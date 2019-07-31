@@ -15,9 +15,11 @@ Run ```make``` to build jcc from source.
 The insruction set is based on [brainfuck](https://esolangs.org/wiki/Brainfuck).
 Each cell is 32-bit. The 30-bit immediate is sign extended to 32-bit.
 
-instruction format:
+instruction format:<br>
+```
 Opcode  Imm 30-bit
 00      000000000000000000000000000000
+```
 
 | Opcode |  Name       |  Description                                              |
 |--------|-------------|-----------------------------------------------------------|
