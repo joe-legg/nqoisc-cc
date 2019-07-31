@@ -25,8 +25,7 @@ Opcode  Imm 30-bit
 |--------|-------------|-----------------------------------------------------------|
 | 00     |  right imm  |  Move the cell pointer to the right by imm.               |
 | 01     |  add   imm  |  Add imm to the cell under the pointer.                   |
-| 10     |  bnz   imm  |  Set the instruction pointer to instruction pointer + imm |
-|        |             |  if the current cell is equal to zero.                    |
+| 10     |  bnz   imm  |  Set the instruction pointer to instruction pointer + imm if the current cell is equal to zero.                    |
 
 Any I/O is memory mapped.
 
