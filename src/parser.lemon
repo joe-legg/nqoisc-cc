@@ -1,0 +1,152 @@
+%include {
+
+#include "jcc.h"
+
+static char *cur_filename;
+static int cur_line_num;
+static char *cur_tok_str;
+
+}
+
+%syntax_error {
+    // TODO: implement error msg system
+    fprintf(stderr, "%s: %d: error: syntax error near \"%s\".\n",
+            cur_filename, cur_line_num, cur_tok_str);
+}
+
+%parse_accept {
+    printf("Parsing done.\n");
+}
+
+%parse_failure {
+}
+
+%stack_overflow {
+    // TODO: implement error msg system
+    fprintf(stderr, "Parser stack overflow. :(\n");
+}
+
+%code {
+
+#include <stdlib.h>
+#include <string.h>
+
+extern int yylex();
+extern char *yytext;
+extern FILE *yyin;
+extern int yylineno;
+
+void parse(char *filename)
+{
+    cur_filename = filename;
+    yyin = fopen(filename, "r");
+    void *parser = ParseAlloc(malloc);
+    int token_id;
+
+    // Uncomment for debugging
+    // ParseTrace(stdout, "Parser: ");
+
+    while ((token_id = yylex())) {
+        cur_tok_str = strdup(yytext);
+        cur_line_num = yylineno;
+        Parse(parser, token_id, strdup(yytext));
+    }
+
+    Parse(parser, 0, NULL);
+    ParseFree(parser, free);
+    fclose(yyin);
+}
+
+}
+
+%token_prefix TOK_
+%token_type   { const char * }
+
+program ::= translation_unit.
+
+translation_unit ::= external_decl.
+translation_unit ::= translation_unit external_decl.
+
+external_decl ::= decl.
+external_decl ::= function_definition.
+
+function_definition ::= decl_specs declarator compound_statement.
+function_definition ::= decl_specs declarator decl_list compound_statement.
+
+decl_list ::= decl.
+decl_list ::= decl_list decl.
+
+decl ::= decl_specs SEMICOLON.
+
+decl_specs ::= type_spec.
+// decl_specs ::= type_spec decl_specs. // FIXME: parsing conflict.
+
+type_spec ::= KWD_INT.
+
+declarator ::= direct_declarator.
+declarator ::= pointer direct_declarator.
+
+direct_declarator ::= IDENT.
+direct_declarator ::= LPAREN declarator RPAREN.
+direct_declarator ::= direct_declarator LPAREN parameter_type_list RPAREN.
+direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
+direct_declarator ::= direct_declarator LPAREN RPAREN.
+
+pointer ::= ASTERISK.
+pointer ::= ASTERISK type_qualifier_list.
+pointer ::= ASTERISK pointer.
+pointer ::= ASTERISK type_qualifier_list pointer.
+
+type_qualifier_list ::= type_qualifier.
+type_qualifier_list ::= type_qualifier_list type_qualifier.
+
+type_qualifier ::= KWD_CONST.
+type_qualifier ::= KWD_RESTRICT.
+type_qualifier ::= KWD_VOLATILE.
+
+parameter_type_list ::= parameter_list.
+parameter_type_list ::= parameter_list COMMA ELLIPSIS.
+
+parameter_list ::= parameter_decl.
+parameter_list ::= parameter_list COMMA parameter_decl.
+
+parameter_decl ::= decl_specs.
+parameter_decl ::= decl_specs declarator.
+
+identifier_list ::= IDENT.
+identifier_list ::= identifier_list COMMA IDENT.
+
+statement ::= compound_statement.
+statement ::= jump_statement.
+
+compound_statement ::= LBRACE RBRACE.
+compound_statement ::= LBRACE block_item_list RBRACE.
+
+block_item_list ::= block_item.
+block_item_list ::= block_item_list block_item.
+
+block_item ::= decl.
+block_item ::= statement.
+
+jump_statement ::= KWD_RETURN SEMICOLON.
+jump_statement ::= KWD_RETURN expression SEMICOLON.
+
+expression ::= assignment_expr.
+expression ::= expression COMMA assignment_expr.
+
+assignment_expr ::= conditional_expr.
+
+conditional_expr ::= primary_expr. // TODO
+
+primary_expr ::= IDENT.
+primary_expr ::= constant.
+
+constant ::= integer_const.
+constant ::= character_const.
+
+character_const ::= CHAR.
+character_const ::= WIDE_CHAR.
+character_const ::= MULTI_CHAR.
+
+integer_const ::= DECIMAL.
+// TODO: integer suffixes, hexadecimal and octal.
