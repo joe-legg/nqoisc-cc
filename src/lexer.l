@@ -26,6 +26,7 @@
 
 [0-9]+                 return TOK_DECIMAL;
 [_a-zA-Z][_a-zA-Z0-9]* return TOK_IDENT;
+\"(\\.|[^"\\\n])*\"     return TOK_STR_LIT;
 \'(\\.|[^"\\\n])\'     return TOK_CHAR;
 \'(\\.|[^"\\\n])*\'    return TOK_MULTI_CHAR;
 
@@ -33,6 +34,6 @@
 \/\/.* {}
 " "|\n|\t|\r {}
 
-. return 999;
+. return 999; // FIXME: when an unknown character is found the program crashes
 
 %%

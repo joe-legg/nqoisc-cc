@@ -1,4 +1,4 @@
 int test()
 {
-    return 42;
+    return "asdf";
 }

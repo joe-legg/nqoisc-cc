@@ -140,6 +140,8 @@ conditional_expr ::= primary_expr. // TODO
 
 primary_expr ::= IDENT.
 primary_expr ::= constant.
+primary_expr ::= STR_LIT.
+primary_expr ::= LPAREN expression RPAREN.
 
 constant ::= integer_const.
 constant ::= character_const.
