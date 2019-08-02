@@ -9,9 +9,7 @@ static char *cur_tok_str;
 }
 
 %syntax_error {
-    // TODO: implement error msg system
-    fprintf(stderr, "%s: %d: error: syntax error near \"%s\".\n",
-            cur_filename, cur_line_num, cur_tok_str);
+    error(cur_filename, cur_line_num, "syntax error near \"%s\".", cur_tok_str);
 }
 
 %parse_accept {
@@ -22,8 +20,7 @@ static char *cur_tok_str;
 }
 
 %stack_overflow {
-    // TODO: implement error msg system
-    fprintf(stderr, "Parser stack overflow. :(\n");
+    error(cur_filename, cur_line_num, "parser stack overflow.");
 }
 
 %code {

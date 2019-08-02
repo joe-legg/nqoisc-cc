@@ -1,4 +1,6 @@
 - [ ] compile return 42 program.
 - [ ] fix function definition parsing.
-- [ ] error system.
 - [ ] rename decl to declaration.
+- [ ] parse statements.
+- [ ] finish parsing declarations.
+- [x] error system.
