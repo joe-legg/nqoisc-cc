@@ -73,29 +73,51 @@ external_decl ::= function_definition.
 function_definition ::= decl_specs declarator compound_statement.
 function_definition ::= decl_specs declarator decl_list compound_statement.
 
+// Declarations
+
 decl_list ::= decl.
 decl_list ::= decl_list decl.
 
 decl ::= decl_specs SEMICOLON.
 
-decl_specs ::= type_spec.
+decl_specs ::= type_specifier.
 // decl_specs ::= type_spec decl_specs. // FIXME: parsing conflict.
 
-type_spec ::= KWD_INT.
+specifier_qualifier_list ::= type_specifier.
+specifier_qualifier_list ::= type_specifier specifier_qualifier_list.
+specifier_qualifier_list ::= type_qualifier.
+specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
+
+type_specifier ::= KWD_VOID.
+type_specifier ::= KWD_CHAR.
+type_specifier ::= KWD_SHORT.
+type_specifier ::= KWD_LONG.
+type_specifier ::= KWD_INT.
+type_specifier ::= KWD_FLOAT.
+type_specifier ::= KWD_DOUBLE.
+type_specifier ::= KWD_SIGNED.
+type_specifier ::= KWD_UNSIGNED.
+type_specifier ::= KWD__BOOL.
+type_specifier ::= KWD__COMPLEX.
+type_specifier ::= KWD__IMAGINARY.
+type_specifier ::= TYPEDEF_NAME.
+//type_specifier ::= struct_or_union_specifier. // TODO
+//type_specifier ::= enum_specifier. // TODO
 
 declarator ::= direct_declarator.
 declarator ::= pointer direct_declarator.
 
+// TODO: finish parsing direct_declarators
 direct_declarator ::= IDENT.
 direct_declarator ::= LPAREN declarator RPAREN.
 direct_declarator ::= direct_declarator LPAREN parameter_type_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN RPAREN.
 
-pointer ::= ASTERISK.
-pointer ::= ASTERISK type_qualifier_list.
-pointer ::= ASTERISK pointer.
-pointer ::= ASTERISK type_qualifier_list pointer.
+pointer ::= OP_ASTERISK.
+pointer ::= OP_ASTERISK type_qualifier_list.
+pointer ::= OP_ASTERISK pointer.
+pointer ::= OP_ASTERISK type_qualifier_list pointer.
 
 type_qualifier_list ::= type_qualifier.
 type_qualifier_list ::= type_qualifier_list type_qualifier.
@@ -113,8 +135,49 @@ parameter_list ::= parameter_list COMMA parameter_decl.
 parameter_decl ::= decl_specs.
 parameter_decl ::= decl_specs declarator.
 
+type_name ::= specifier_qualifier_list.
+type_name ::= specifier_qualifier_list abstract_declarator.
+
+direct_abstract_declarator ::= LPAREN abstract_declarator RPAREN.
+direct_abstract_declarator ::= LSQUARE RSQUARE.
+direct_abstract_declarator ::= LSQUARE assignment_expr RSQUARE.
+direct_abstract_declarator ::= direct_abstract_declarator LSQUARE RSQUARE.
+direct_abstract_declarator ::= direct_abstract_declarator LSQUARE assignment_expr
+                               RSQUARE.
+direct_abstract_declarator ::= direct_abstract_declarator LSQUARE OP_ASTERISK
+                               RSQUARE.
+direct_abstract_declarator ::= LSQUARE OP_ASTERISK RSQUARE.
+direct_abstract_declarator ::= LPAREN RPAREN.
+direct_abstract_declarator ::= LPAREN parameter_type_list RPAREN.
+direct_abstract_declarator ::= direct_abstract_declarator LPAREN RPAREN.
+direct_abstract_declarator ::= direct_abstract_declarator LPAREN
+                               parameter_type_list RPAREN.
+
+abstract_declarator ::= pointer.
+abstract_declarator ::= direct_abstract_declarator.
+abstract_declarator ::= pointer direct_abstract_declarator.
+
 identifier_list ::= IDENT.
 identifier_list ::= identifier_list COMMA IDENT.
+
+initializer ::= assignment_expr.
+initializer ::= LBRACE initializer RBRACE.
+initializer ::= LBRACE initializer COMMA RBRACE.
+
+initializer_list ::= designation initializer.
+initializer_list ::= initializer.
+initializer_list ::= initializer_list COMMA designation initializer.
+initializer_list ::= initializer_list COMMA initializer.
+
+designation ::= designator_list OP_EQUALS.
+
+designator_list ::= designator.
+designator_list ::= designator_list designator.
+
+designator ::= LSQUARE constant_expr RSQUARE.
+designator ::= DOT IDENT.
+
+// Statements
 
 statement ::= compound_statement.
 statement ::= jump_statement.
@@ -131,12 +194,99 @@ block_item ::= statement.
 jump_statement ::= KWD_RETURN SEMICOLON.
 jump_statement ::= KWD_RETURN expression SEMICOLON.
 
+// Expressions
+
+constant_expr ::= conditional_expr.
+
 expression ::= assignment_expr.
 expression ::= expression COMMA assignment_expr.
 
-assignment_expr ::= conditional_expr.
+assignment_op ::= OP_EQUALS.
+assignment_op ::= OP_TIMES_EQUALS.
+assignment_op ::= OP_DIVIDE_EQUALS.
+assignment_op ::= OP_MODULO_EQUALS.
+assignment_op ::= OP_PLUS_EQUALS.
+assignment_op ::= OP_MINUS_EQUALS.
+assignment_op ::= OP_SHIFT_LEFT_EQUALS.
+assignment_op ::= OP_SHIFT_RIGHT_EQUALS.
+assignment_op ::= OP_AND_EQUALS.
+assignment_op ::= OP_XOR_EQUALS.
+assignment_op ::= OP_OR_EQUALS.
 
-conditional_expr ::= primary_expr. // TODO
+assignment_expr ::= conditional_expr.
+assignment_expr ::= unary_expr assignment_op assignment_expr. // TODO
+
+conditional_expr ::= logical_or_expr.
+conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON
+                     conditional_expr.
+
+logical_or_expr ::= logical_and_expr.
+logical_or_expr ::= logical_or_expr OP_LOGICAL_OR logical_and_expr.
+
+logical_and_expr ::= inclusive_or_expr.
+logical_and_expr ::= logical_and_expr OP_LOGICAL_AND inclusive_or_expr.
+
+inclusive_or_expr ::= exclusive_or_expr.
+inclusive_or_expr ::= inclusive_or_expr OP_OR exclusive_or_expr.
+
+exclusive_or_expr ::= and_expr.
+exclusive_or_expr ::= exclusive_or_expr OP_CARET and_expr.
+
+and_expr ::= equality_expr.
+and_expr ::= and_expr OP_AND equality_expr.
+
+equality_expr ::= relational_expr.
+equality_expr ::= equality_expr OP_EQUALITY relational_expr.
+equality_expr ::= equality_expr OP_NOT_EQUAL relational_expr.
+
+relational_expr ::= shift_expr.
+relational_expr ::= relational_expr OP_LESS_THAN shift_expr.
+relational_expr ::= relational_expr OP_MORE_THAN shift_expr.
+relational_expr ::= relational_expr OP_LESS_THAN_OR_EQUAL shift_expr.
+relational_expr ::= relational_expr OP_MORE_THAN_OR_EQUAL shift_expr.
+
+shift_expr ::= additive_expr.
+shift_expr ::= shift_expr OP_SHIFT_LEFT additive_expr.
+shift_expr ::= shift_expr OP_SHIFT_RIGHT additive_expr.
+
+additive_expr ::= multiplicative_expr.
+additive_expr ::= additive_expr OP_PLUS multiplicative_expr.
+additive_expr ::= additive_expr OP_MINUS multiplicative_expr.
+
+multiplicative_expr ::= cast_expr.
+multiplicative_expr ::= multiplicative_expr OP_ASTERISK cast_expr.
+multiplicative_expr ::= multiplicative_expr OP_DIVIDE cast_expr.
+multiplicative_expr ::= multiplicative_expr OP_MODULO cast_expr.
+
+cast_expr ::= unary_expr.
+cast_expr ::= LPAREN type_name RPAREN cast_expr.
+
+unary_op ::= OP_AND.
+unary_op ::= OP_ASTERISK.
+unary_op ::= OP_PLUS.
+unary_op ::= OP_MINUS.
+unary_op ::= OP_TILDE.
+unary_op ::= OP_NOT.
+
+unary_expr ::= postfix_expr.
+unary_expr ::= OP_PLUS_PLUS unary_expr.
+unary_expr ::= OP_MINUS_MINUS unary_expr.
+unary_expr ::= unary_op cast_expr.
+unary_expr ::= OP_SIZEOF unary_expr.
+unary_expr ::= OP_SIZEOF LPAREN type_name RPAREN.
+
+argument_expr_list ::= assignment_expr.
+argument_expr_list ::= argument_expr_list COMMA assignment_expr.
+
+postfix_expr ::= primary_expr.
+postfix_expr ::= postfix_expr LSQUARE expression RSQUARE.
+postfix_expr ::= postfix_expr LPAREN argument_expr_list RPAREN.
+postfix_expr ::= postfix_expr DOT IDENT.
+postfix_expr ::= postfix_expr OP_ARROW IDENT.
+postfix_expr ::= postfix_expr OP_PLUS_PLUS.
+postfix_expr ::= postfix_expr OP_MINUS_MINUS.
+postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list RBRACE.
+postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.
 
 primary_expr ::= IDENT.
 primary_expr ::= constant.
