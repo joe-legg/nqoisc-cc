@@ -23,6 +23,15 @@
 "double"     return TOK_KWD_DOUBLE;
 "signed"     return TOK_KWD_SIGNED;
 "unsigned"   return TOK_KWD_UNSIGNED;
+"inline"     return TOK_KWD_INLINE;
+"typedef"    return TOK_KWD_TYPEDEF;
+"extern"     return TOK_KWD_EXTERN;
+"static"     return TOK_KWD_STATIC;
+"auto"       return TOK_KWD_AUTO;
+"register"   return TOK_KWD_REGISTER;
+"struct"     return TOK_KWD_STRUCT;
+"union"      return TOK_KWD_UNION;
+"enum"       return TOK_KWD_ENUM;
 "_Bool"      return TOK_KWD__BOOL;
 "_Complex"   return TOK_KWD__COMPLEX;
 "_Imaginary" return TOK_KWD__IMAGINARY;
@@ -87,13 +96,13 @@
 \/\/.* {}
 " "|\n|\t|\r {}
 
-. return 999; 
+. return 999; // FIXME: when an unknown character is found the program crashes
 
 %%
-// FIXME: when an unknown character is found the program crashes
 
+/*
 static int check_ident_type()
 {
-    // TODO
     return 0;
 }
+*/

@@ -1,4 +1,7 @@
-void *test()
+typedef struct TestStruct {
+    int a;
+};
+
+int main()
 {
-    return 1  1 * 10 / 32 % 10 >> 4345 & 10 >> 3;
 }

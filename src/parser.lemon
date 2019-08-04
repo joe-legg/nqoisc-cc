@@ -72,13 +72,32 @@ function_definition ::= decl_specs declarator decl_list compound_statement.
 
 // Declarations
 
+decl ::= decl_specs SEMICOLON.
+decl ::= decl_specs init_declarator_list SEMICOLON.
+
 decl_list ::= decl.
 decl_list ::= decl_list decl.
 
-decl ::= decl_specs SEMICOLON.
-
+decl_specs ::= storage_class_specifier.
+decl_specs ::= storage_class_specifier decl_specs.
 decl_specs ::= type_specifier.
-// decl_specs ::= type_spec decl_specs. // FIXME: parsing conflict.
+decl_specs ::= type_specifier decl_specs.
+decl_specs ::= type_qualifier.
+decl_specs ::= type_qualifier decl_specs.
+decl_specs ::= KWD_INLINE.
+decl_specs ::= KWD_INLINE decl_specs.
+
+init_declarator_list ::= init_declarator.
+init_declarator_list ::= init_declarator_list COMMA init_declarator.
+
+init_declarator ::= declarator.
+init_declarator ::= declarator OP_EQUALS initializer.
+
+storage_class_specifier ::= KWD_TYPEDEF.
+storage_class_specifier ::= KWD_EXTERN.
+storage_class_specifier ::= KWD_STATIC.
+storage_class_specifier ::= KWD_AUTO.
+storage_class_specifier ::= KWD_REGISTER.
 
 specifier_qualifier_list ::= type_specifier.
 specifier_qualifier_list ::= type_specifier specifier_qualifier_list.
@@ -98,15 +117,61 @@ type_specifier ::= KWD__BOOL.
 type_specifier ::= KWD__COMPLEX.
 type_specifier ::= KWD__IMAGINARY.
 type_specifier ::= TYPEDEF_NAME.
-//type_specifier ::= struct_or_union_specifier. // TODO
-//type_specifier ::= enum_specifier. // TODO
+type_specifier ::= struct_or_union_specifier.
+type_specifier ::= enum_specifier.
+
+struct_or_union_specifier ::= struct_or_union IDENT LBRACE
+                              struct_declaration_list RBRACE.
+struct_or_union_specifier ::= struct_or_union LBRACE struct_declaration_list
+                              RBRACE.
+struct_or_union_specifier ::= struct_or_union IDENT.
+
+struct_or_union ::= KWD_STRUCT.
+struct_or_union ::= KWD_UNION.
+
+struct_declaration_list ::= struct_declaration.
+struct_declaration_list ::= struct_declaration_list struct_declaration.
+
+struct_declaration ::= specifier_qualifier_list struct_declarator_list SEMICOLON.
+
+struct_declarator_list ::= struct_declarator.
+struct_declarator_list ::= struct_declarator_list COMMA struct_declarator.
+
+struct_declarator ::= declarator.
+struct_declarator ::= COLON constant_expr.
+struct_declarator ::= declarator COLON constant_expr.
+
+enum_specifier ::= KWD_ENUM LBRACE enumerator_list RBRACE.
+enum_specifier ::= KWD_ENUM IDENT LBRACE enumerator_list RBRACE.
+enum_specifier ::= KWD_ENUM LBRACE enumerator_list COMMA RBRACE.
+enum_specifier ::= KWD_ENUM IDENT LBRACE enumerator_list COMMA RBRACE.
+enum_specifier ::= KWD_ENUM IDENT.
+
+enumerator_list ::= enumerator.
+enumerator_list ::= enumerator_list COMMA enumerator.
+
+enumerator ::= ENUMERATION_CONSTANT.
+enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 
 declarator ::= direct_declarator.
 declarator ::= pointer direct_declarator.
 
-// TODO: finish parsing direct_declarators
 direct_declarator ::= IDENT.
 direct_declarator ::= LPAREN declarator RPAREN.
+direct_declarator ::= direct_declarator LSQUARE RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE type_qualifier_list
+                      assignment_expr RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE assignment_expr RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE type_qualifier_list RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE KWD_STATIC assignment_expr
+                      RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE KWD_STATIC type_qualifier_list
+                      assignment_expr RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE type_qualifier_list KWD_STATIC
+                      assignment_expr RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE OP_ASTERISK RSQUARE.
+direct_declarator ::= direct_declarator LSQUARE type_qualifier_list OP_ASTERISK
+                      RSQUARE.
 direct_declarator ::= direct_declarator LPAREN parameter_type_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN RPAREN.
@@ -158,13 +223,13 @@ identifier_list ::= IDENT.
 identifier_list ::= identifier_list COMMA IDENT.
 
 initializer ::= assignment_expr.
-initializer ::= LBRACE initializer RBRACE.
-initializer ::= LBRACE initializer COMMA RBRACE.
+initializer ::= LBRACE initializer_list RBRACE.
+initializer ::= LBRACE initializer_list COMMA RBRACE.
 
-initializer_list ::= designation initializer.
 initializer_list ::= initializer.
-initializer_list ::= initializer_list COMMA designation initializer.
+initializer_list ::= designation initializer.
 initializer_list ::= initializer_list COMMA initializer.
+initializer_list ::= initializer_list COMMA designation initializer.
 
 designation ::= designator_list OP_EQUALS.
 
@@ -211,7 +276,7 @@ assignment_op ::= OP_XOR_EQUALS.
 assignment_op ::= OP_OR_EQUALS.
 
 assignment_expr ::= conditional_expr.
-assignment_expr ::= unary_expr assignment_op assignment_expr. // TODO
+assignment_expr ::= unary_expr assignment_op assignment_expr.
 
 conditional_expr ::= logical_or_expr.
 conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON
@@ -290,8 +355,9 @@ primary_expr ::= constant.
 primary_expr ::= STR_LIT.
 primary_expr ::= LPAREN expression RPAREN.
 
-constant ::= integer_const.
+constant ::= integer_const. // TODO: floating_const
 constant ::= character_const.
+constant ::= ENUMERATION_CONSTANT.
 
 character_const ::= CHAR.
 character_const ::= WIDE_CHAR.
