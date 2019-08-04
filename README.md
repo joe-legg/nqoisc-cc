@@ -1,4 +1,4 @@
-# JCC (Joes C Compiler)
+# jcc (Joes C Compiler)
 A small c compiler designed to target an instruction set with only three
 instructions.
 
