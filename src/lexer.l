@@ -23,6 +23,10 @@
 "double"     return TOK_KWD_DOUBLE;
 "signed"     return TOK_KWD_SIGNED;
 "unsigned"   return TOK_KWD_UNSIGNED;
+"_Bool"      return TOK_KWD__BOOL;
+"_Complex"   return TOK_KWD__COMPLEX;
+"_Imaginary" return TOK_KWD__IMAGINARY;
+
 "inline"     return TOK_KWD_INLINE;
 "typedef"    return TOK_KWD_TYPEDEF;
 "extern"     return TOK_KWD_EXTERN;
@@ -32,9 +36,18 @@
 "struct"     return TOK_KWD_STRUCT;
 "union"      return TOK_KWD_UNION;
 "enum"       return TOK_KWD_ENUM;
-"_Bool"      return TOK_KWD__BOOL;
-"_Complex"   return TOK_KWD__COMPLEX;
-"_Imaginary" return TOK_KWD__IMAGINARY;
+
+"case"     return TOK_KWD_CASE;
+"default"  return TOK_KWD_DEFAULT;
+"if"       return TOK_KWD_IF;
+"else"     return TOK_KWD_ELSE;
+"switch"   return TOK_KWD_SWITCH;
+"while"    return TOK_KWD_WHILE;
+"do"       return TOK_KWD_DO;
+"for"      return TOK_KWD_FOR;
+"goto"     return TOK_KWD_GOTO;
+"continue" return TOK_KWD_CONTINUE;
+"break"    return TOK_KWD_BREAK;
 
 "*"      return TOK_OP_ASTERISK;
 "/"      return TOK_OP_DIVIDE;

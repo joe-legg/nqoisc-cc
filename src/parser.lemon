@@ -59,6 +59,9 @@ void parse(char *filename)
 %token_prefix TOK_
 %token_type   { const char * }
 
+%nonassoc KWD_IF.
+%nonassoc KWD_ELSE.
+
 program ::= translation_unit.
 
 translation_unit ::= external_decl.
@@ -156,6 +159,7 @@ enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 declarator ::= direct_declarator.
 declarator ::= pointer direct_declarator.
 
+// Direct declarator
 direct_declarator ::= IDENT.
 direct_declarator ::= LPAREN declarator RPAREN.
 direct_declarator ::= direct_declarator LSQUARE RSQUARE.
@@ -176,6 +180,7 @@ direct_declarator ::= direct_declarator LPAREN parameter_type_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN RPAREN.
 
+// Pointer
 pointer ::= OP_ASTERISK.
 pointer ::= OP_ASTERISK type_qualifier_list.
 pointer ::= OP_ASTERISK pointer.
@@ -188,6 +193,7 @@ type_qualifier ::= KWD_CONST.
 type_qualifier ::= KWD_RESTRICT.
 type_qualifier ::= KWD_VOLATILE.
 
+// Parameters
 parameter_type_list ::= parameter_list.
 parameter_type_list ::= parameter_list COMMA ELLIPSIS.
 
@@ -197,9 +203,11 @@ parameter_list ::= parameter_list COMMA parameter_decl.
 parameter_decl ::= decl_specs.
 parameter_decl ::= decl_specs declarator.
 
+// Type name
 type_name ::= specifier_qualifier_list.
 type_name ::= specifier_qualifier_list abstract_declarator.
 
+// Direct abstract declarator
 direct_abstract_declarator ::= LPAREN abstract_declarator RPAREN.
 direct_abstract_declarator ::= LSQUARE RSQUARE.
 direct_abstract_declarator ::= LSQUARE assignment_expr RSQUARE.
@@ -222,6 +230,7 @@ abstract_declarator ::= pointer direct_abstract_declarator.
 identifier_list ::= IDENT.
 identifier_list ::= identifier_list COMMA IDENT.
 
+// Initializer
 initializer ::= assignment_expr.
 initializer ::= LBRACE initializer_list RBRACE.
 initializer ::= LBRACE initializer_list COMMA RBRACE.
@@ -231,6 +240,7 @@ initializer_list ::= designation initializer.
 initializer_list ::= initializer_list COMMA initializer.
 initializer_list ::= initializer_list COMMA designation initializer.
 
+// Designation
 designation ::= designator_list OP_EQUALS.
 
 designator_list ::= designator.
@@ -241,9 +251,19 @@ designator ::= DOT IDENT.
 
 // Statements
 
+statement ::= labeled_statement.
 statement ::= compound_statement.
+statement ::= expression_statement.
+statement ::= selection_statement.
+statement ::= iteration_statement.
 statement ::= jump_statement.
 
+// Labeled statement
+labeled_statement ::= IDENT COLON statement.
+labeled_statement ::= KWD_CASE constant_expr COLON statement.
+labeled_statement ::= KWD_DEFAULT COLON statement.
+
+// Compound statement
 compound_statement ::= LBRACE RBRACE.
 compound_statement ::= LBRACE block_item_list RBRACE.
 
@@ -253,6 +273,33 @@ block_item_list ::= block_item_list block_item.
 block_item ::= decl.
 block_item ::= statement.
 
+// Expr statement
+expression_statement ::= expression SEMICOLON.
+
+// If else
+selection_statement ::= KWD_IF LPAREN expression RPAREN statement.
+selection_statement ::= KWD_IF LPAREN expression RPAREN statement KWD_ELSE
+                        statement.
+selection_statement ::= KWD_SWITCH LPAREN expression RPAREN statement.
+
+// While and do while
+iteration_statement ::= KWD_WHILE LPAREN expression RPAREN statement.
+iteration_statement ::= KWD_DO statement KWD_WHILE LPAREN expression RPAREN
+                        SEMICOLON.
+// For loop
+iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
+                        expression RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
+                        RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+                        expression RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+                        RPAREN statement.
+
+// Jump statements
+jump_statement ::= KWD_GOTO IDENT SEMICOLON.
+jump_statement ::= KWD_CONTINUE SEMICOLON.
+jump_statement ::= KWD_BREAK SEMICOLON.
 jump_statement ::= KWD_RETURN SEMICOLON.
 jump_statement ::= KWD_RETURN expression SEMICOLON.
 
@@ -263,6 +310,7 @@ constant_expr ::= conditional_expr.
 expression ::= assignment_expr.
 expression ::= expression COMMA assignment_expr.
 
+// Assignment operators
 assignment_op ::= OP_EQUALS.
 assignment_op ::= OP_TIMES_EQUALS.
 assignment_op ::= OP_DIVIDE_EQUALS.
@@ -275,6 +323,7 @@ assignment_op ::= OP_AND_EQUALS.
 assignment_op ::= OP_XOR_EQUALS.
 assignment_op ::= OP_OR_EQUALS.
 
+// Assignment expression
 assignment_expr ::= conditional_expr.
 assignment_expr ::= unary_expr assignment_op assignment_expr.
 
