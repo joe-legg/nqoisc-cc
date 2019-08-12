@@ -1,9 +1,9 @@
-typedef struct TestStruct {
-    int a;
-}
-
 int main()
 {
     if (1 == 2)
-        printf("it works!");
+        ;
+    else if (1 == 1)
+        ;
+    else
+        ;
 }

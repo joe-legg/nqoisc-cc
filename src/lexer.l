@@ -101,9 +101,8 @@
 
 [0-9]+                 return TOK_DECIMAL;
 [_a-zA-Z][_a-zA-Z0-9]* return TOK_IDENT;
-\"(\\.|[^"\\\n])*\"    return TOK_STR_LIT;
-\'(\\.|[^"\\\n])\'     return TOK_CHAR;
-\'(\\.|[^"\\\n])*\'    return TOK_MULTI_CHAR;
+((u8|u|U|L)?\"([^"\\\n]|(\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+)))*\"[ \t\v\n\f]*)+ return TOK_STR_LIT;
+L?'(\\.|[^\\'\n])+'    return TOK_CHAR;
 
 \/\*(.*\n)*.*\*\/ {}
 \/\/.* {}
