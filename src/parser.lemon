@@ -59,6 +59,8 @@ void parse(char *filename)
 %token_prefix TOK_
 %token_type   { const char * }
 
+%right KWD_IF KWD_ELSE.
+
 program ::= translation_unit.
 
 translation_unit ::= external_decl.
@@ -248,27 +250,12 @@ designator ::= DOT IDENT.
 
 // Statements
 
-statement ::= open_statement.
-statement ::= closed_statement.
-
-simple_statement ::= iteration_statement.
-simple_statement ::= jump_statement.
-simple_statement ::= labeled_statement.
-simple_statement ::= compound_statement.
-simple_statement ::= expression_statement.
-simple_statement ::= selection_statement.
-
-closed_statement ::= simple_statement.
-
-// If else
-closed_statement ::= KWD_IF LPAREN expression RPAREN closed_statement KWD_ELSE
-                     closed_statement.
-open_statement ::= KWD_IF LPAREN expression RPAREN statement.
-open_statement ::= KWD_IF LPAREN expression RPAREN closed_statement KWD_ELSE
-                   open_statement.
-
-// Switch statement
-selection_statement ::= KWD_SWITCH LPAREN expression RPAREN statement.
+statement ::= labeled_statement.
+statement ::= compound_statement.
+statement ::= expression_statement.
+statement ::= selection_statement.
+statement ::= iteration_statement.
+statement ::= jump_statement.
 
 // Labeled statement
 labeled_statement ::= IDENT COLON statement.
@@ -288,29 +275,27 @@ block_item ::= statement.
 // Expr statement
 expression_statement ::= expression SEMICOLON.
 
+// If else
+selection_statement ::= KWD_IF LPAREN expression RPAREN statement. [KWD_ELSE]
+selection_statement ::= KWD_IF LPAREN expression RPAREN statement KWD_ELSE
+                        statement.
+
+// Switch statement
+selection_statement ::= KWD_SWITCH LPAREN expression RPAREN statement.
+
 // While and do while
-closed_statement ::= KWD_WHILE LPAREN expression RPAREN closed_statement.
-open_statement ::= KWD_WHILE LPAREN expression RPAREN open_statement.
+iteration_statement ::= KWD_WHILE LPAREN expression RPAREN statement.
 iteration_statement ::= KWD_DO statement KWD_WHILE LPAREN expression RPAREN
                         SEMICOLON.
 // For loop
-open_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                   expression RPAREN open_statement.
-open_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                   RPAREN open_statement.
-open_statement ::= KWD_FOR LPAREN decl expression_statement
-                   expression RPAREN open_statement.
-open_statement ::= KWD_FOR LPAREN decl expression_statement
-                   RPAREN open_statement.
-
-closed_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                     expression RPAREN closed_statement.
-closed_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                     RPAREN closed_statement.
-closed_statement ::= KWD_FOR LPAREN decl expression_statement
-                     expression RPAREN closed_statement.
-closed_statement ::= KWD_FOR LPAREN decl expression_statement
-                     RPAREN closed_statement.
+iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
+                        expression RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
+                        RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+                        expression RPAREN statement.
+iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+                        RPAREN statement.
 
 // Jump statements
 jump_statement ::= KWD_GOTO IDENT SEMICOLON.

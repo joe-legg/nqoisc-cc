@@ -1,0 +1,6 @@
+jcc
+src/parser.out
+src/parser.h
+src/parser.c
+lex.yy.c
+*.o

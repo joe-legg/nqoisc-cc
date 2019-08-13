@@ -3,7 +3,7 @@
 - [ ] rename decl to declaration.
 - [ ] finish parsing constants.
 - [ ] add comments to parser.
-- [ ] fix if else parsing.
+- [x] fix if/else parsing.
 - [x] parse statements.
 - [x] finish parsing declarations.
 - [x] error system.
