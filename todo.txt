@@ -2,8 +2,8 @@ Todo List
 #########################################
 - [ ] compile return 42 program.
 - [ ] create IR gen for return 42.
-- [ ] create AST for return 42 program.
 - [ ] fix function definition parsing.
+- [ ] create AST for return 42 program.
 - [x] rename decl to declaration.
 - [x] finish parsing constants.
 - [x] add comments to parser.
