@@ -1,4 +1,4 @@
-#include "jcc.h"
+extern void parse(char *filename);
 
 int main(int argc, char *argv[])
 {

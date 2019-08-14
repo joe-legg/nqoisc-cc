@@ -1,6 +1,6 @@
 %include {
 
-#include "jcc.h"
+#include "error.h"
 
 static char *cur_filename;
 static int cur_line_num;
