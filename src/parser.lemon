@@ -106,6 +106,7 @@ specifier_qualifier_list ::= type_specifier specifier_qualifier_list.
 specifier_qualifier_list ::= type_qualifier.
 specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
+// Type specifiers
 type_specifier ::= KWD_VOID.
 type_specifier ::= KWD_CHAR.
 type_specifier ::= KWD_SHORT.
@@ -122,6 +123,7 @@ type_specifier ::= TYPEDEF_NAME.
 type_specifier ::= struct_or_union_specifier.
 type_specifier ::= enum_specifier.
 
+// Structs
 struct_or_union_specifier ::= struct_or_union IDENT LBRACE
                               struct_declaration_list RBRACE.
 struct_or_union_specifier ::= struct_or_union LBRACE struct_declaration_list
@@ -143,6 +145,7 @@ struct_declarator ::= declarator.
 struct_declarator ::= COLON constant_expr.
 struct_declarator ::= declarator COLON constant_expr.
 
+// Enums
 enum_specifier ::= KWD_ENUM LBRACE enumerator_list RBRACE.
 enum_specifier ::= KWD_ENUM IDENT LBRACE enumerator_list RBRACE.
 enum_specifier ::= KWD_ENUM LBRACE enumerator_list COMMA RBRACE.
@@ -226,6 +229,7 @@ abstract_declarator ::= pointer.
 abstract_declarator ::= direct_abstract_declarator.
 abstract_declarator ::= pointer direct_abstract_declarator.
 
+// Identifier list
 identifier_list ::= IDENT.
 identifier_list ::= identifier_list COMMA IDENT.
 
@@ -405,9 +409,15 @@ primary_expr ::= constant.
 primary_expr ::= STR_LIT.
 primary_expr ::= LPAREN expression RPAREN.
 
-constant ::= integer_const. // TODO: floating_const
+// Constants
+constant ::= integer_const.
+constant ::= floating_const.
 constant ::= CHAR.
 constant ::= ENUMERATION_CONSTANT.
 
-integer_const ::= DECIMAL.
-// TODO: integer suffixes, hexadecimal and octal.
+integer_const ::= DECIMAL_CONST.
+integer_const ::= OCTAL_CONST.
+integer_const ::= HEXADECIMAL_CONST.
+
+floating_const ::= DECIMAL_FLOAT.
+floating_const ::= HEXADECIMAL_FLOAT.
