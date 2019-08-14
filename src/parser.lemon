@@ -63,31 +63,31 @@ void parse(char *filename)
 
 program ::= translation_unit.
 
-translation_unit ::= external_decl.
-translation_unit ::= translation_unit external_decl.
+translation_unit ::= external_declaration.
+translation_unit ::= translation_unit external_declaration.
 
-external_decl ::= decl.
-external_decl ::= function_definition.
+external_declaration ::= declaration.
+external_declaration ::= function_definition.
 
-function_definition ::= decl_specs declarator compound_statement.
-function_definition ::= decl_specs declarator decl_list compound_statement.
+function_definition ::= declaration_specs declarator compound_statement.
+function_definition ::= declaration_specs declarator declaration_list compound_statement.
 
 // Declarations
 
-decl ::= decl_specs SEMICOLON.
-decl ::= decl_specs init_declarator_list SEMICOLON.
+declaration ::= declaration_specs SEMICOLON.
+declaration ::= declaration_specs init_declarator_list SEMICOLON.
 
-decl_list ::= decl.
-decl_list ::= decl_list decl.
+declaration_list ::= declaration.
+declaration_list ::= declaration_list declaration.
 
-decl_specs ::= storage_class_specifier.
-decl_specs ::= storage_class_specifier decl_specs.
-decl_specs ::= type_specifier.
-decl_specs ::= type_specifier decl_specs.
-decl_specs ::= type_qualifier.
-decl_specs ::= type_qualifier decl_specs.
-decl_specs ::= KWD_INLINE.
-decl_specs ::= KWD_INLINE decl_specs.
+declaration_specs ::= storage_class_specifier.
+declaration_specs ::= storage_class_specifier declaration_specs.
+declaration_specs ::= type_specifier.
+declaration_specs ::= type_specifier declaration_specs.
+declaration_specs ::= type_qualifier.
+declaration_specs ::= type_qualifier declaration_specs.
+declaration_specs ::= KWD_INLINE.
+declaration_specs ::= KWD_INLINE declaration_specs.
 
 init_declarator_list ::= init_declarator.
 init_declarator_list ::= init_declarator_list COMMA init_declarator.
@@ -199,11 +199,11 @@ type_qualifier ::= KWD_VOLATILE.
 parameter_type_list ::= parameter_list.
 parameter_type_list ::= parameter_list COMMA ELLIPSIS.
 
-parameter_list ::= parameter_decl.
-parameter_list ::= parameter_list COMMA parameter_decl.
+parameter_list ::= parameter_declaration.
+parameter_list ::= parameter_list COMMA parameter_declaration.
 
-parameter_decl ::= decl_specs.
-parameter_decl ::= decl_specs declarator.
+parameter_declaration ::= declaration_specs.
+parameter_declaration ::= declaration_specs declarator.
 
 // Type name
 type_name ::= specifier_qualifier_list.
@@ -273,7 +273,7 @@ compound_statement ::= LBRACE block_item_list RBRACE.
 block_item_list ::= block_item.
 block_item_list ::= block_item_list block_item.
 
-block_item ::= decl.
+block_item ::= declaration.
 block_item ::= statement.
 
 // Expr statement
@@ -296,9 +296,9 @@ iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
                         expression RPAREN statement.
 iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
                         RPAREN statement.
-iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
                         expression RPAREN statement.
-iteration_statement ::= KWD_FOR LPAREN decl expression_statement
+iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
                         RPAREN statement.
 
 // Jump statements

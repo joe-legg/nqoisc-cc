@@ -1,6 +1,6 @@
 - [ ] compile return 42 program.
 - [ ] fix function definition parsing.
-- [ ] rename decl to declaration.
+- [x] rename decl to declaration.
 - [x] finish parsing constants.
 - [x] add comments to parser.
 - [x] fix if/else parsing.
