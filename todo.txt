@@ -11,3 +11,7 @@ Todo List
 - [x] parse statements.
 - [x] finish parsing declarations.
 - [x] error system.
+
+Long Term Todo
+#########################################
+- [ ] Optimization with genetic algorithm.
