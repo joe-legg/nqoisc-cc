@@ -1,5 +1,8 @@
 %include {
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "ast.h"
 #include "error.h"
 
@@ -8,7 +11,7 @@ static int cur_line_num;
 static char *cur_tok_str;
 
 // Root node for the AST
-static AstNode *root_node;
+static AstNode *ast_root_node;
 
 }
 
@@ -28,9 +31,6 @@ static AstNode *root_node;
 }
 
 %code {
-
-#include <stdlib.h>
-#include <string.h>
 
 extern int yylex();
 extern char *yytext;
@@ -57,7 +57,7 @@ AstNode *parse(char *filename)
     ParseFree(parser, free);
     fclose(yyin);
 
-    return root_node;
+    return ast_root_node;
 }
 
 }
@@ -68,7 +68,9 @@ AstNode *parse(char *filename)
 
 %right KWD_IF KWD_ELSE.
 
-program ::= translation_unit(TRANSLATION_UNIT). { root_node = TANSLATION_UNIT; }
+program ::= translation_unit(TRANSLATION_UNIT). {
+    ast_root_node = TRANSLATION_UNIT;
+}
 
 translation_unit(A) ::= external_declaration(EXTERN_DECL). { A = EXTERN_DECL; }
 translation_unit ::= translation_unit external_declaration. // TODO: finish translation unit AST gen
@@ -77,12 +79,12 @@ external_declaration(A) ::= declaration(DECL).             { A = DECL; }
 external_declaration(A) ::= function_definition(FUNC_DEF). { A = FUNC_DEF; }
 
 function_definition(A) ::= declaration_specs declarator(DECLARATOR)
-                           compound_statement. {
-    AstNode *node;
-    node->type = FUNCTION_DEFINITION;
-    node->func_name = DECLARATOR
-    A = node;
-    // TODO
+                           compound_statement(BODY). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    A->func_ident = DECLARATOR->identifier;
+    A->func_type = new_data_type(TYPE_INT); // TODO
+    A->func_body = BODY;
 }
 function_definition ::= declaration_specs declarator declaration_list
                         compound_statement.
@@ -179,7 +181,9 @@ declarator ::= direct_declarator.
 declarator ::= pointer direct_declarator.
 
 // Direct declarator
-direct_declarator ::= IDENT.
+direct_declarator(A) ::= IDENT(IDENT). {
+    A = new_ast_ident(IDENT);
+}
 direct_declarator ::= LPAREN declarator RPAREN.
 direct_declarator ::= direct_declarator LSQUARE RSQUARE.
 direct_declarator ::= direct_declarator LSQUARE type_qualifier_list
@@ -271,12 +275,12 @@ designator ::= DOT IDENT.
 
 // Statements
 
-statement ::= labeled_statement.
-statement ::= compound_statement.
-statement ::= expression_statement.
-statement ::= selection_statement.
-statement ::= iteration_statement.
-statement ::= jump_statement.
+statement(A) ::= labeled_statement(STMT).    { A = STMT; }
+statement(A) ::= compound_statement(STMT).   { A = STMT; }
+statement(A) ::= expression_statement(STMT). { A = STMT; }
+statement(A) ::= selection_statement(STMT).  { A = STMT; }
+statement(A) ::= iteration_statement(STMT).  { A = STMT; }
+statement(A) ::= jump_statement(STMT).       { A = STMT; }
 
 // Labeled statement
 labeled_statement ::= IDENT COLON statement.
@@ -284,17 +288,35 @@ labeled_statement ::= KWD_CASE constant_expr COLON statement.
 labeled_statement ::= KWD_DEFAULT COLON statement.
 
 // Compound statement
-compound_statement ::= LBRACE RBRACE.
-compound_statement ::= LBRACE block_item_list RBRACE.
+compound_statement(A) ::= LBRACE RBRACE. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_COMPOUND_STMT;
+    A->statements = new_vector();
+}
+compound_statement(A) ::= LBRACE block_item_list(BLOCK_ITEM_LIST) RBRACE. {
+    A = BLOCK_ITEM_LIST;
+}
 
-block_item_list ::= block_item.
-block_item_list ::= block_item_list block_item.
+block_item_list(A) ::= block_item(ITEM). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_COMPOUND_STMT;
+    A->statements = new_vector();
+    vector_append(A->statements, ITEM);
+}
+block_item_list(A) ::= block_item_list(ITEM_LIST) block_item(NEW_ITEM). {
+    vector_append(ITEM_LIST->statements, NEW_ITEM);
+    A = ITEM_LIST;
+}
 
 block_item ::= declaration.
 block_item ::= statement.
 
 // Expr statement
-expression_statement ::= expression SEMICOLON.
+expression_statement(A) ::= expression(EXPR) SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_EXPR_STMT;
+    A->expression = EXPR;
+}
 
 // If else
 selection_statement ::= KWD_IF LPAREN expression RPAREN statement. [KWD_ELSE]
@@ -322,15 +344,23 @@ iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
 jump_statement ::= KWD_GOTO IDENT SEMICOLON.
 jump_statement ::= KWD_CONTINUE SEMICOLON.
 jump_statement ::= KWD_BREAK SEMICOLON.
-jump_statement ::= KWD_RETURN SEMICOLON.
-jump_statement ::= KWD_RETURN expression SEMICOLON.
+jump_statement(A) ::= KWD_RETURN SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_RETURN_STMT;
+    A->return_expr = NULL;
+}
+jump_statement(A) ::= KWD_RETURN expression(EXPR) SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_RETURN_STMT;
+    A->return_expr = EXPR;
+}
 
 // Expressions
 
-constant_expr ::= conditional_expr.
+constant_expr(A) ::= conditional_expr(COND). { A = COND; }
 
-expression ::= assignment_expr.
-expression ::= expression COMMA assignment_expr.
+expression(A) ::= assignment_expr(ASSIGNMENT). { A = ASSIGNMENT; }
+expression ::= expression COMMA assignment_expr. // TODO
 
 // Assignment operators
 assignment_op ::= OP_EQUALS.
@@ -346,52 +376,52 @@ assignment_op ::= OP_XOR_EQUALS.
 assignment_op ::= OP_OR_EQUALS.
 
 // Assignment expression
-assignment_expr ::= conditional_expr.
+assignment_expr(A) ::= conditional_expr(COND). { A = COND; }
 assignment_expr ::= unary_expr assignment_op assignment_expr.
 
-conditional_expr ::= logical_or_expr.
+conditional_expr(A) ::= logical_or_expr(LOGICAL_OR). { A = LOGICAL_OR; }
 conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON
                      conditional_expr.
 
-logical_or_expr ::= logical_and_expr.
+logical_or_expr(A) ::= logical_and_expr(LOGICAL_AND). { A = LOGICAL_AND; }
 logical_or_expr ::= logical_or_expr OP_LOGICAL_OR logical_and_expr.
 
-logical_and_expr ::= inclusive_or_expr.
+logical_and_expr(A) ::= inclusive_or_expr(INCLUSIVE). { A = INCLUSIVE; }
 logical_and_expr ::= logical_and_expr OP_LOGICAL_AND inclusive_or_expr.
 
-inclusive_or_expr ::= exclusive_or_expr.
+inclusive_or_expr(A) ::= exclusive_or_expr(EXCLUSIVE). { A = EXCLUSIVE; }
 inclusive_or_expr ::= inclusive_or_expr OP_OR exclusive_or_expr.
 
-exclusive_or_expr ::= and_expr.
+exclusive_or_expr(A) ::= and_expr(AND). { A = AND; }
 exclusive_or_expr ::= exclusive_or_expr OP_CARET and_expr.
 
-and_expr ::= equality_expr.
+and_expr(A) ::= equality_expr(EQUALITY). { A = EQUALITY; }
 and_expr ::= and_expr OP_AND equality_expr.
 
-equality_expr ::= relational_expr.
+equality_expr(A) ::= relational_expr(RELATIONAL). { A = RELATIONAL; }
 equality_expr ::= equality_expr OP_EQUALITY relational_expr.
 equality_expr ::= equality_expr OP_NOT_EQUAL relational_expr.
 
-relational_expr ::= shift_expr.
+relational_expr(A) ::= shift_expr(SHIFT). { A = SHIFT; }
 relational_expr ::= relational_expr OP_LESS_THAN shift_expr.
 relational_expr ::= relational_expr OP_MORE_THAN shift_expr.
 relational_expr ::= relational_expr OP_LESS_THAN_OR_EQUAL shift_expr.
 relational_expr ::= relational_expr OP_MORE_THAN_OR_EQUAL shift_expr.
 
-shift_expr ::= additive_expr.
+shift_expr(A) ::= additive_expr(ADD).  { A = ADD; }
 shift_expr ::= shift_expr OP_SHIFT_LEFT additive_expr.
 shift_expr ::= shift_expr OP_SHIFT_RIGHT additive_expr.
 
-additive_expr ::= multiplicative_expr.
+additive_expr(A) ::= multiplicative_expr(MULT_EXPR). { A = MULT_EXPR; }
 additive_expr ::= additive_expr OP_PLUS multiplicative_expr.
 additive_expr ::= additive_expr OP_MINUS multiplicative_expr.
 
-multiplicative_expr ::= cast_expr.
+multiplicative_expr(A) ::= cast_expr(CAST). { A = CAST; }
 multiplicative_expr ::= multiplicative_expr OP_ASTERISK cast_expr.
 multiplicative_expr ::= multiplicative_expr OP_DIVIDE cast_expr.
 multiplicative_expr ::= multiplicative_expr OP_MODULO cast_expr.
 
-cast_expr ::= unary_expr.
+cast_expr(A) ::= unary_expr(UNARY). { A = UNARY; }
 cast_expr ::= LPAREN type_name RPAREN cast_expr.
 
 unary_op ::= OP_AND.
@@ -401,7 +431,7 @@ unary_op ::= OP_MINUS.
 unary_op ::= OP_TILDE.
 unary_op ::= OP_NOT.
 
-unary_expr ::= postfix_expr.
+unary_expr(A) ::= postfix_expr(POSTFIX). { A = POSTFIX; }
 unary_expr ::= OP_PLUS_PLUS unary_expr.
 unary_expr ::= OP_MINUS_MINUS unary_expr.
 unary_expr ::= unary_op cast_expr.
@@ -411,7 +441,7 @@ unary_expr ::= OP_SIZEOF LPAREN type_name RPAREN.
 argument_expr_list ::= assignment_expr.
 argument_expr_list ::= argument_expr_list COMMA assignment_expr.
 
-postfix_expr ::= primary_expr.
+postfix_expr(A) ::= primary_expr(PRIMARY). { A = PRIMARY; }
 postfix_expr ::= postfix_expr LSQUARE expression RSQUARE.
 postfix_expr ::= postfix_expr LPAREN argument_expr_list RPAREN.
 postfix_expr ::= postfix_expr DOT IDENT.
@@ -422,19 +452,22 @@ postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list RBRACE.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.
 
 primary_expr ::= IDENT.
-primary_expr ::= constant.
+primary_expr(A) ::= constant(CONST). { A = CONST; }
 primary_expr ::= STR_LIT.
 primary_expr ::= LPAREN expression RPAREN.
 
 // Constants
-constant ::= integer_const.
+constant(A) ::= integer_const(CONST). { A = CONST; }
 constant ::= floating_const.
 constant ::= CHAR.
 constant ::= ENUMERATION_CONSTANT.
 
-integer_const ::= DECIMAL_CONST.
+integer_const(A) ::= DECIMAL_CONST(CONST). {
+    A = new_ast_integer_const(atoi(CONST));
+}
 integer_const ::= OCTAL_CONST.
 integer_const ::= HEXADECIMAL_CONST.
+// TODO: check integer constants
 
 floating_const ::= DECIMAL_FLOAT.
 floating_const ::= HEXADECIMAL_FLOAT.

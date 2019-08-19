@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include "vector.h"
 
-Vector *vector_init()
+Vector *new_vector()
 {
     Vector *vector = malloc(sizeof(Vector));
+    vector->length = 0;
     return vector;
 }
 

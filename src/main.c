@@ -1,7 +1,11 @@
-extern void parse(char *filename);
+#include "ast.h"
+
+extern AstNode *parse(char *filename);
 
 int main(int argc, char *argv[])
 {
+    AstNode *ast;
     if (argc == 2)
-        parse(argv[1]);
+        ast = parse(argv[1]);
+    print_ast(ast);
 }
