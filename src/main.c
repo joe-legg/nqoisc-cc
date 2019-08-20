@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <stdio.h>
 
 extern AstNode *parse(char *filename);
 

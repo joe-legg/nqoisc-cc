@@ -1,9 +1,10 @@
 Todo List
 #########################################
+- [ ] fix memory leaks.
 - [ ] compile return 42 program.
 - [ ] create IR gen for return 42.
 - [ ] fix function definition parsing.
-- [ ] create AST for return 42 program.
+- [x] create AST for return 42 program.
 - [x] rename decl to declaration.
 - [x] finish parsing constants.
 - [x] add comments to parser.

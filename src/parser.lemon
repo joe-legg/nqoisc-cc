@@ -16,7 +16,8 @@ static AstNode *ast_root_node;
 }
 
 %syntax_error {
-    error(cur_filename, cur_line_num, "syntax error near \"%s\".", cur_tok_str);
+    error(cur_filename, cur_line_num, "unexpected token near \"%s\".",
+          cur_tok_str);
 }
 
 %parse_accept {
@@ -384,7 +385,10 @@ conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON
                      conditional_expr.
 
 logical_or_expr(A) ::= logical_and_expr(LOGICAL_AND). { A = LOGICAL_AND; }
-logical_or_expr ::= logical_or_expr OP_LOGICAL_OR logical_and_expr.
+logical_or_expr(A) ::= logical_or_expr(LHS) OP_LOGICAL_OR
+                       logical_and_expr(RHS). {
+    A = new_ast_binary_op(OP_LOGICAL_OR, LHS, RHS);
+}
 
 logical_and_expr(A) ::= inclusive_or_expr(INCLUSIVE). { A = INCLUSIVE; }
 logical_and_expr ::= logical_and_expr OP_LOGICAL_AND inclusive_or_expr.

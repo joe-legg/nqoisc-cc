@@ -22,6 +22,16 @@ AstNode *new_ast_integer_const(long value)
     return node;
 }
 
+AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_BINARY_OP;
+    node->binary_left = left;
+    node->binary_right = right;
+    node->binary_op = op;
+    return node;
+}
+
 DataType *new_data_type(int type)
 {
     DataType *new_type = malloc(sizeof(DataType));
@@ -44,6 +54,13 @@ void print_ast(AstNode *ast)
             break;
         case AST_IDENTIFIER:
             printf("(identifier %s)", ast->identifier);
+            break;
+        case AST_BINARY_OP:
+            printf("(binary-op %d ", ast->binary_op);
+            print_ast(ast->binary_left);
+            printf(" ");
+            print_ast(ast->binary_right);
+            printf(")");
             break;
         case AST_RETURN_STMT:
             printf("(return-stmt ");
