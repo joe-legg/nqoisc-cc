@@ -26,13 +26,14 @@ enum {
     OP_GREATER_THAN,
     OP_LESS_THAN,
     OP_LESS_THAN_EQUAL,
-    OP_MORE_THAN_EQUAL,
+    OP_GREATER_THAN_EQUAL,
     UNARY_NOT,
     OP_LOGICAL_AND,
     OP_LOGICAL_OR,
     OP_BITWISE_NOT,
     OP_BITWISE_OR,
     OP_BITWISE_XOR,
+    OP_BITWISE_AND,
     OP_SHIFT_LEFT,
     OP_SHIFT_RIGHT,
     OP_ASSIGN_ADD,
@@ -79,6 +80,7 @@ typedef struct AstNode {
         // Compound statement
         Vector *statements;
 
+        // Binary operator
         struct {
             struct AstNode *binary_left;
             struct AstNode *binary_right;
@@ -100,6 +102,7 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 
 DataType *new_data_type(int type);
 
+void print_data_type(const DataType *type);
 void print_ast(AstNode *ast);
 
 #endif

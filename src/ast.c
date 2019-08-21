@@ -41,7 +41,7 @@ DataType *new_data_type(int type)
 
 /* Print AST */
 
-static void print_data_type(const DataType *type)
+void print_data_type(const DataType *type)
 {
     printf("(type %d)", type->type);
 }

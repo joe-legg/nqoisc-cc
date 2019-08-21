@@ -67,9 +67,9 @@ IS (((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))
 "=="     return TOK_OP_EQUALITY;
 "!="     return TOK_OP_NOT_EQUAL;
 "<"      return TOK_OP_LESS_THAN;
-">"      return TOK_OP_MORE_THAN;
+">"      return TOK_OP_GREATER_THAN;
 "<="     return TOK_OP_LESS_THAN_OR_EQUAL;
-">="     return TOK_OP_MORE_THAN_OR_EQUAL;
+">="     return TOK_OP_GREATER_THAN_OR_EQUAL;
 "<<"     return TOK_OP_SHIFT_LEFT;
 ">>"     return TOK_OP_SHIFT_RIGHT;
 "++"     return TOK_OP_PLUS_PLUS;

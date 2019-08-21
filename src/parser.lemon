@@ -391,40 +391,80 @@ logical_or_expr(A) ::= logical_or_expr(LHS) OP_LOGICAL_OR
 }
 
 logical_and_expr(A) ::= inclusive_or_expr(INCLUSIVE). { A = INCLUSIVE; }
-logical_and_expr ::= logical_and_expr OP_LOGICAL_AND inclusive_or_expr.
+logical_and_expr(A) ::= logical_and_expr(LHS) OP_LOGICAL_AND
+                        inclusive_or_expr(RHS). {
+    A = new_ast_binary_op(OP_LOGICAL_AND, LHS, RHS);
+}
 
 inclusive_or_expr(A) ::= exclusive_or_expr(EXCLUSIVE). { A = EXCLUSIVE; }
-inclusive_or_expr ::= inclusive_or_expr OP_OR exclusive_or_expr.
+inclusive_or_expr(A) ::= inclusive_or_expr(LHS) OP_OR exclusive_or_expr(RHS). {
+    A = new_ast_binary_op(OP_BITWISE_OR, LHS, RHS);
+}
 
 exclusive_or_expr(A) ::= and_expr(AND). { A = AND; }
-exclusive_or_expr ::= exclusive_or_expr OP_CARET and_expr.
+exclusive_or_expr(A) ::= exclusive_or_expr(LHS) OP_CARET and_expr(RHS). {
+    A = new_ast_binary_op(OP_BITWISE_XOR, LHS, RHS);
+}
 
 and_expr(A) ::= equality_expr(EQUALITY). { A = EQUALITY; }
-and_expr ::= and_expr OP_AND equality_expr.
+and_expr(A) ::= and_expr(LHS) OP_AND equality_expr(RHS). {
+    A = new_ast_binary_op(OP_BITWISE_AND, LHS, RHS);
+}
 
+// Equality check
 equality_expr(A) ::= relational_expr(RELATIONAL). { A = RELATIONAL; }
-equality_expr ::= equality_expr OP_EQUALITY relational_expr.
-equality_expr ::= equality_expr OP_NOT_EQUAL relational_expr.
+equality_expr(A) ::= equality_expr(LHS) OP_EQUALITY relational_expr(RHS). {
+    A = new_ast_binary_op(OP_EQUALITY, LHS, RHS);
+}
+equality_expr(A) ::= equality_expr(LHS) OP_NOT_EQUAL relational_expr(RHS). {
+    A = new_ast_binary_op(OP_NOT_EQUAL, LHS, RHS);
+}
 
+// Realational expressions
 relational_expr(A) ::= shift_expr(SHIFT). { A = SHIFT; }
-relational_expr ::= relational_expr OP_LESS_THAN shift_expr.
-relational_expr ::= relational_expr OP_MORE_THAN shift_expr.
-relational_expr ::= relational_expr OP_LESS_THAN_OR_EQUAL shift_expr.
-relational_expr ::= relational_expr OP_MORE_THAN_OR_EQUAL shift_expr.
+relational_expr(A) ::= relational_expr(LHS) OP_LESS_THAN shift_expr(RHS). {
+    A = new_ast_binary_op(OP_LESS_THAN, LHS, RHS);
+}
+relational_expr(A) ::= relational_expr(LHS) OP_GREATER_THAN shift_expr(RHS). {
+    A = new_ast_binary_op(OP_GREATER_THAN, LHS, RHS);
+}
+relational_expr(A) ::= relational_expr(LHS) OP_LESS_THAN_OR_EQUAL
+                       shift_expr(RHS). {
+    A = new_ast_binary_op(OP_LESS_THAN_EQUAL, LHS, RHS);
+}
+relational_expr(A) ::= relational_expr(LHS) OP_GREATER_THAN_OR_EQUAL
+                       shift_expr(RHS). {
+    A = new_ast_binary_op(OP_GREATER_THAN_EQUAL, LHS, RHS);
+}
 
+// Shift expression TODO
 shift_expr(A) ::= additive_expr(ADD).  { A = ADD; }
 shift_expr ::= shift_expr OP_SHIFT_LEFT additive_expr.
 shift_expr ::= shift_expr OP_SHIFT_RIGHT additive_expr.
 
+// Addition
 additive_expr(A) ::= multiplicative_expr(MULT_EXPR). { A = MULT_EXPR; }
-additive_expr ::= additive_expr OP_PLUS multiplicative_expr.
-additive_expr ::= additive_expr OP_MINUS multiplicative_expr.
+additive_expr(A) ::= additive_expr(LHS) OP_PLUS multiplicative_expr(RHS). {
+    A = new_ast_binary_op(OP_PLUS, LHS, RHS);
+}
+additive_expr(A) ::= additive_expr(LHS) OP_MINUS multiplicative_expr(RHS). {
+    A = new_ast_binary_op(OP_MINUS, LHS, RHS);
+}
 
+// Multiplication
 multiplicative_expr(A) ::= cast_expr(CAST). { A = CAST; }
-multiplicative_expr ::= multiplicative_expr OP_ASTERISK cast_expr.
-multiplicative_expr ::= multiplicative_expr OP_DIVIDE cast_expr.
-multiplicative_expr ::= multiplicative_expr OP_MODULO cast_expr.
+multiplicative_expr(A) ::= multiplicative_expr(LHS) OP_ASTERISK
+                           cast_expr(RHS). {
+    A = new_ast_binary_op(OP_MULT, LHS, RHS);
+}
+multiplicative_expr(A) ::= multiplicative_expr(LHS) OP_DIVIDE cast_expr(RHS). {
+    A = new_ast_binary_op(OP_DIV, LHS, RHS);
+}
+multiplicative_expr(A) ::= multiplicative_expr(LHS) OP_MODULO cast_expr(RHS). {
+    A = new_ast_binary_op(OP_MODULO, LHS, RHS);
+}
 
+// TODO finish expression parsing
 cast_expr(A) ::= unary_expr(UNARY). { A = UNARY; }
 cast_expr ::= LPAREN type_name RPAREN cast_expr.
 
