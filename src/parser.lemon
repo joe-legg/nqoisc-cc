@@ -79,7 +79,9 @@ translation_unit ::= translation_unit external_declaration. // TODO: finish tran
 external_declaration(A) ::= declaration(DECL).             { A = DECL; }
 external_declaration(A) ::= function_definition(FUNC_DEF). { A = FUNC_DEF; }
 
-function_definition(A) ::= declaration_specs declarator(DECLARATOR)
+/* Functions */
+
+function_definition(A) ::= declaration_specs func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
@@ -87,10 +89,35 @@ function_definition(A) ::= declaration_specs declarator(DECLARATOR)
     A->func_type = new_data_type(TYPE_INT); // TODO
     A->func_body = BODY;
 }
-function_definition ::= declaration_specs declarator declaration_list
+function_definition ::= declaration_specs old_func_declarator declaration_list
                         compound_statement.
 
-// Declarations
+/* Function declarators */
+
+func_declarator ::= func_direct_declarator_head
+                    func_direct_declarator_tail.
+func_declarator ::= pointer func_direct_declarator_head
+                    func_direct_declarator_tail.
+
+// Head
+func_direct_declarator_head ::= IDENT.
+func_direct_declarator_head ::= LPAREN func_direct_declarator_head RPAREN.
+
+// Tail
+func_direct_declarator_tail ::= LPAREN parameter_type_list RPAREN.
+func_direct_declarator_tail ::= LPAREN RPAREN.
+
+// Old style function declarator
+old_func_declarator ::= func_direct_declarator_head
+                    old_func_direct_declarator_tail.
+old_func_declarator ::= pointer func_direct_declarator_head
+                    old_func_direct_declarator_tail.
+
+// Tail
+old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
+old_func_direct_declarator_tail ::= LPAREN RPAREN.
+
+/* Declarations */
 
 declaration ::= declaration_specs SEMICOLON.
 declaration ::= declaration_specs init_declarator_list SEMICOLON.
@@ -274,7 +301,7 @@ designator_list ::= designator_list designator.
 designator ::= LSQUARE constant_expr RSQUARE.
 designator ::= DOT IDENT.
 
-// Statements
+/* Statements */
 
 statement(A) ::= labeled_statement(STMT).    { A = STMT; }
 statement(A) ::= compound_statement(STMT).   { A = STMT; }
@@ -356,7 +383,7 @@ jump_statement(A) ::= KWD_RETURN expression(EXPR) SEMICOLON. {
     A->return_expr = EXPR;
 }
 
-// Expressions
+/* Expressions */
 
 constant_expr(A) ::= conditional_expr(COND). { A = COND; }
 

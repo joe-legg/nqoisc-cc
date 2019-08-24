@@ -3,8 +3,8 @@ Todo List
 - [ ] maybe make functions in ir static.
 - [ ] fix memory leaks.
 - [ ] compile return 42 program.
-- [ ] fix function definition parsing.
 - [ ] gen ir for return 42 program.
+- [x] fix function definition parsing. - I think this is fixed though I am not sure
 - [x] create AST for return 42 program.
 - [x] rename decl to declaration.
 - [x] finish parsing constants.
