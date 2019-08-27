@@ -81,37 +81,57 @@ external_declaration(A) ::= function_definition(FUNC_DEF). { A = FUNC_DEF; }
 
 /* Functions */
 
-function_definition(A) ::= declaration_specs func_declarator(DECLARATOR)
+function_definition(A) ::= declaration_specs(DECL_SPECS)
+                           func_declarator(DECLARATOR)
                            compound_statement(BODY). {
-    A = malloc(sizeof(AstNode));
-    A->node_type = AST_FUNCTION_DEF;
-    A->func_ident = DECLARATOR->identifier;
-    A->func_type = new_data_type(TYPE_INT); // TODO
+    A = DECLARATOR;
+    A->func_type = DECL_SPECS->declaration_type; // TODO
     A->func_body = BODY;
 }
-function_definition ::= declaration_specs old_func_declarator declaration_list
+function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
                         compound_statement.
 
 /* Function declarators */
 
-func_declarator ::= func_direct_declarator_head
-                    func_direct_declarator_tail.
+func_declarator(A) ::= func_direct_declarator_head(HEAD)
+                       func_direct_declarator_tail(TAIL). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    A->func_ident = HEAD->identifier;
+    A->parameters = TAIL->parameters;
+    free(TAIL);
+}
 func_declarator ::= pointer func_direct_declarator_head
-                    func_direct_declarator_tail.
+                    func_direct_declarator_tail. {
+    // TODO
+}
 
 // Head
-func_direct_declarator_head ::= IDENT.
-func_direct_declarator_head ::= LPAREN func_direct_declarator_head RPAREN.
+func_direct_declarator_head(A) ::= IDENT(IDENT). {
+    A = new_ast_ident(IDENT);
+}
+func_direct_declarator_head(A) ::= LPAREN func_direct_declarator_head(DECL)
+                                RPAREN. {
+    A = new_ast_ident(DECL->identifier); // FIXME: This might cause problems
+}
 
 // Tail
-func_direct_declarator_tail ::= LPAREN parameter_type_list RPAREN.
-func_direct_declarator_tail ::= LPAREN RPAREN.
+func_direct_declarator_tail(A) ::= LPAREN parameter_type_list(PARAMS) RPAREN. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    vector_append(A->parameters, PARAMS);
+}
+func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    A->parameters = new_vector();
+}
 
 // Old style function declarator
-old_func_declarator ::= func_direct_declarator_head
-                    old_func_direct_declarator_tail.
+old_func_declarator ::= func_direct_declarator_head // TODO
+                        old_func_direct_declarator_tail.
 old_func_declarator ::= pointer func_direct_declarator_head
-                    old_func_direct_declarator_tail.
+                        old_func_direct_declarator_tail.
 
 // Tail
 old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
@@ -127,7 +147,11 @@ declaration_list ::= declaration_list declaration.
 
 declaration_specs ::= storage_class_specifier.
 declaration_specs ::= storage_class_specifier declaration_specs.
-declaration_specs(A) ::= type_specifier(TYPE_SPEC). { A = TYPE_SPEC; }
+declaration_specs(A) ::= type_specifier(TYPE_SPEC). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_DECLARATION;
+    A->declaration_type = TYPE_SPEC;
+}
 declaration_specs ::= type_specifier declaration_specs.
 declaration_specs ::= type_qualifier.
 declaration_specs ::= type_qualifier declaration_specs.
@@ -152,18 +176,43 @@ specifier_qualifier_list ::= type_qualifier.
 specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
 // Type specifiers
-type_specifier ::= KWD_VOID.
-type_specifier ::= KWD_CHAR.
-type_specifier ::= KWD_SHORT.
-type_specifier ::= KWD_LONG.
-type_specifier ::= KWD_INT.
-type_specifier ::= KWD_FLOAT.
-type_specifier ::= KWD_DOUBLE.
-type_specifier ::= KWD_SIGNED.
-type_specifier ::= KWD_UNSIGNED.
-type_specifier ::= KWD__BOOL.
-type_specifier ::= KWD__COMPLEX.
-type_specifier ::= KWD__IMAGINARY.
+%type type_specifier { DataType * }
+type_specifier(A) ::= KWD_VOID. {
+    A = new_data_type(TYPE_VOID);
+}
+type_specifier(A) ::= KWD_CHAR. {
+    A = new_data_type(TYPE_CHAR);
+}
+type_specifier(A) ::= KWD_SHORT. {
+    A = new_data_type(TYPE_SHORT);
+}
+type_specifier(A) ::= KWD_LONG. {
+    A = new_data_type(TYPE_LONG);
+}
+type_specifier(A) ::= KWD_INT. {
+    A = new_data_type(TYPE_INT);
+}
+type_specifier(A) ::= KWD_FLOAT. {
+    A = new_data_type(TYPE_FLOAT);
+}
+type_specifier(A) ::= KWD_DOUBLE. {
+    A = new_data_type(TYPE_DOUBLE);
+}
+type_specifier(A) ::= KWD_SIGNED. {
+    A = new_data_type(TYPE_SIGNED);
+}
+type_specifier(A) ::= KWD_UNSIGNED. {
+    A = new_data_type(TYPE_UNSIGNED);
+}
+type_specifier(A) ::= KWD__BOOL. {
+    A = new_data_type(TYPE_BOOL);
+}
+type_specifier(A) ::= KWD__COMPLEX. {
+    A = new_data_type(TYPE_COMPLEX);
+}
+type_specifier(A) ::= KWD__IMAGINARY. {
+    A = new_data_type(TYPE_IMAGINARY);
+}
 type_specifier ::= TYPEDEF_NAME.
 type_specifier ::= struct_or_union_specifier.
 type_specifier ::= enum_specifier.
@@ -245,13 +294,22 @@ type_qualifier ::= KWD_RESTRICT.
 type_qualifier ::= KWD_VOLATILE.
 
 // Parameters
-parameter_type_list ::= parameter_list.
-parameter_type_list ::= parameter_list COMMA ELLIPSIS.
+parameter_type_list(A) ::= parameter_list(PARAMS). { A = PARAMS; }
+parameter_type_list ::= parameter_list COMMA ELLIPSIS. // TODO
 
-parameter_list ::= parameter_declaration.
-parameter_list ::= parameter_list COMMA parameter_declaration.
+parameter_list(A) ::= parameter_declaration(PARAM). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    A->parameters = new_vector();
+    vector_append(A->parameters, PARAM);
+}
+parameter_list(A) ::= parameter_list(PARAM_LIST) COMMA
+                   parameter_declaration(NEW_PARAM). {
+    vector_append(PARAM_LIST->parameters, NEW_PARAM);
+    A = PARAM_LIST;
+}
 
-parameter_declaration ::= declaration_specs.
+parameter_declaration ::= declaration_specs. // TODO
 parameter_declaration ::= declaration_specs declarator.
 
 // Type name

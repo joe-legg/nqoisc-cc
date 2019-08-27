@@ -2,8 +2,10 @@ Todo List
 #########################################
 - [ ] maybe make functions in ir static.
 - [ ] fix memory leaks.
+- [ ] ir gen.
 - [ ] compile return 42 program.
-- [ ] gen ir for return 42 program.
+- [ ] AST gen for function parameters.
+- [ ] AST gen for pointers.
 - [x] fix function definition parsing. - I think this is fixed though I am not sure
 - [x] create AST for return 42 program.
 - [x] rename decl to declaration.

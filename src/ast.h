@@ -4,7 +4,18 @@
 #include "vector.h"
 
 enum {
-    TYPE_INT
+    TYPE_INT,
+    TYPE_VOID,
+    TYPE_CHAR,
+    TYPE_SHORT,
+    TYPE_LONG,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_SIGNED,
+    TYPE_UNSIGNED,
+    TYPE_BOOL,
+    TYPE_COMPLEX,
+    TYPE_IMAGINARY
 };
 
 typedef struct DataType {
@@ -58,6 +69,8 @@ typedef struct AstNode {
         AST_EXPR_STMT,
         AST_COMPOUND_STMT,
 
+        AST_DECLARATION,
+
         // Expressions
         AST_INTEGER_CONST,
         AST_IDENTIFIER,
@@ -87,10 +100,16 @@ typedef struct AstNode {
             int binary_op;
         };
 
+        // Declaration
+        struct {
+            DataType *declaration_type;
+        };
+
         // Function definition
         struct {
             char *func_ident;
-            DataType *func_type;
+            DataType *func_type; // TODO: This might not need to be a pointer
+            Vector *parameters;
             struct AstNode *func_body;
         };
     };
