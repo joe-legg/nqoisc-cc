@@ -8,18 +8,21 @@ enum {
     TYPE_VOID,
     TYPE_CHAR,
     TYPE_SHORT,
-    TYPE_LONG,
+    TYPE_LONG,  // TODO
+    TYPE_LLONG, // TODO
     TYPE_FLOAT,
     TYPE_DOUBLE,
+    TYPE_LDOUBLE, // TODO
     TYPE_SIGNED,
     TYPE_UNSIGNED,
     TYPE_BOOL,
-    TYPE_COMPLEX,
-    TYPE_IMAGINARY
+    TYPE_POINTER
 };
 
 typedef struct DataType {
     int type;
+    int is_unsigned; // 1 if unsigned
+    struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
 } DataType;
 
 enum {
@@ -108,7 +111,7 @@ typedef struct AstNode {
         // Function definition
         struct {
             char *func_ident;
-            DataType *func_type; // TODO: This might not need to be a pointer
+            DataType *func_type;
             Vector *parameters;
             struct AstNode *func_body;
         };
@@ -119,7 +122,7 @@ AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 
-DataType *new_data_type(int type);
+DataType *new_data_type(int type, int is_unsigned);
 
 void print_data_type(const DataType *type);
 void print_ast(AstNode *ast);

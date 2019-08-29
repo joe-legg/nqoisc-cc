@@ -25,9 +25,9 @@ IS (((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))
 "double"     return TOK_KWD_DOUBLE;
 "signed"     return TOK_KWD_SIGNED;
 "unsigned"   return TOK_KWD_UNSIGNED;
-"_Bool"      return TOK_KWD__BOOL;
-"_Complex"   return TOK_KWD__COMPLEX;
-"_Imaginary" return TOK_KWD__IMAGINARY;
+"_Bool"      return TOK_KWD_BOOL;
+"_Complex"   return TOK_KWD_COMPLEX;
+"_Imaginary" return TOK_KWD_IMAGINARY;
 
 "inline"     return TOK_KWD_INLINE;
 "typedef"    return TOK_KWD_TYPEDEF;

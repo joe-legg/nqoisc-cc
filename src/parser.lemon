@@ -85,7 +85,7 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = DECLARATOR;
-    A->func_type = DECL_SPECS->declaration_type; // TODO
+    A->func_type = DECL_SPECS; // TODO
     A->func_body = BODY;
 }
 function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
@@ -145,18 +145,114 @@ declaration ::= declaration_specs init_declarator_list SEMICOLON.
 declaration_list ::= declaration.
 declaration_list ::= declaration_list declaration.
 
-declaration_specs ::= storage_class_specifier.
-declaration_specs ::= storage_class_specifier declaration_specs.
-declaration_specs(A) ::= type_specifier(TYPE_SPEC). {
-    A = malloc(sizeof(AstNode));
-    A->node_type = AST_DECLARATION;
-    A->declaration_type = TYPE_SPEC;
+// Declaration specifiers
+%type declaration_specs { DataType * }
+declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
+    // The sign of the current type.
+    enum { SIGN_UNSPECIFIED = -1, SIGN_SIGNED = 0, SIGN_UNSIGNED = 1
+    } sign = SIGN_UNSPECIFIED;
+    int type = -1;
+
+    // NOTE: This is probably not the best way to do but is was the best I could
+    //       think of.
+    // Parse the list of types.
+    for (int i = 0; i < TYPE_LIST->length; i++) {
+        switch (*(int *)TYPE_LIST->items[i]) {
+        case TYPE_INT:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_INT;
+            break;
+        case TYPE_VOID:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_VOID;
+            break;
+        case TYPE_CHAR:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_CHAR;
+            break;
+        case TYPE_FLOAT:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_FLOAT;
+            break;
+        case TYPE_DOUBLE:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_DOUBLE;
+            break;
+        case TYPE_BOOL:
+            if (type >= 0)
+                error(cur_filename, cur_line_num,
+                      "multiple types in declaration specifiers.");
+            else
+                type = TYPE_BOOL;
+            break;
+        case TYPE_SHORT:
+            // TODO
+            break;
+        case TYPE_LONG:
+            // TODO
+            break;
+        case TYPE_SIGNED:
+            if (sign == SIGN_UNSIGNED)
+                error(cur_filename, cur_line_num,
+                      "\"signed\" and \"unsigned\" in declaration specifiers.");
+            else if (sign == SIGN_SIGNED)
+                error(cur_filename, cur_line_num,
+                      "duplicate \"signed\" in declaration specifiers.");
+            else
+                sign = SIGN_SIGNED;
+            break;
+        case TYPE_UNSIGNED:
+            if (sign == SIGN_SIGNED)
+                error(cur_filename, cur_line_num,
+                      "\"signed\" and \"unsigned\" in declaration specifiers.");
+            else if (sign == SIGN_UNSIGNED)
+                error(cur_filename, cur_line_num,
+                      "duplicate \"unsigned\" in declaration specifiers.");
+            else
+                sign = SIGN_UNSIGNED;
+            break;
+        }
+    }
+    if (type == -1)
+        error(cur_filename, cur_line_num, "type unspecified.");
+    A = new_data_type(type, sign == -1 ? SIGN_SIGNED : sign);
 }
-declaration_specs ::= type_specifier declaration_specs.
-declaration_specs ::= type_qualifier.
-declaration_specs ::= type_qualifier declaration_specs.
-declaration_specs ::= KWD_INLINE.
-declaration_specs ::= KWD_INLINE declaration_specs.
+
+%type declaration_specs_list { Vector * }
+declaration_specs_list ::= storage_class_specifier.
+declaration_specs_list ::= storage_class_specifier declaration_specs_list.
+declaration_specs_list(A) ::= type_specifier(TYPE). {
+    void *new_type = malloc(sizeof(int));
+    *((int*)new_type) = TYPE;
+    A = new_vector();
+    vector_append(A, new_type);
+}
+declaration_specs_list(A) ::= type_specifier(NEW_TYPE)
+                              declaration_specs_list(DECL_SPECS). {
+    void *new_type = malloc(sizeof(int));
+    *((int*)new_type) = NEW_TYPE;
+    vector_append(DECL_SPECS, new_type);
+    A = DECL_SPECS;
+}
+declaration_specs_list ::= type_qualifier.
+declaration_specs_list ::= type_qualifier declaration_specs_list.
+declaration_specs_list ::= KWD_INLINE.
+declaration_specs_list ::= KWD_INLINE declaration_specs_list.
 
 init_declarator_list ::= init_declarator.
 init_declarator_list ::= init_declarator_list COMMA init_declarator.
@@ -176,42 +272,42 @@ specifier_qualifier_list ::= type_qualifier.
 specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
 // Type specifiers
-%type type_specifier { DataType * }
+%type type_specifier { int }
 type_specifier(A) ::= KWD_VOID. {
-    A = new_data_type(TYPE_VOID);
+    A = TYPE_VOID;
 }
 type_specifier(A) ::= KWD_CHAR. {
-    A = new_data_type(TYPE_CHAR);
+    A = TYPE_CHAR;
 }
 type_specifier(A) ::= KWD_SHORT. {
-    A = new_data_type(TYPE_SHORT);
+    A = TYPE_SHORT;
 }
 type_specifier(A) ::= KWD_LONG. {
-    A = new_data_type(TYPE_LONG);
+    A = TYPE_LONG;
 }
 type_specifier(A) ::= KWD_INT. {
-    A = new_data_type(TYPE_INT);
+    A = TYPE_INT;
 }
 type_specifier(A) ::= KWD_FLOAT. {
-    A = new_data_type(TYPE_FLOAT);
+    A = TYPE_FLOAT;
 }
 type_specifier(A) ::= KWD_DOUBLE. {
-    A = new_data_type(TYPE_DOUBLE);
+    A = TYPE_DOUBLE;
 }
 type_specifier(A) ::= KWD_SIGNED. {
-    A = new_data_type(TYPE_SIGNED);
+    A = TYPE_SIGNED;
 }
 type_specifier(A) ::= KWD_UNSIGNED. {
-    A = new_data_type(TYPE_UNSIGNED);
+    A = TYPE_UNSIGNED;
 }
-type_specifier(A) ::= KWD__BOOL. {
-    A = new_data_type(TYPE_BOOL);
+type_specifier(A) ::= KWD_BOOL. {
+    A = TYPE_BOOL;
 }
-type_specifier(A) ::= KWD__COMPLEX. {
-    A = new_data_type(TYPE_COMPLEX);
+type_specifier ::= KWD_IMAGINARY. {
+    error(cur_filename, cur_line_num, "complex types not supported.");
 }
-type_specifier(A) ::= KWD__IMAGINARY. {
-    A = new_data_type(TYPE_IMAGINARY);
+type_specifier ::= KWD_COMPLEX. {
+    error(cur_filename, cur_line_num, "complex types not supported.");
 }
 type_specifier ::= TYPEDEF_NAME.
 type_specifier ::= struct_or_union_specifier.
@@ -304,7 +400,7 @@ parameter_list(A) ::= parameter_declaration(PARAM). {
     vector_append(A->parameters, PARAM);
 }
 parameter_list(A) ::= parameter_list(PARAM_LIST) COMMA
-                   parameter_declaration(NEW_PARAM). {
+                      parameter_declaration(NEW_PARAM). {
     vector_append(PARAM_LIST->parameters, NEW_PARAM);
     A = PARAM_LIST;
 }

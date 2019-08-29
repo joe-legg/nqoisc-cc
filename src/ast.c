@@ -32,10 +32,11 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
     return node;
 }
 
-DataType *new_data_type(int type)
+DataType *new_data_type(int type, int is_unsigned)
 {
     DataType *new_type = malloc(sizeof(DataType));
     new_type->type = type;
+    new_type->is_unsigned = is_unsigned;
     return new_type;
 }
 
@@ -43,7 +44,7 @@ DataType *new_data_type(int type)
 
 void print_data_type(const DataType *type)
 {
-    printf("(type %d)", type->type);
+    printf("(type %d %d)", type->type, type->is_unsigned);
 }
 
 void print_ast(AstNode *ast)
