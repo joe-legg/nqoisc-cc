@@ -148,10 +148,10 @@ declaration_list ::= declaration_list declaration.
 // Declaration specifiers
 %type declaration_specs { DataType * }
 declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
-    // The sign of the current type.
-    enum { SIGN_UNSPECIFIED = -1, SIGN_SIGNED = 0, SIGN_UNSIGNED = 1
-    } sign = SIGN_UNSPECIFIED;
+    // -1 for unspecified
     int type = -1;
+    int is_unsigned = -1;
+    int long_cnt = 0;
 
     // NOTE: This is probably not the best way to do but is was the best I could
     //       think of.
@@ -159,78 +159,101 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     for (int i = 0; i < TYPE_LIST->length; i++) {
         switch (*(int *)TYPE_LIST->items[i]) {
         case TYPE_INT:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_INT;
             break;
         case TYPE_VOID:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_VOID;
             break;
         case TYPE_CHAR:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_CHAR;
             break;
         case TYPE_FLOAT:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_FLOAT;
             break;
         case TYPE_DOUBLE:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_DOUBLE;
             break;
         case TYPE_BOOL:
-            if (type >= 0)
+            if (type > -1)
                 error(cur_filename, cur_line_num,
-                      "multiple types in declaration specifiers.");
+                      "multiple data types in declaration specifiers.");
             else
                 type = TYPE_BOOL;
             break;
         case TYPE_SHORT:
-            // TODO
             break;
-        case TYPE_LONG:
-            // TODO
-            break;
+        case TYPE_LONG: long_cnt++; break;
         case TYPE_SIGNED:
-            if (sign == SIGN_UNSIGNED)
+            if (is_unsigned == 1) {
                 error(cur_filename, cur_line_num,
                       "\"signed\" and \"unsigned\" in declaration specifiers.");
-            else if (sign == SIGN_SIGNED)
+            } else if (is_unsigned == 0) {
                 error(cur_filename, cur_line_num,
                       "duplicate \"signed\" in declaration specifiers.");
-            else
-                sign = SIGN_SIGNED;
+            } else {
+                is_unsigned = 0;
+            }
             break;
         case TYPE_UNSIGNED:
-            if (sign == SIGN_SIGNED)
-                error(cur_filename, cur_line_num,
-                      "\"signed\" and \"unsigned\" in declaration specifiers.");
-            else if (sign == SIGN_UNSIGNED)
+            if (is_unsigned == 1) {
                 error(cur_filename, cur_line_num,
                       "duplicate \"unsigned\" in declaration specifiers.");
-            else
-                sign = SIGN_UNSIGNED;
+            } else if (is_unsigned == 0) {
+                error(cur_filename, cur_line_num,
+                      "\"signed\" and \"unsigned\" in declaration specifiers.");
+            } else {
+                is_unsigned = 1;
+            }
             break;
         }
     }
-    if (type == -1)
-        error(cur_filename, cur_line_num, "type unspecified.");
-    A = new_data_type(type, sign == -1 ? SIGN_SIGNED : sign);
+
+    if (type == -1 && long_cnt > 0)
+        type = TYPE_LONG;
+
+    if (type == -1 && is_unsigned == -1)
+        error(cur_filename, cur_line_num,
+              "no type specified in declaration specifiers.");
+
+    if (long_cnt > 2) {
+        error(cur_filename, cur_line_num,
+              "to many \"long\" types in declaration specifiers.");
+    }
+
+    if (type == TYPE_LONG || type == TYPE_INT) {
+        if (long_cnt == 2) {
+            type = TYPE_LLONG;
+        } else if (long_cnt == 1) {
+            type = TYPE_LONG;
+        }
+    } else if (type == TYPE_DOUBLE) {
+        if (long_cnt == 1) {
+            type = TYPE_LDOUBLE;
+        }
+    }
+
+    // If only sign is specified set type = sign
+    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned);
 }
 
 %type declaration_specs_list { Vector * }
@@ -264,7 +287,9 @@ storage_class_specifier ::= KWD_TYPEDEF.
 storage_class_specifier ::= KWD_EXTERN.
 storage_class_specifier ::= KWD_STATIC.
 storage_class_specifier ::= KWD_AUTO.
-storage_class_specifier ::= KWD_REGISTER.
+storage_class_specifier ::= KWD_REGISTER. {
+    warning(cur_filename, cur_line_num, "register keyword is not supported.");
+}
 
 specifier_qualifier_list ::= type_specifier.
 specifier_qualifier_list ::= type_specifier specifier_qualifier_list.

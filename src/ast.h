@@ -8,11 +8,11 @@ enum {
     TYPE_VOID,
     TYPE_CHAR,
     TYPE_SHORT,
-    TYPE_LONG,  // TODO
-    TYPE_LLONG, // TODO
+    TYPE_LONG,
+    TYPE_LLONG,
     TYPE_FLOAT,
     TYPE_DOUBLE,
-    TYPE_LDOUBLE, // TODO
+    TYPE_LDOUBLE,
     TYPE_SIGNED,
     TYPE_UNSIGNED,
     TYPE_BOOL,
@@ -124,7 +124,8 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 
 DataType *new_data_type(int type, int is_unsigned);
 
-void print_data_type(const DataType *type);
+char *type_to_string(const DataType *type); // Used for error messages
+void print_data_type(const DataType *type); // Print data type
 void print_ast(AstNode *ast);
 
 #endif

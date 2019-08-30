@@ -1,3 +1,3 @@
-signed signed int main()
+long char main()
 {
 }

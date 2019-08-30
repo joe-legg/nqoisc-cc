@@ -22,7 +22,7 @@ void warning(const char *filename, int line_num, char *fmt, ...)
     if (!enable_warnings) return;
     va_list args;
     va_start(args, fmt);
-    fprintf(stderr, "%s: %d: %s ", filename, line_num,
+    fprintf(stderr, "%s: %d: %s", filename, line_num,
             isatty(fileno(stderr)) ? "\x1b[1;33mwarning: \x1b[0m" : "warning: ");
     vfprintf(stderr, fmt, args);
     fprintf(stderr, "\n");
