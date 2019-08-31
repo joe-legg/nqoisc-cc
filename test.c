@@ -1,3 +1,7 @@
-long char main()
+long main()
+{
+}
+
+long long test()
 {
 }

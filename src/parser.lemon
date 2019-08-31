@@ -73,8 +73,17 @@ program ::= translation_unit(TRANSLATION_UNIT). {
     ast_root_node = TRANSLATION_UNIT;
 }
 
-translation_unit(A) ::= external_declaration(EXTERN_DECL). { A = EXTERN_DECL; }
-translation_unit ::= translation_unit external_declaration. // TODO: finish translation unit AST gen
+translation_unit(A) ::= external_declaration(EXTERN_DECL). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_COMPOUND_STMT;
+    A->statements = new_vector();
+    vector_append(A->statements, EXTERN_DECL);
+}
+translation_unit(A) ::= translation_unit(TRANSLATION)
+                        external_declaration(EXTERN_DECL). {
+    vector_append(TRANSLATION->statements, EXTERN_DECL);
+    A = TRANSLATION;
+}
 
 external_declaration(A) ::= declaration(DECL).             { A = DECL; }
 external_declaration(A) ::= function_definition(FUNC_DEF). { A = FUNC_DEF; }
