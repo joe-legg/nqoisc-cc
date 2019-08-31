@@ -161,9 +161,10 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     int type = -1;
     int is_unsigned = -1;
     int long_cnt = 0;
+    int is_short = 0; // 1 if short 0 if not
 
     // NOTE: This is probably not the best way to do but is was the best I could
-    //       think of.
+    //       think of also this is probably the worst code in the compiler.
     // Parse the list of types.
     for (int i = 0; i < TYPE_LIST->length; i++) {
         switch (*(int *)TYPE_LIST->items[i]) {
@@ -210,6 +211,13 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                 type = TYPE_BOOL;
             break;
         case TYPE_SHORT:
+            if (is_short) {
+                error(cur_filename, cur_line_num,
+                      "\"short\" appears more than once in declaration "
+                      "specifiers.");
+            } else {
+                is_short = 1;
+            }
             break;
         case TYPE_LONG: long_cnt++; break;
         case TYPE_SIGNED:
@@ -218,7 +226,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                       "\"signed\" and \"unsigned\" in declaration specifiers.");
             } else if (is_unsigned == 0) {
                 error(cur_filename, cur_line_num,
-                      "duplicate \"signed\" in declaration specifiers.");
+                      "more than one \"signed\" in declaration specifiers.");
             } else {
                 is_unsigned = 0;
             }
@@ -226,7 +234,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         case TYPE_UNSIGNED:
             if (is_unsigned == 1) {
                 error(cur_filename, cur_line_num,
-                      "duplicate \"unsigned\" in declaration specifiers.");
+                      "more than one \"unsigned\" in declaration specifiers.");
             } else if (is_unsigned == 0) {
                 error(cur_filename, cur_line_num,
                       "\"signed\" and \"unsigned\" in declaration specifiers.");
@@ -237,16 +245,47 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         }
     }
 
-    if (type == -1 && long_cnt > 0)
-        type = TYPE_LONG;
+    if (type == -1) {
+        if (is_short) {
+            type = TYPE_SHORT;
+        } else if (long_cnt) {
+            type = TYPE_LONG;
+        } else if (is_unsigned == 1) {
+            type = TYPE_INT;
+        } else if (is_unsigned == 0) {
+            type = TYPE_INT;
+        } else {
+            error(cur_filename, cur_line_num,
+                  "no type specified in declaration specifiers.");
+        }
+    }
 
-    if (type == -1 && is_unsigned == -1)
-        error(cur_filename, cur_line_num,
-              "no type specified in declaration specifiers.");
+    if (is_short && type == TYPE_INT) {
+        type = TYPE_SHORT;
+    }
 
     if (long_cnt > 2) {
         error(cur_filename, cur_line_num,
               "to many \"long\" types in declaration specifiers.");
+    }
+    
+    if ((long_cnt || is_short) &&
+        (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
+        error(cur_filename, cur_line_num,
+              "cannot specify a size for for \"%s\".",
+              type_to_string(new_data_type(type, is_unsigned)));
+    }
+
+    if (type == TYPE_DOUBLE && is_short) {
+        error(cur_filename, cur_line_num,
+              "\"double\" and \"short\" in function definition.");
+    }
+
+    if (is_unsigned > -1 &&
+        (type == TYPE_FLOAT || type == TYPE_DOUBLE || type == TYPE_BOOL)) {
+        error(cur_filename, cur_line_num,
+              "cannot specify a sign for \"%s\".",
+              type_to_string(new_data_type(type, is_unsigned)));
     }
 
     if (type == TYPE_LONG || type == TYPE_INT) {
@@ -258,6 +297,9 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     } else if (type == TYPE_DOUBLE) {
         if (long_cnt == 1) {
             type = TYPE_LDOUBLE;
+        } else if (long_cnt > 1) {
+            error(cur_filename, cur_line_num,
+                  "to many \"long\" types for double.");
         }
     }
 

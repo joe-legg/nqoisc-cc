@@ -1,7 +1,3 @@
-long main()
-{
-}
-
-long long test()
+signed signed signed main()
 {
 }

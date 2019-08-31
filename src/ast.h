@@ -82,7 +82,7 @@ typedef struct AstNode {
 
     union {
         // Integer, long or character
-        long integer_const;
+        long long integer_const;
 
         // Identifier
         char *identifier;
