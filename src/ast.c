@@ -14,6 +14,15 @@ AstNode *new_ast_ident(const char *ident)
     return node;
 }
 
+AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_DECLARATION;
+    node->declaration_type = decl_type;
+    node->declaration_declarator = declarator;
+    return node;
+}
+
 AstNode *new_ast_integer_const(long value)
 {
     AstNode *node = malloc(sizeof(AstNode));
@@ -93,7 +102,7 @@ char *type_to_string(const DataType *type)
     return strdup(type_string);
 }
 
-void print_data_type(const DataType *type)
+static void print_data_type(const DataType *type)
 {
     printf("(type \"%s\")", type_to_string(type));
 }
@@ -128,10 +137,29 @@ void print_ast(AstNode *ast)
             }
             printf(")");
             break;
+        case AST_DECLARATION:
+            printf("(declaration ");
+            print_data_type(ast->declaration_type);
+            if (ast->declaration_declarator != NULL) {
+                printf(" ");
+                print_ast(ast->declaration_declarator);
+            }
+            printf(")");
+            break;
         case AST_FUNCTION_DEF:
             printf("(function-def %s ", ast->func_ident);
             print_data_type(ast->func_type);
-            printf(" ");
+            printf(" (parameters ");
+            if (ast->func_params == NULL) {
+                printf("(null)");
+            } else {
+                print_ast(ast->func_params->items[0]);
+                for (int i = 1; i < ast->func_params->length - 1; i++) {
+                    printf(" ");
+                    print_ast(ast->func_params->items[i]);
+                }
+            }
+            printf(") ");
             print_ast(ast->func_body);
             printf(")");
             break;

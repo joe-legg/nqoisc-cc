@@ -117,26 +117,30 @@ typedef struct AstNode {
         // Declaration
         struct {
             DataType *declaration_type;
+            struct AstNode *declaration_declarator;
         };
 
         // Function definition
         struct {
             char *func_ident;
             DataType *func_type;
-            Vector *parameters;
+            Vector *func_params;
             struct AstNode *func_body;
         };
     };
 } AstNode;
 
+// AST Functions
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
+AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator);
 
+// New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs);
 
+// AST Printing
 char *type_to_string(const DataType *type); // Used for error messages
-void print_data_type(const DataType *type); // Print data type
 void print_ast(AstNode *ast);
 
 #endif

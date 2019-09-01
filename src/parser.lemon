@@ -94,12 +94,14 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = DECLARATOR;
+    // Check storage-class specifiers
     if (DECL_SPECS->storage_specs &&
         (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC ||
         DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN)) {
         error(cur_filename, cur_line_num,
               "invalid storage class specifier for function definition.");
     }
+    A->func_params = DECLARATOR->func_params;
     A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
@@ -113,7 +115,7 @@ func_declarator(A) ::= func_direct_declarator_head(HEAD)
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
     A->func_ident = HEAD->identifier;
-    A->parameters = TAIL->parameters;
+    A->func_params = TAIL->func_params;
     free(TAIL);
 }
 func_declarator ::= pointer func_direct_declarator_head
@@ -134,12 +136,12 @@ func_direct_declarator_head(A) ::= LPAREN func_direct_declarator_head(DECL)
 func_direct_declarator_tail(A) ::= LPAREN parameter_type_list(PARAMS) RPAREN. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
-    vector_append(A->parameters, PARAMS);
+    A->func_params = PARAMS->func_params;
 }
 func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
-    A->parameters = new_vector();
+    A->func_params = new_vector();
 }
 
 // Old style function declarator
@@ -148,7 +150,7 @@ old_func_declarator ::= func_direct_declarator_head // TODO
 old_func_declarator ::= pointer func_direct_declarator_head
                         old_func_direct_declarator_tail.
 
-// Tail
+// Old style tail
 old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
 old_func_direct_declarator_tail ::= LPAREN RPAREN.
 
@@ -546,17 +548,22 @@ parameter_type_list ::= parameter_list COMMA ELLIPSIS. // TODO
 parameter_list(A) ::= parameter_declaration(PARAM). {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
-    A->parameters = new_vector();
-    vector_append(A->parameters, PARAM);
+    A->func_params = new_vector();
+    vector_append(A->func_params, PARAM);
 }
 parameter_list(A) ::= parameter_list(PARAM_LIST) COMMA
                       parameter_declaration(NEW_PARAM). {
-    vector_append(PARAM_LIST->parameters, NEW_PARAM);
+    vector_append(PARAM_LIST->func_params, NEW_PARAM);
     A = PARAM_LIST;
 }
 
-parameter_declaration ::= declaration_specs. // TODO
-parameter_declaration ::= declaration_specs declarator.
+parameter_declaration(A) ::= declaration_specs(DECL_SPECS). {
+    A = new_ast_declaration(DECL_SPECS, NULL);
+}
+parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
+                             declarator(DECLARATOR). {
+    A = new_ast_declaration(DECL_SPECS, DECLARATOR);
+}
 
 // Type name
 type_name ::= specifier_qualifier_list.

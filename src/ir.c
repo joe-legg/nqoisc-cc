@@ -129,7 +129,7 @@ void ir_print()
             break;
         case IR_FUNC_HEADER:
             printf("(func-head %s ", cur_instr->func_ident);
-            print_data_type(cur_instr->func_type);
+            printf("(type %s)", type_to_string(cur_instr->func_type));
             printf(")\n");
             break;
         }
