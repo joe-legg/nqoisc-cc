@@ -3,6 +3,7 @@
 
 #include "vector.h"
 
+// Data types and declaration specifiers
 enum {
     TYPE_INT,
     TYPE_VOID,
@@ -16,15 +17,25 @@ enum {
     TYPE_SIGNED,
     TYPE_UNSIGNED,
     TYPE_BOOL,
-    TYPE_POINTER
+
+    TYPE_POINTER,
+
+    // Storage specifiers
+    STORAGE_SPEC_TYPEDEF,
+    STORAGE_SPEC_EXTERN,
+    STORAGE_SPEC_STATIC,
+    STORAGE_SPEC_AUTO,
+    STORAGE_SPEC_REGISTER,
 };
 
 typedef struct DataType {
     int type;
     int is_unsigned; // 1 if unsigned
+    int storage_specs; // 0 if there are no storage_specs
     struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
 } DataType;
 
+// Operators for the AST
 enum {
     OP_PLUS,
     OP_MINUS,
@@ -122,7 +133,7 @@ AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 
-DataType *new_data_type(int type, int is_unsigned);
+DataType *new_data_type(int type, int is_unsigned, int storage_specs);
 
 char *type_to_string(const DataType *type); // Used for error messages
 void print_data_type(const DataType *type); // Print data type

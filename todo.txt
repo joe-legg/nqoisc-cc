@@ -1,16 +1,23 @@
 Todo List
 #########################################
-- [ ] redo declaration specs pasing.
+- [ ] typedefs.
 - [ ] maybe make functions in ir static.
 - [ ] fix memory leaks.
 - [ ] ir gen.
 - [ ] compile return 42 program.
+- [ ] AST gen old style function definitions.
 - [ ] finish declarations.
+- [ ] ast gen for variables/declrations.
 - [ ] AST gen for function parameters.
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
+- [ ] code quality check.
+- [ ] fix parsing conflicts.
 - [ ] AST gen for decl specs.
-- [x] AST gen for type specs.
+    - [ ] inline keyword.
+    - [ ] AST gen for type qualifiers.
+    - [x] AST gen for storage class specifiers.
+    - [x] AST gen for type specs.
 - [x] fix function definition parsing. - I think this is fixed though I am not sure
 - [x] create AST for return 42 program.
 - [x] rename decl to declaration.
@@ -25,3 +32,5 @@ Long Term Todo
 #########################################
 - [ ] Optimization with genetic algorithm.
 - [ ] c11 standard
+
+- [ ] redo declaration specs pasing.

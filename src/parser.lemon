@@ -94,7 +94,13 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = DECLARATOR;
-    A->func_type = DECL_SPECS; // TODO
+    if (DECL_SPECS->storage_specs &&
+        (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC ||
+        DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN)) {
+        error(cur_filename, cur_line_num,
+              "invalid storage class specifier for function definition.");
+    }
+    A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
 function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
@@ -162,6 +168,8 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     int is_unsigned = -1;
     int long_cnt = 0;
     int is_short = 0; // 1 if short 0 if not
+
+    int storage_specs = 0;
 
     // NOTE: This is probably not the best way to do but is was the best I could
     //       think of also this is probably the worst code in the compiler.
@@ -242,6 +250,47 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                 is_unsigned = 1;
             }
             break;
+
+        case STORAGE_SPEC_TYPEDEF:
+            if (storage_specs) {
+                error(cur_filename, cur_line_num,
+                      "duplicate \"typedef\" in declaration specifiers.");
+            } else {
+                storage_specs = STORAGE_SPEC_TYPEDEF;
+            }
+            break;
+        case STORAGE_SPEC_EXTERN:
+            if (storage_specs) {
+                error(cur_filename, cur_line_num,
+                      "duplicate \"extern\" in declaration specifiers.");
+            } else {
+                storage_specs = STORAGE_SPEC_EXTERN;
+            }
+            break;
+        case STORAGE_SPEC_STATIC:
+            if (storage_specs) {
+                error(cur_filename, cur_line_num,
+                      "duplicate \"static\" in declaration specifiers.");
+            } else {
+                storage_specs = STORAGE_SPEC_STATIC;
+            }
+            break;
+        case STORAGE_SPEC_AUTO:
+            if (storage_specs) {
+                error(cur_filename, cur_line_num,
+                      "duplicate \"auto\" in declaration specifiers.");
+            } else {
+                storage_specs = STORAGE_SPEC_AUTO;
+            }
+            break;
+        case STORAGE_SPEC_REGISTER:
+            if (storage_specs) {
+                error(cur_filename, cur_line_num,
+                      "duplicate \"register\" in declaration specifiers.");
+            } else {
+                storage_specs = STORAGE_SPEC_REGISTER;
+            }
+            break;
         }
     }
 
@@ -273,7 +322,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
         error(cur_filename, cur_line_num,
               "cannot specify a size for for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned)));
+              type_to_string(new_data_type(type, is_unsigned, storage_specs)));
     }
 
     if (type == TYPE_DOUBLE && is_short) {
@@ -285,7 +334,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         (type == TYPE_FLOAT || type == TYPE_DOUBLE || type == TYPE_BOOL)) {
         error(cur_filename, cur_line_num,
               "cannot specify a sign for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned)));
+              type_to_string(new_data_type(type, is_unsigned, storage_specs)));
     }
 
     if (type == TYPE_LONG || type == TYPE_INT) {
@@ -304,12 +353,26 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     }
 
     // If only sign is specified set type = sign
-    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned);
+    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned, storage_specs);
 }
 
 %type declaration_specs_list { Vector * }
-declaration_specs_list ::= storage_class_specifier.
-declaration_specs_list ::= storage_class_specifier declaration_specs_list.
+// Storage class specifiers
+declaration_specs_list(A) ::= storage_class_specifier(SPEC). {
+    void *new_spec = malloc(sizeof(int));
+    *((int*)new_spec) = SPEC;
+    A = new_vector();
+    vector_append(A, new_spec);
+}
+declaration_specs_list(A) ::= storage_class_specifier(SPEC)
+                              declaration_specs_list(DECL_SPECS). {
+    void *new_spec = malloc(sizeof(int));
+    *((int*)new_spec) = SPEC;
+    vector_append(DECL_SPECS, new_spec);
+    A = DECL_SPECS;
+}
+
+// Type specifiers
 declaration_specs_list(A) ::= type_specifier(TYPE). {
     void *new_type = malloc(sizeof(int));
     *((int*)new_type) = TYPE;
@@ -334,11 +397,22 @@ init_declarator_list ::= init_declarator_list COMMA init_declarator.
 init_declarator ::= declarator.
 init_declarator ::= declarator OP_EQUALS initializer.
 
-storage_class_specifier ::= KWD_TYPEDEF.
-storage_class_specifier ::= KWD_EXTERN.
-storage_class_specifier ::= KWD_STATIC.
-storage_class_specifier ::= KWD_AUTO.
-storage_class_specifier ::= KWD_REGISTER. {
+%type storage_class_specifier { int }
+storage_class_specifier(A) ::= KWD_TYPEDEF. {
+    A = STORAGE_SPEC_TYPEDEF;
+}
+storage_class_specifier(A) ::= KWD_EXTERN. {
+    A = STORAGE_SPEC_EXTERN;
+}
+storage_class_specifier(A) ::= KWD_STATIC. {
+    A = STORAGE_SPEC_STATIC;
+}
+storage_class_specifier(A) ::= KWD_AUTO. {
+    A = STORAGE_SPEC_AUTO;
+}
+storage_class_specifier(A) ::= KWD_REGISTER. {
+    A = STORAGE_SPEC_REGISTER;
+    // TODO Maybe remove this warning
     warning(cur_filename, cur_line_num, "register keyword is not supported.");
 }
 

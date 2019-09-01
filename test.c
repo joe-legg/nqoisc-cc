@@ -1,3 +1,3 @@
-signed signed signed main()
+int main()
 {
 }

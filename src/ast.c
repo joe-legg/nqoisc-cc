@@ -32,11 +32,12 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
     return node;
 }
 
-DataType *new_data_type(int type, int is_unsigned)
+DataType *new_data_type(int type, int is_unsigned, int storage_specs)
 {
     DataType *new_type = malloc(sizeof(DataType));
     new_type->type = type;
     new_type->is_unsigned = is_unsigned;
+    new_type->storage_specs = storage_specs;
     return new_type;
 }
 
@@ -46,25 +47,49 @@ char *type_to_string(const DataType *type)
 {
     // TODO: pointers
     char *sign_str = type->is_unsigned ? "unsigned" : "signed";
-    char type_string[30];
+    char type_string[50];
+    char storage_specs_str[10];
+
+    switch (type->storage_specs) {
+    case STORAGE_SPEC_TYPEDEF:  sprintf(storage_specs_str, "typedef "); break;
+    case STORAGE_SPEC_EXTERN:   sprintf(storage_specs_str, "extern "); break;
+    case STORAGE_SPEC_STATIC:   sprintf(storage_specs_str, "static "); break;
+    case STORAGE_SPEC_AUTO:     sprintf(storage_specs_str, "auto "); break;
+    case STORAGE_SPEC_REGISTER: sprintf(storage_specs_str, "register "); break;
+    default: sprintf(storage_specs_str, ""); break;
+    }
 
     switch (type->type) {
-    case TYPE_INT:      sprintf(type_string, "%s int", sign_str); break;
-    case TYPE_CHAR:     sprintf(type_string, "%s char", sign_str); break;
-    case TYPE_LLONG:    sprintf(type_string, "%s long long", sign_str); break;
-    case TYPE_LONG:     sprintf(type_string, "%s long", sign_str); break;
-    case TYPE_SHORT:    sprintf(type_string, "%s short", sign_str); break;
-    case TYPE_VOID:     sprintf(type_string, "void"); break;
-    case TYPE_FLOAT:    sprintf(type_string, "float"); break;
-    case TYPE_DOUBLE:   sprintf(type_string, "double"); break;
-    case TYPE_LDOUBLE:  sprintf(type_string, "long double"); break;
-    case TYPE_BOOL:     sprintf(type_string, "_Bool"); break;
-    case TYPE_SIGNED:   sprintf(type_string, "signed"); break;
-    case TYPE_UNSIGNED: sprintf(type_string, "unsigned"); break;
+    case TYPE_INT:
+        sprintf(type_string, "%s%s int", storage_specs_str, sign_str); break;
+    case TYPE_CHAR:
+        sprintf(type_string, "%s%s char", storage_specs_str, sign_str); break;
+    case TYPE_LLONG:
+        sprintf(type_string, "%s%s long long", storage_specs_str, sign_str);
+        break;
+    case TYPE_LONG:
+        sprintf(type_string, "%s%s long", storage_specs_str, sign_str); break;
+    case TYPE_SHORT:
+        sprintf(type_string, "%s%s short", storage_specs_str, sign_str); break;
+    case TYPE_VOID:
+        sprintf(type_string, "%svoid", storage_specs_str); break;
+    case TYPE_FLOAT:
+        sprintf(type_string, "%sfloat", storage_specs_str); break;
+    case TYPE_DOUBLE:
+        sprintf(type_string, "%sdouble", storage_specs_str); break;
+    case TYPE_LDOUBLE:
+        sprintf(type_string, "%slong double", storage_specs_str); break;
+    case TYPE_BOOL:
+        sprintf(type_string, "%s_Bool", storage_specs_str); break;
+    case TYPE_SIGNED:
+        sprintf(type_string, "%ssigned", storage_specs_str); break;
+    case TYPE_UNSIGNED:
+        sprintf(type_string, "%sunsigned", storage_specs_str); break;
     case TYPE_POINTER:
         // TODO
         break;
     }
+
     return strdup(type_string);
 }
 
