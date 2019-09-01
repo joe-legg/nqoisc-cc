@@ -8,11 +8,11 @@ Todo List
 - [ ] AST gen old style function definitions.
 - [ ] finish declarations.
 - [ ] ast gen for variables/declrations.
-- [ ] AST gen for function parameters.
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
 - [ ] code quality check.
 - [ ] fix parsing conflicts.
+- [x] AST gen for function parameters.
 - [ ] AST gen for decl specs.
     - [ ] inline keyword.
     - [ ] AST gen for type qualifiers.

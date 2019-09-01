@@ -51,11 +51,12 @@ AstNode *parse(char *filename)
     while ((token_id = yylex())) {
         cur_tok_str = strdup(yytext);
         cur_line_num = yylineno;
-        Parse(parser, token_id, strdup(yytext));
+        Parse(parser, token_id, cur_tok_str);
     }
 
     Parse(parser, 0, NULL);
     ParseFree(parser, free);
+    free(yytext);
     fclose(yyin);
 
     return ast_root_node;
@@ -64,7 +65,7 @@ AstNode *parse(char *filename)
 }
 
 %token_prefix TOK_
-%token_type   { const char * }
+%token_type   { char * }
 %default_type { AstNode * }
 
 %right KWD_IF KWD_ELSE.
@@ -126,10 +127,12 @@ func_declarator ::= pointer func_direct_declarator_head
 // Head
 func_direct_declarator_head(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
+    free(IDENT);
 }
 func_direct_declarator_head(A) ::= LPAREN func_direct_declarator_head(DECL)
-                                RPAREN. {
-    A = new_ast_ident(DECL->identifier); // FIXME: This might cause problems
+                                   RPAREN. {
+    A = new_ast_ident(DECL->identifier);
+    free(DECL->identifier);
 }
 
 // Tail

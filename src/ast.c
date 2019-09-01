@@ -65,7 +65,7 @@ char *type_to_string(const DataType *type)
     case STORAGE_SPEC_STATIC:   sprintf(storage_specs_str, "static "); break;
     case STORAGE_SPEC_AUTO:     sprintf(storage_specs_str, "auto "); break;
     case STORAGE_SPEC_REGISTER: sprintf(storage_specs_str, "register "); break;
-    default: sprintf(storage_specs_str, ""); break;
+    //default: sprintf(storage_specs_str, ""); break;
     }
 
     switch (type->type) {
@@ -104,14 +104,16 @@ char *type_to_string(const DataType *type)
 
 static void print_data_type(const DataType *type)
 {
-    printf("(type \"%s\")", type_to_string(type));
+    char *type_str = type_to_string(type);
+    printf("(type \"%s\")", type_str);
+    free(type_str);
 }
 
 void print_ast(AstNode *ast)
 {
     switch (ast->node_type) {
         case AST_INTEGER_CONST:
-            printf("(integer-val %ld)", ast->integer_const);
+            printf("(integer-val %lli)", ast->integer_const);
             break;
         case AST_IDENTIFIER:
             printf("(identifier %s)", ast->identifier);
@@ -123,6 +125,11 @@ void print_ast(AstNode *ast)
             print_ast(ast->binary_right);
             printf(")");
             break;
+        case AST_EXPR_STMT:
+            printf("(expr-stmt ");
+            print_ast(ast->expression);
+            printf(")");
+            break;
         case AST_RETURN_STMT:
             printf("(return-stmt ");
             if (ast->return_expr == NULL) printf("(null)");
@@ -131,9 +138,14 @@ void print_ast(AstNode *ast)
             break;
         case AST_COMPOUND_STMT:
             printf("(compound-stmt ");
-            for (int i = 0; i < ast->statements->length; i++) {
-                print_ast(ast->statements->items[i]);
-                printf(" ");
+            if (!ast->statements->length) {
+                printf("(null)");
+            } else {
+                print_ast(ast->statements->items[0]);
+                for (int i = 1; i < ast->statements->length; i++) {
+                    printf(" ");
+                    print_ast(ast->statements->items[i]);
+                }
             }
             printf(")");
             break;
@@ -147,20 +159,21 @@ void print_ast(AstNode *ast)
             printf(")");
             break;
         case AST_FUNCTION_DEF:
-            printf("(function-def %s ", ast->func_ident);
-            print_data_type(ast->func_type);
+            printf("(function-def %s ", ast->func_ident); // Name
+            print_data_type(ast->func_type); // Type
+            // Print parameters
             printf(" (parameters ");
-            if (ast->func_params == NULL) {
+            if (!ast->func_params->length) {
                 printf("(null)");
             } else {
                 print_ast(ast->func_params->items[0]);
-                for (int i = 1; i < ast->func_params->length - 1; i++) {
+                for (int i = 1; i < ast->func_params->length; i++) {
                     printf(" ");
                     print_ast(ast->func_params->items[i]);
                 }
             }
             printf(") ");
-            print_ast(ast->func_body);
+            print_ast(ast->func_body); // Body
             printf(")");
             break;
     }
