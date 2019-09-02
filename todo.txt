@@ -2,7 +2,6 @@ Todo List
 #########################################
 - [ ] typedefs.
 - [ ] maybe make functions in ir static.
-- [ ] fix memory leaks.
 - [ ] ir gen.
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
@@ -12,6 +11,7 @@ Todo List
 - [ ] AST gen for pointers.
 - [ ] code quality check.
 - [ ] fix parsing conflicts.
+- [ ] fix memory leaks.
 - [x] AST gen for function parameters.
 - [ ] AST gen for decl specs.
     - [ ] inline keyword.

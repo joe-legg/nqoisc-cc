@@ -32,7 +32,7 @@ typedef struct DataType {
     int type;
     int is_unsigned; // 1 if unsigned
     int storage_specs; // 0 if there are no storage_specs
-    struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
+    //struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
 } DataType;
 
 // Operators for the AST
@@ -135,6 +135,9 @@ AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator);
+
+void delete_ast(AstNode *ast);
+void delete_data_type(DataType *type);
 
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs);

@@ -50,6 +50,47 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs)
     return new_type;
 }
 
+/* Delete AST */
+
+void delete_data_type(DataType *type)
+{
+    free(type);
+}
+
+void delete_ast(AstNode *ast)
+{
+    switch (ast->node_type) {
+        case AST_IDENTIFIER:  free(ast->identifier); break;
+        case AST_EXPR_STMT:   delete_ast(ast->expression); break;
+        case AST_RETURN_STMT: delete_ast(ast->return_expr); break;
+        case AST_INTEGER_CONST: break;
+        case AST_BINARY_OP:
+            delete_ast(ast->binary_left);
+            delete_ast(ast->binary_right);
+            break;
+        case AST_DECLARATION:
+            delete_data_type(ast->declaration_type);
+            delete_ast(ast->declaration_declarator);
+            break;
+        case AST_COMPOUND_STMT:
+            for (int i = 0; i < ast->statements->length; i++) {
+                delete_ast(ast->statements->items[i]);
+            }
+            vector_free(ast->statements);
+            break;
+        case AST_FUNCTION_DEF:
+            for (int i = 0; i < ast->func_params->length; i++) {
+                delete_ast(ast->func_params->items[i]);
+            }
+            vector_free(ast->func_params);
+            delete_data_type(ast->func_type);
+            free(ast->func_ident);
+            delete_ast(ast->func_body);
+            break;
+    }
+    free(ast);
+}
+
 /* Print AST */
 
 char *type_to_string(const DataType *type)
