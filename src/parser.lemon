@@ -175,6 +175,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     int is_short = 0; // 1 if short 0 if not
 
     int storage_specs = 0;
+    int type_qualifiers = 0;
 
     // NOTE: This is probably not the best way to do but is was the best I could
     //       think of also this is probably the worst code in the compiler.
@@ -296,6 +297,9 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                 storage_specs = STORAGE_SPEC_REGISTER;
             }
             break;
+        case TYPE_QUAL_CONST:    type_qualifiers |= TYPE_QUAL_CONST; break;
+        case TYPE_QUAL_VOLATILE: type_qualifiers |= TYPE_QUAL_VOLATILE; break;
+        case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
         }
     }
 
@@ -327,7 +331,8 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
         error(cur_filename, cur_line_num,
               "cannot specify a size for for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned, storage_specs)));
+              type_to_string(new_data_type(type, is_unsigned, storage_specs,
+                             type_qualifiers)));
     }
 
     if (type == TYPE_DOUBLE && is_short) {
@@ -339,7 +344,8 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         (type == TYPE_FLOAT || type == TYPE_DOUBLE || type == TYPE_BOOL)) {
         error(cur_filename, cur_line_num,
               "cannot specify a sign for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned, storage_specs)));
+              type_to_string(new_data_type(type, is_unsigned, storage_specs,
+                             type_qualifiers)));
     }
 
     if (type == TYPE_LONG || type == TYPE_INT) {
@@ -358,21 +364,22 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     }
 
     // If only sign is specified set type = sign
-    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned, storage_specs);
+    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned, storage_specs,
+                      type_qualifiers);
 }
 
 %type declaration_specs_list { Vector * }
 // Storage class specifiers
 declaration_specs_list(A) ::= storage_class_specifier(SPEC). {
     void *new_spec = malloc(sizeof(int));
-    *((int*)new_spec) = SPEC;
+    *((int *)new_spec) = SPEC;
     A = new_vector();
     vector_append(A, new_spec);
 }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC)
                               declaration_specs_list(DECL_SPECS). {
     void *new_spec = malloc(sizeof(int));
-    *((int*)new_spec) = SPEC;
+    *((int *)new_spec) = SPEC;
     vector_append(DECL_SPECS, new_spec);
     A = DECL_SPECS;
 }
@@ -380,19 +387,33 @@ declaration_specs_list(A) ::= storage_class_specifier(SPEC)
 // Type specifiers
 declaration_specs_list(A) ::= type_specifier(TYPE). {
     void *new_type = malloc(sizeof(int));
-    *((int*)new_type) = TYPE;
+    *((int *)new_type) = TYPE;
     A = new_vector();
     vector_append(A, new_type);
 }
 declaration_specs_list(A) ::= type_specifier(NEW_TYPE)
                               declaration_specs_list(DECL_SPECS). {
     void *new_type = malloc(sizeof(int));
-    *((int*)new_type) = NEW_TYPE;
+    *((int *)new_type) = NEW_TYPE;
     vector_append(DECL_SPECS, new_type);
     A = DECL_SPECS;
 }
-declaration_specs_list ::= type_qualifier.
-declaration_specs_list ::= type_qualifier declaration_specs_list.
+
+// Type qualifiers
+declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL). {
+    void *new_qualifier = malloc(sizeof(int));
+    *((int *)new_qualifier) = TYPE_QUAL;
+    A = new_vector();
+    vector_append(A, new_qualifier);
+}
+declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
+                           declaration_specs_list(DECL_SPECS). {
+    void *new_qualifier = malloc(sizeof(int));
+    *((int *)new_qualifier) = TYPE_QUAL;
+    vector_append(DECL_SPECS, new_qualifier);
+    A = DECL_SPECS;
+    
+}
 declaration_specs_list ::= KWD_INLINE.
 declaration_specs_list ::= KWD_INLINE declaration_specs_list.
 
@@ -532,17 +553,25 @@ direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
 direct_declarator ::= direct_declarator LPAREN RPAREN.
 
 // Pointer
-pointer ::= OP_ASTERISK.
+pointer ::= OP_ASTERISK. // TODO
 pointer ::= OP_ASTERISK type_qualifier_list.
 pointer ::= OP_ASTERISK pointer.
 pointer ::= OP_ASTERISK type_qualifier_list pointer.
 
-type_qualifier_list ::= type_qualifier.
+// Type qualifiers
+type_qualifier_list ::= type_qualifier. // TODO
 type_qualifier_list ::= type_qualifier_list type_qualifier.
 
-type_qualifier ::= KWD_CONST.
-type_qualifier ::= KWD_RESTRICT.
-type_qualifier ::= KWD_VOLATILE.
+%type type_qualifier { int }
+type_qualifier(A) ::= KWD_CONST. {
+    A = TYPE_QUAL_CONST;
+}
+type_qualifier(A) ::= KWD_RESTRICT. {
+    A = TYPE_QUAL_RESTRICT;
+}
+type_qualifier(A) ::= KWD_VOLATILE. {
+    A = TYPE_QUAL_VOLATILE;
+}
 
 // Parameters
 parameter_type_list(A) ::= parameter_list(PARAMS). { A = PARAMS; }

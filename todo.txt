@@ -10,6 +10,7 @@ Todo List
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
 - [ ] code quality check.
+- [ ] rewrite the type_to_string() funciton
 - [ ] fix parsing conflicts.
 - [ ] fix memory leaks.
 - [x] AST gen for function parameters.

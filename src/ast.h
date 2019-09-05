@@ -26,12 +26,18 @@ enum {
     STORAGE_SPEC_STATIC,
     STORAGE_SPEC_AUTO,
     STORAGE_SPEC_REGISTER,
+
+    // Type qualifiers
+    TYPE_QUAL_CONST = 0xff0000,
+    TYPE_QUAL_RESTRICT = 0x00ff00,
+    TYPE_QUAL_VOLATILE = 0x0000ff
 };
 
 typedef struct DataType {
     int type;
     int is_unsigned; // 1 if unsigned
     int storage_specs; // 0 if there are no storage_specs
+    int type_qualifiers;
     //struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
 } DataType;
 
@@ -140,7 +146,8 @@ void delete_ast(AstNode *ast);
 void delete_data_type(DataType *type);
 
 // New Data Type
-DataType *new_data_type(int type, int is_unsigned, int storage_specs);
+DataType *new_data_type(int type, int is_unsigned, int storage_specs,
+                        int type_qualifiers);
 
 // AST Printing
 char *type_to_string(const DataType *type); // Used for error messages

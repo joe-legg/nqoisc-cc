@@ -1,5 +1,3 @@
-int main(int a)
+const volatile double main()
 {
-    1 + 1;
-    return 1;
 }
