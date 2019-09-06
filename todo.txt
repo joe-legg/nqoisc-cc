@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] start implementing semantic checks - ast_check()
 - [ ] typedefs.
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
@@ -9,17 +10,24 @@ Todo List
 - [ ] ast gen for variables/declrations.
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
+- [ ] AST gen for statements.
+    - [ ] if else statements
+    - [ ] while loops
+    - [ ] for loops
+    - [ ] switch
+    - [ ] goto
+    - [ ] return
 - [ ] code quality check.
 - [ ] rewrite the type_to_string() funciton
 - [ ] fix parsing conflicts.
 - [ ] fix memory leaks.
 - [x] AST gen for function parameters.
 - [ ] AST gen for decl specs.
-    - [ ] inline keyword.
-    - [ ] AST gen for type qualifiers.
+    - [ ] inline keyword. - Do this in ast_check()
+    - [x] AST gen for type qualifiers.
     - [x] AST gen for storage class specifiers.
     - [x] AST gen for type specs.
-- [x] fix function definition parsing. - I think this is fixed though I am not sure
+- [x] fix function definition parsing.
 - [x] create AST for return 42 program.
 - [x] rename decl to declaration.
 - [x] finish parsing constants.

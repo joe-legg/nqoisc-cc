@@ -1,3 +1,1 @@
-const volatile double main()
-{
-}
+int main();
