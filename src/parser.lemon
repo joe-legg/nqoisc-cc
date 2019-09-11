@@ -106,10 +106,8 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
-/*
 function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
                         compound_statement.
-                        */
 
 /* Function declarators */
 
@@ -140,7 +138,6 @@ old_func_declarator ::= direct_declarator_head // TODO
 
 // Old style tail
 old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
-old_func_direct_declarator_tail ::= LPAREN RPAREN.
 
 /* Declarations */
 
@@ -528,10 +525,11 @@ direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
 }
 
 // Direct declarator tail
-direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).      { A = ARRAY; }
-direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
-// FIXME: parsing conflict
-//direct_declarator_tail ::= old_func_direct_declarator_tail. 
+direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).          { A = ARRAY; }
+direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL).     { A = TAIL; }
+direct_declarator_tail(A) ::= old_func_direct_declarator_tail(TAIL). {
+    A = TAIL;
+}
 
 // Arrays
 array_declarator_tail ::= array_declarator_single.

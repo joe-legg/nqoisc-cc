@@ -20,7 +20,7 @@ Todo List
 - [ ] code quality check.
 - [ ] rewrite the type_to_string() funciton.
 - [x] fix parsing conflicts.
-    - [ ] fix parsing conflicts with old style function definitions.
+    - [x] fix parsing conflicts with old style function definitions.
     - [x] fix array parsing.
 - [ ] fix memory leaks.
 - [x] AST gen for function parameters.
