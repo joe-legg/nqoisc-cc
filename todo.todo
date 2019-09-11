@@ -18,8 +18,10 @@ Todo List
     - [ ] goto
     - [ ] return
 - [ ] code quality check.
-- [ ] rewrite the type_to_string() funciton
-- [ ] fix parsing conflicts.
+- [ ] rewrite the type_to_string() funciton.
+- [x] fix parsing conflicts.
+    - [ ] fix parsing conflicts with old style function definitions.
+    - [ ] fix array parsing.
 - [ ] fix memory leaks.
 - [x] AST gen for function parameters.
 - [ ] AST gen for decl specs.

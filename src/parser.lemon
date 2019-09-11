@@ -46,7 +46,7 @@ AstNode *parse(char *filename)
     int token_id;
 
     // Uncomment for debugging
-    // ParseTrace(stdout, "Parser: ");
+    ParseTrace(stdout, "Parser: ");
 
     while ((token_id = yylex())) {
         cur_tok_str = strdup(yytext);
@@ -106,33 +106,20 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
+/*
 function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
                         compound_statement.
+                        */
 
 /* Function declarators */
 
-func_declarator(A) ::= func_direct_declarator_head(HEAD)
+func_declarator(A) ::= direct_declarator_head(HEAD)
                        func_direct_declarator_tail(TAIL). {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
     A->func_ident = HEAD->identifier;
     A->func_params = TAIL->func_params;
     free(TAIL);
-}
-func_declarator ::= pointer func_direct_declarator_head
-                    func_direct_declarator_tail. {
-    // TODO
-}
-
-// Head
-func_direct_declarator_head(A) ::= IDENT(IDENT). {
-    A = new_ast_ident(IDENT);
-    free(IDENT);
-}
-func_direct_declarator_head(A) ::= LPAREN func_direct_declarator_head(DECL)
-                                   RPAREN. {
-    A = new_ast_ident(DECL->identifier);
-    free(DECL->identifier);
 }
 
 // Tail
@@ -148,9 +135,7 @@ func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
 }
 
 // Old style function declarator
-old_func_declarator ::= func_direct_declarator_head // TODO
-                        old_func_direct_declarator_tail.
-old_func_declarator ::= pointer func_direct_declarator_head
+old_func_declarator ::= direct_declarator_head // TODO
                         old_func_direct_declarator_tail.
 
 // Old style tail
@@ -412,7 +397,6 @@ declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
     *((int *)new_qualifier) = TYPE_QUAL;
     vector_append(DECL_SPECS, new_qualifier);
     A = DECL_SPECS;
-    
 }
 declaration_specs_list ::= KWD_INLINE.
 declaration_specs_list ::= KWD_INLINE declaration_specs_list.
@@ -525,32 +509,42 @@ enumerator_list ::= enumerator_list COMMA enumerator.
 enumerator ::= ENUMERATION_CONSTANT.
 enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 
-// Declarator
-declarator ::= direct_declarator.
-declarator ::= pointer direct_declarator.
+/* Declarator */
 
-// Direct declarator
-direct_declarator(A) ::= IDENT(IDENT). {
+declarator ::= direct_declarator_head direct_declarator_tail.
+
+// Direct declarator head
+direct_declarator_head ::= direct_declarator_head_no_pointer.
+direct_declarator_head ::= pointer direct_declarator_head_no_pointer.
+
+direct_declarator_head_no_pointer(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
+    free(IDENT);
 }
-direct_declarator ::= LPAREN declarator RPAREN.
-direct_declarator ::= direct_declarator LSQUARE RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE type_qualifier_list
-                      assignment_expr RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE assignment_expr RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE type_qualifier_list RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE KWD_STATIC assignment_expr
-                      RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE KWD_STATIC type_qualifier_list
-                      assignment_expr RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE type_qualifier_list KWD_STATIC
-                      assignment_expr RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE OP_ASTERISK RSQUARE.
-direct_declarator ::= direct_declarator LSQUARE type_qualifier_list OP_ASTERISK
-                      RSQUARE.
-direct_declarator ::= direct_declarator LPAREN parameter_type_list RPAREN.
-direct_declarator ::= direct_declarator LPAREN identifier_list RPAREN.
-direct_declarator ::= direct_declarator LPAREN RPAREN.
+direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
+                                         RPAREN. {
+    A = HEAD;
+}
+
+// Direct declarator tail
+direct_declarator_tail ::= direct_declarator_head LSQUARE RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
+                           assignment_expr RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE assignment_expr RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
+                           RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE KWD_STATIC assignment_expr
+                           RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE KWD_STATIC
+                           type_qualifier_list assignment_expr RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
+                           KWD_STATIC assignment_expr RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE OP_ASTERISK RSQUARE.
+direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
+                           OP_ASTERISK RSQUARE.
+direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
+// FIXME: parsing conflict
+//direct_declarator_tail ::= old_func_direct_declarator_tail. 
 
 // Pointer
 pointer ::= OP_ASTERISK. // TODO
