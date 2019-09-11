@@ -46,7 +46,7 @@ AstNode *parse(char *filename)
     int token_id;
 
     // Uncomment for debugging
-    ParseTrace(stdout, "Parser: ");
+    // ParseTrace(stdout, "Parser: ");
 
     while ((token_id = yylex())) {
         cur_tok_str = strdup(yytext);
@@ -512,6 +512,7 @@ enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 /* Declarator */
 
 declarator ::= direct_declarator_head direct_declarator_tail.
+declarator ::= direct_declarator_head.
 
 // Direct declarator head
 direct_declarator_head ::= direct_declarator_head_no_pointer.
@@ -527,24 +528,25 @@ direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
 }
 
 // Direct declarator tail
-direct_declarator_tail ::= direct_declarator_head LSQUARE RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
-                           assignment_expr RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE assignment_expr RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
-                           RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE KWD_STATIC assignment_expr
-                           RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE KWD_STATIC
-                           type_qualifier_list assignment_expr RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
-                           KWD_STATIC assignment_expr RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE OP_ASTERISK RSQUARE.
-direct_declarator_tail ::= direct_declarator_head LSQUARE type_qualifier_list
-                           OP_ASTERISK RSQUARE.
+direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).      { A = ARRAY; }
 direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
 // FIXME: parsing conflict
 //direct_declarator_tail ::= old_func_direct_declarator_tail. 
+
+// Arrays
+array_declarator_tail ::= array_declarator_single.
+array_declarator_tail ::= array_declarator_tail array_declarator_single.
+array_declarator_single ::= LSQUARE RSQUARE.
+array_declarator_single ::= LSQUARE type_qualifier_list assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE type_qualifier_list RSQUARE.
+array_declarator_single ::= LSQUARE KWD_STATIC assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE KWD_STATIC type_qualifier_list
+                            assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE type_qualifier_list KWD_STATIC
+                            assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE OP_ASTERISK RSQUARE.
+array_declarator_single ::= LSQUARE type_qualifier_list OP_ASTERISK RSQUARE.
 
 // Pointer
 pointer ::= OP_ASTERISK. // TODO
