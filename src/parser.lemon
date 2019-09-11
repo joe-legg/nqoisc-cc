@@ -96,8 +96,9 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            compound_statement(BODY). {
     A = DECLARATOR;
     // Check storage-class specifiers
+    // TODO: move this to check_ast()
     if (DECL_SPECS->storage_specs &&
-        (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC ||
+        (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
         DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN)) {
         error(cur_filename, cur_line_num,
               "invalid storage class specifier for function definition.");
@@ -525,8 +526,8 @@ direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
 }
 
 // Direct declarator tail
-direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).          { A = ARRAY; }
-direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL).     { A = TAIL; }
+direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).      { A = ARRAY; }
+direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
 direct_declarator_tail(A) ::= old_func_direct_declarator_tail(TAIL). {
     A = TAIL;
 }

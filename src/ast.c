@@ -54,10 +54,7 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs,
 
 /* Delete AST */
 
-void delete_data_type(DataType *type)
-{
-    free(type);
-}
+void delete_data_type(DataType *type) { free(type); }
 
 void delete_ast(AstNode *ast)
 {
@@ -95,81 +92,52 @@ void delete_ast(AstNode *ast)
 
 /* Print AST */
 
-// TODO: rewrite this funciton
 char *type_to_string(const DataType *type)
 {
     char *sign_str = type->is_unsigned ? "unsigned" : "signed";
-    char type_string[50];
-    char storage_specs_str[10];
-    char type_quals_str[30];
+    char *type_spec_str;
+    char type_qualifier[25] = { 0 };
+    char type_str[25];
 
+    // Storage specifiers
     switch (type->storage_specs) {
-    case STORAGE_SPEC_TYPEDEF:  sprintf(storage_specs_str, "typedef "); break;
-    case STORAGE_SPEC_EXTERN:   sprintf(storage_specs_str, "extern "); break;
-    case STORAGE_SPEC_STATIC:   sprintf(storage_specs_str, "static "); break;
-    case STORAGE_SPEC_AUTO:     sprintf(storage_specs_str, "auto "); break;
-    case STORAGE_SPEC_REGISTER: sprintf(storage_specs_str, "register "); break;
+    case STORAGE_SPEC_TYPEDEF:  /* TODO */ break;
+    case STORAGE_SPEC_EXTERN:   type_spec_str = "extern "; break;
+    case STORAGE_SPEC_STATIC:   type_spec_str = "static "; break;
+    case STORAGE_SPEC_AUTO:     type_spec_str = "auto "; break;
+    case STORAGE_SPEC_REGISTER: type_spec_str = "register "; break;
+    default: type_spec_str = "";
     }
 
-    // This causes warnings but will not crash
+    // Type qualifiers
     if (type->type_qualifiers & TYPE_QUAL_CONST) {
-        sprintf(type_quals_str, "const ");
+        strcat(type_qualifier, "const ");
     }
     if (type->type_qualifiers & TYPE_QUAL_RESTRICT) {
-        sprintf(type_quals_str, "%srestrict ", type_quals_str);
+        strcat(type_qualifier, "restrict ");
     }
     if (type->type_qualifiers & TYPE_QUAL_VOLATILE) {
-        sprintf(type_quals_str, "%svolatile ", type_quals_str);
+        strcat(type_qualifier, "volatile ");
     }
 
+    // Types
     switch (type->type) {
-    case TYPE_INT:
-        sprintf(type_string, "%s%s%s int", type_quals_str, storage_specs_str,
-                sign_str);
-        break;
-    case TYPE_CHAR:
-        sprintf(type_string, "%s%s%s char", type_quals_str, storage_specs_str,
-                sign_str); break;
-    case TYPE_LLONG:
-        sprintf(type_string, "%s%s%s long long", type_quals_str,
-                storage_specs_str, sign_str);
-        break;
-    case TYPE_LONG:
-        sprintf(type_string, "%s%s%s long", type_quals_str, storage_specs_str,
-                sign_str);
-        break;
-    case TYPE_SHORT:
-        sprintf(type_string, "%s%s%s short", type_quals_str, storage_specs_str,
-                sign_str);
-        break;
-    case TYPE_VOID:
-        sprintf(type_string, "%s%svoid", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_FLOAT:
-        sprintf(type_string, "%s%sfloat", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_DOUBLE:
-        sprintf(type_string, "%s%sdouble", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_LDOUBLE:
-        sprintf(type_string, "%s%slong double", type_quals_str,
-                storage_specs_str);
-        break;
-    case TYPE_BOOL:
-        sprintf(type_string, "%s%s_Bool", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_SIGNED:
-        sprintf(type_string, "%s%ssigned", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_UNSIGNED:
-        sprintf(type_string, "%s%sunsigned", type_quals_str, storage_specs_str);
-        break;
-    case TYPE_POINTER:
-        // TODO
-        break;
+    case TYPE_VOID:    sprintf(type_str, "void"); break;
+    case TYPE_BOOL:    sprintf(type_str, "_Bool"); break;
+    case TYPE_FLOAT:   sprintf(type_str, "float"); break;
+    case TYPE_DOUBLE:  sprintf(type_str, "double"); break;
+    case TYPE_LDOUBLE: sprintf(type_str, "long double"); break;
+    case TYPE_INT:     sprintf(type_str, "%s int", sign_str); break;
+    case TYPE_CHAR:    sprintf(type_str, "%s char", sign_str); break;
+    case TYPE_SHORT:   sprintf(type_str, "%s short", sign_str); break;
+    case TYPE_LONG:    sprintf(type_str, "%s long", sign_str); break;
+    case TYPE_LLONG:   sprintf(type_str, "%s long long", sign_str); break;
     }
 
-    return strdup(type_string);
+    char final_str[60];
+    sprintf(final_str, "%s%s%s", type_spec_str, type_qualifier, type_str);
+
+    return strdup(final_str);
 }
 
 static void print_data_type(const DataType *type)
