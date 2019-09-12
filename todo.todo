@@ -18,7 +18,8 @@ Todo List
     - [x] if else statements
     - [x] while loops
     - [x] do while
-    - [ ] goto
+    - [x] goto
+    - [ ] continue, break
     - [ ] return
     - [ ] for loops
     - [ ] switch

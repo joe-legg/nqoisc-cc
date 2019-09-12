@@ -721,7 +721,11 @@ iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
                         RPAREN statement.
 
 // Jump statements
-jump_statement ::= KWD_GOTO IDENT SEMICOLON.
+jump_statement(A) ::= KWD_GOTO IDENT(IDENT) SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_GOTO_STMT;
+    A->identifier = IDENT;
+}
 jump_statement ::= KWD_CONTINUE SEMICOLON.
 jump_statement ::= KWD_BREAK SEMICOLON.
 jump_statement(A) ::= KWD_RETURN SEMICOLON. {

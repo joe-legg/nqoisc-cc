@@ -70,6 +70,7 @@ void delete_data_type(DataType *type) { free(type); }
 void delete_ast(AstNode *ast)
 {
     switch (ast->node_type) {
+        case AST_GOTO_STMT:
         case AST_IDENTIFIER:    free(ast->identifier); break;
         case AST_EXPR_STMT:     delete_ast(ast->expression); break;
         case AST_RETURN_STMT:   delete_ast(ast->return_expr); break;
@@ -165,11 +166,10 @@ static void print_data_type(const DataType *type)
 void print_ast(AstNode *ast)
 {
     switch (ast->node_type) {
+        case AST_GOTO_STMT:  printf("(goto %s)", ast->identifier); break;
+        case AST_IDENTIFIER: printf("(identifier %s)", ast->identifier); break;
         case AST_INTEGER_CONST:
             printf("(integer-val %lli)", ast->integer_const);
-            break;
-        case AST_IDENTIFIER:
-            printf("(identifier %s)", ast->identifier);
             break;
         case AST_BINARY_OP:
             printf("(binary-op %d ", ast->binary_op);

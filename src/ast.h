@@ -91,6 +91,7 @@ typedef struct AstNode {
         AST_WHILE_STMT,
         AST_DO_WHILE_STMT,
         AST_IF_STMT,
+        AST_GOTO_STMT,
 
         AST_DECLARATION,
 
@@ -104,7 +105,7 @@ typedef struct AstNode {
         // Integer, long or character
         long long integer_const;
 
-        // Identifier
+        // Identifier, goto
         char *identifier;
 
         // Return statement
