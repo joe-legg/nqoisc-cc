@@ -651,7 +651,12 @@ statement(A) ::= iteration_statement(STMT).  { A = STMT; }
 statement(A) ::= jump_statement(STMT).       { A = STMT; }
 
 // Labeled statement
-labeled_statement ::= IDENT COLON statement.
+labeled_statement(A) ::= IDENT(IDENT) COLON statement(STMT). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_LABEL_STMT;
+    A->label_ident = IDENT;
+    A->label_stmt = STMT;
+}
 labeled_statement ::= KWD_CASE constant_expr COLON statement.
 labeled_statement ::= KWD_DEFAULT COLON statement.
 
@@ -676,8 +681,8 @@ block_item_list(A) ::= block_item_list(ITEM_LIST) block_item(NEW_ITEM). {
     A = ITEM_LIST;
 }
 
-block_item ::= declaration.
-block_item ::= statement.
+block_item(A) ::= declaration(DECL). { A = DECL; }
+block_item(A) ::= statement(STMT).   { A = STMT; }
 
 // Expr statement
 expression_statement(A) ::= expression(EXPR) SEMICOLON. {

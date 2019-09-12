@@ -70,42 +70,45 @@ void delete_data_type(DataType *type) { free(type); }
 void delete_ast(AstNode *ast)
 {
     switch (ast->node_type) {
-        case AST_GOTO_STMT:
-        case AST_IDENTIFIER:    free(ast->identifier); break;
-        case AST_EXPR_STMT:     delete_ast(ast->expression); break;
-        case AST_RETURN_STMT:   delete_ast(ast->return_expr); break;
-        case AST_INTEGER_CONST: break;
-        case AST_BINARY_OP:
-            delete_ast(ast->binary_left);
-            delete_ast(ast->binary_right);
-            break;
-        case AST_DECLARATION:
-            delete_data_type(ast->declaration_type);
-            delete_ast(ast->declaration_declarator);
-            break;
-        case AST_COMPOUND_STMT:
-            for (int i = 0; i < ast->statements->length; i++)
-                delete_ast(ast->statements->items[i]);
-            vector_free(ast->statements);
-            break;
-        // Conditionals
-        case AST_IF_STMT:
-        case AST_WHILE_STMT:
-        case AST_DO_WHILE_STMT:
-            delete_ast(ast->cond);
-            delete_ast(ast->cond_body);
-            if (ast->cond_else != NULL)
-                delete_ast(ast->cond_else);
-            break;
-        case AST_FUNCTION_DEF:
-            for (int i = 0; i < ast->func_params->length; i++)
-                delete_ast(ast->func_params->items[i]);
-            vector_free(ast->func_params);
-            delete_data_type(ast->func_type);
-            free(ast->func_ident);
-            delete_ast(ast->func_body);
-            break;
-        default: ;
+    case AST_GOTO_STMT:
+    case AST_IDENTIFIER:    free(ast->identifier); break;
+    case AST_EXPR_STMT:     delete_ast(ast->expression); break;
+    case AST_RETURN_STMT:   delete_ast(ast->return_expr); break;
+    case AST_LABEL_STMT:
+        free(ast->label_ident);
+        delete_ast(ast->label_stmt);
+        break;
+    case AST_BINARY_OP:
+        delete_ast(ast->binary_left);
+        delete_ast(ast->binary_right);
+        break;
+    case AST_DECLARATION:
+        delete_data_type(ast->declaration_type);
+        delete_ast(ast->declaration_declarator);
+        break;
+    case AST_COMPOUND_STMT:
+        for (int i = 0; i < ast->statements->length; i++)
+            delete_ast(ast->statements->items[i]);
+        vector_free(ast->statements);
+        break;
+    // Conditionals
+    case AST_IF_STMT:
+    case AST_WHILE_STMT:
+    case AST_DO_WHILE_STMT:
+        delete_ast(ast->cond);
+        delete_ast(ast->cond_body);
+        if (ast->cond_else != NULL)
+            delete_ast(ast->cond_else);
+        break;
+    case AST_FUNCTION_DEF:
+        for (int i = 0; i < ast->func_params->length; i++)
+            delete_ast(ast->func_params->items[i]);
+        vector_free(ast->func_params);
+        delete_data_type(ast->func_type);
+        free(ast->func_ident);
+        delete_ast(ast->func_body);
+        break;
+    default: ;
     }
     free(ast);
 }
@@ -167,89 +170,94 @@ static void print_data_type(const DataType *type)
 void print_ast(AstNode *ast)
 {
     switch (ast->node_type) {
-        case AST_BREAK_STMT:    printf("(break)"); break;
-        case AST_CONTINUE_STMT: printf("(continue)"); break;
-        case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
-        case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
-        case AST_INTEGER_CONST:
-            printf("(integer-val %lli)", ast->integer_const);
-            break;
-        case AST_BINARY_OP:
-            printf("(binary-op %d ", ast->binary_op);
-            print_ast(ast->binary_left);
+    case AST_BREAK_STMT:    printf("(break)"); break;
+    case AST_CONTINUE_STMT: printf("(continue)"); break;
+    case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
+    case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
+    case AST_LABEL_STMT:
+        printf("(label %s ", ast->label_ident);
+        print_ast(ast->label_stmt);
+        printf(")");
+        break;
+    case AST_INTEGER_CONST:
+        printf("(integer-val %lli)", ast->integer_const);
+        break;
+    case AST_BINARY_OP:
+        printf("(binary-op %d ", ast->binary_op);
+        print_ast(ast->binary_left);
+        printf(" ");
+        print_ast(ast->binary_right);
+        printf(")");
+        break;
+    case AST_EXPR_STMT:
+        printf("(expr-stmt ");
+        print_ast(ast->expression);
+        printf(")");
+        break;
+    case AST_RETURN_STMT:
+        printf("(return-stmt ");
+        if (ast->return_expr == NULL) printf("(null)");
+        else print_ast(ast->return_expr);
+        printf(")");
+        break;
+    // Conditionals
+    case AST_IF_STMT:
+        printf("(cond-if ");
+        goto print_cond;
+    case AST_WHILE_STMT:
+        printf("(cond-while ");
+        goto print_cond;
+    case AST_DO_WHILE_STMT:
+        printf("(cond-do-while ");
+    print_cond:
+        print_ast(ast->cond);
+        printf(" ");
+        print_ast(ast->cond_body);
+        if (ast->cond_else != NULL) {
             printf(" ");
-            print_ast(ast->binary_right);
-            printf(")");
-            break;
-        case AST_EXPR_STMT:
-            printf("(expr-stmt ");
-            print_ast(ast->expression);
-            printf(")");
-            break;
-        case AST_RETURN_STMT:
-            printf("(return-stmt ");
-            if (ast->return_expr == NULL) printf("(null)");
-            else print_ast(ast->return_expr);
-            printf(")");
-            break;
-        // Conditionals
-        case AST_IF_STMT:
-            printf("(cond-if ");
-            goto print_cond;
-        case AST_WHILE_STMT:
-            printf("(cond-while ");
-            goto print_cond;
-        case AST_DO_WHILE_STMT:
-            printf("(cond-do-while ");
-        print_cond:
-            print_ast(ast->cond);
+            print_ast(ast->cond_else);
+        }
+        printf(")");
+        break;
+    case AST_COMPOUND_STMT:
+        printf("(compound-stmt ");
+        if (!ast->statements->length) {
+            printf("(null)");
+        } else {
+            print_ast(ast->statements->items[0]);
+            for (int i = 1; i < ast->statements->length; i++) {
+                printf(" ");
+                print_ast(ast->statements->items[i]);
+            }
+        }
+        printf(")");
+        break;
+    case AST_DECLARATION:
+        printf("(declaration ");
+        print_data_type(ast->declaration_type);
+        if (ast->declaration_declarator != NULL) {
             printf(" ");
-            print_ast(ast->cond_body);
-            if (ast->cond_else != NULL) {
+            print_ast(ast->declaration_declarator);
+        }
+        printf(")");
+        break;
+    case AST_FUNCTION_DEF:
+        printf("(function-def %s ", ast->func_ident); // Name
+        print_data_type(ast->func_type); // Type
+        // Print parameters
+        printf(" (parameters ");
+        if (!ast->func_params->length) {
+            printf("(null)");
+        } else {
+            print_ast(ast->func_params->items[0]);
+            for (int i = 1; i < ast->func_params->length; i++) {
                 printf(" ");
-                print_ast(ast->cond_else);
+                print_ast(ast->func_params->items[i]);
             }
-            printf(")");
-            break;
-        case AST_COMPOUND_STMT:
-            printf("(compound-stmt ");
-            if (!ast->statements->length) {
-                printf("(null)");
-            } else {
-                print_ast(ast->statements->items[0]);
-                for (int i = 1; i < ast->statements->length; i++) {
-                    printf(" ");
-                    print_ast(ast->statements->items[i]);
-                }
-            }
-            printf(")");
-            break;
-        case AST_DECLARATION:
-            printf("(declaration ");
-            print_data_type(ast->declaration_type);
-            if (ast->declaration_declarator != NULL) {
-                printf(" ");
-                print_ast(ast->declaration_declarator);
-            }
-            printf(")");
-            break;
-        case AST_FUNCTION_DEF:
-            printf("(function-def %s ", ast->func_ident); // Name
-            print_data_type(ast->func_type); // Type
-            // Print parameters
-            printf(" (parameters ");
-            if (!ast->func_params->length) {
-                printf("(null)");
-            } else {
-                print_ast(ast->func_params->items[0]);
-                for (int i = 1; i < ast->func_params->length; i++) {
-                    printf(" ");
-                    print_ast(ast->func_params->items[i]);
-                }
-            }
-            printf(") ");
-            print_ast(ast->func_body); // Body
-            printf(")");
-            break;
+        }
+        printf(") ");
+        print_ast(ast->func_body); // Body
+        printf(")");
+        break;
     }
 }

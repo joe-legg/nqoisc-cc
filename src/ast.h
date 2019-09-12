@@ -94,6 +94,7 @@ typedef struct AstNode {
         AST_GOTO_STMT,
         AST_BREAK_STMT,
         AST_CONTINUE_STMT,
+        AST_LABEL_STMT,
 
         AST_DECLARATION,
 
@@ -145,6 +146,12 @@ typedef struct AstNode {
             struct AstNode *cond;
             struct AstNode *cond_body;
             struct AstNode *cond_else;
+        };
+
+        // Label
+        struct {
+            char *label_ident;
+            struct AstNode *label_stmt;
         };
     };
 } AstNode;

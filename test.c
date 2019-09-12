@@ -1,5 +1,5 @@
 int main()
 {
-    break;
-    continue;
+test:
+    1 + 1;
 }
