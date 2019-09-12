@@ -92,6 +92,8 @@ typedef struct AstNode {
         AST_DO_WHILE_STMT,
         AST_IF_STMT,
         AST_GOTO_STMT,
+        AST_BREAK_STMT,
+        AST_CONTINUE_STMT,
 
         AST_DECLARATION,
 

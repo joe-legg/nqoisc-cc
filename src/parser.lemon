@@ -726,8 +726,14 @@ jump_statement(A) ::= KWD_GOTO IDENT(IDENT) SEMICOLON. {
     A->node_type = AST_GOTO_STMT;
     A->identifier = IDENT;
 }
-jump_statement ::= KWD_CONTINUE SEMICOLON.
-jump_statement ::= KWD_BREAK SEMICOLON.
+jump_statement(A) ::= KWD_CONTINUE SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_CONTINUE_STMT;
+}
+jump_statement(A) ::= KWD_BREAK SEMICOLON. {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_BREAK_STMT;
+}
 jump_statement(A) ::= KWD_RETURN SEMICOLON. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_RETURN_STMT;

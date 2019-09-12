@@ -105,6 +105,7 @@ void delete_ast(AstNode *ast)
             free(ast->func_ident);
             delete_ast(ast->func_body);
             break;
+        default: ;
     }
     free(ast);
 }
@@ -166,8 +167,10 @@ static void print_data_type(const DataType *type)
 void print_ast(AstNode *ast)
 {
     switch (ast->node_type) {
-        case AST_GOTO_STMT:  printf("(goto %s)", ast->identifier); break;
-        case AST_IDENTIFIER: printf("(identifier %s)", ast->identifier); break;
+        case AST_BREAK_STMT:    printf("(break)"); break;
+        case AST_CONTINUE_STMT: printf("(continue)"); break;
+        case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
+        case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
         case AST_INTEGER_CONST:
             printf("(integer-val %lli)", ast->integer_const);
             break;
@@ -189,6 +192,7 @@ void print_ast(AstNode *ast)
             else print_ast(ast->return_expr);
             printf(")");
             break;
+        // Conditionals
         case AST_IF_STMT:
             printf("(cond-if ");
             goto print_cond;

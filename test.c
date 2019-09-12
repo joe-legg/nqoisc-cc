@@ -1,4 +1,5 @@
 int main()
 {
-    goto test;
+    break;
+    continue;
 }
