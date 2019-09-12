@@ -88,6 +88,9 @@ typedef struct AstNode {
         AST_RETURN_STMT,
         AST_EXPR_STMT,
         AST_COMPOUND_STMT,
+        AST_WHILE_STMT,
+        AST_DO_WHILE_STMT,
+        AST_IF_STMT,
 
         AST_DECLARATION,
 
@@ -133,6 +136,13 @@ typedef struct AstNode {
             Vector *func_params;
             struct AstNode *func_body;
         };
+
+        // If, while
+        struct {
+            struct AstNode *cond;
+            struct AstNode *cond_body;
+            struct AstNode *cond_else;
+        };
     };
 } AstNode;
 
@@ -141,6 +151,8 @@ AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator);
+AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
+                             AstNode *cond_else);
 
 void delete_ast(AstNode *ast);
 void delete_data_type(DataType *type);

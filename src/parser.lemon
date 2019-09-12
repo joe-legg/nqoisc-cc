@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "error.h"
 
+// Location info
 static char *cur_filename;
 static int cur_line_num;
 static char *cur_tok_str;
@@ -54,6 +55,7 @@ AstNode *parse(char *filename)
         Parse(parser, token_id, cur_tok_str);
     }
 
+    // Cleanup
     Parse(parser, 0, NULL);
     ParseFree(parser, free);
     free(yytext);
@@ -309,7 +311,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         error(cur_filename, cur_line_num,
               "to many \"long\" types in declaration specifiers.");
     }
-    
+
     if ((long_cnt || is_short) &&
         (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
         error(cur_filename, cur_line_num,
@@ -683,19 +685,31 @@ expression_statement(A) ::= expression(EXPR) SEMICOLON. {
     A->node_type = AST_EXPR_STMT;
     A->expression = EXPR;
 }
+expression_statement ::= SEMICOLON.
 
 // If else
-selection_statement ::= KWD_IF LPAREN expression RPAREN statement. [KWD_ELSE]
-selection_statement ::= KWD_IF LPAREN expression RPAREN statement KWD_ELSE
-                        statement.
+selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN
+                           statement(BODY). [KWD_ELSE] {
+    A = new_ast_conditional(AST_IF_STMT, COND, BODY, NULL);
+}
+selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN statement(BODY)
+                           KWD_ELSE statement(ELSE). {
+    A = new_ast_conditional(AST_IF_STMT, COND, BODY, ELSE);
+}
 
 // Switch statement
 selection_statement ::= KWD_SWITCH LPAREN expression RPAREN statement.
 
 // While and do while
-iteration_statement ::= KWD_WHILE LPAREN expression RPAREN statement.
-iteration_statement ::= KWD_DO statement KWD_WHILE LPAREN expression RPAREN
-                        SEMICOLON.
+iteration_statement(A) ::= KWD_WHILE LPAREN expression(COND) RPAREN
+                           statement(BODY). {
+    A = new_ast_conditional(AST_WHILE_STMT, COND, BODY, NULL);
+}
+iteration_statement(A) ::= KWD_DO statement(BODY) KWD_WHILE LPAREN
+                           expression(COND) RPAREN SEMICOLON. {
+    A = new_ast_conditional(AST_DO_WHILE_STMT, COND, BODY, NULL);
+}
+
 // For loop
 iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
                         expression RPAREN statement.

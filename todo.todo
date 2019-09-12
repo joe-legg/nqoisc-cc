@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] improve errors.
 - [ ] start implementing semantic checks - check_ast()
 - [ ] typedefs.
 - [ ] maybe make functions in ir static.
@@ -7,24 +8,28 @@ Todo List
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
 - [ ] finish declarations.
-- [ ] ast gen for variables/declrations.
+- [ ] finish expression AST gen.
+- [ ] AST gen for variables/declrations.
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
+- [ ] AST gen for old style function def.
+- [x] fix error on empty statement (';').
 - [ ] AST gen for statements.
-    - [ ] if else statements
-    - [ ] while loops
-    - [ ] for loops
-    - [ ] switch
+    - [x] if else statements
+    - [x] while loops
+    - [x] do while
     - [ ] goto
     - [ ] return
-- [ ] code quality check.
-- [x] rewrite the type_to_string() funciton.
+    - [ ] for loops
+    - [ ] switch
 - [ ] fix memory leaks.
+- [x] code quality check.
+- [x] rewrite the type_to_string() funciton.
 - [x] fix parsing conflicts.
     - [x] fix parsing conflicts with old style function definitions.
     - [x] fix array parsing.
 - [x] AST gen for function parameters.
-- [ ] AST gen for decl specs.
+- [x] AST gen for decl specs.
     - [ ] inline keyword. - Do this in check_ast()
     - [x] AST gen for type qualifiers.
     - [x] AST gen for storage class specifiers.
@@ -41,7 +46,7 @@ Todo List
 
 Long Term Todo
 #########################################
-- [ ] Optimization with genetic algorithm.
+- [ ] Optimization with genetic algorithm. - Not sure that this is possiable
 - [ ] c11 standard
 
 - [ ] redo declaration specs pasing.

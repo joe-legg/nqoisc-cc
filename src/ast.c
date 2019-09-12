@@ -41,6 +41,17 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
     return node;
 }
 
+AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
+                             AstNode *cond_else)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = node_type;
+    node->cond = cond;
+    node->cond_body = cond_body;
+    node->cond_else = cond_else;
+    return node;
+}
+
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers)
 {
@@ -59,9 +70,9 @@ void delete_data_type(DataType *type) { free(type); }
 void delete_ast(AstNode *ast)
 {
     switch (ast->node_type) {
-        case AST_IDENTIFIER:  free(ast->identifier); break;
-        case AST_EXPR_STMT:   delete_ast(ast->expression); break;
-        case AST_RETURN_STMT: delete_ast(ast->return_expr); break;
+        case AST_IDENTIFIER:    free(ast->identifier); break;
+        case AST_EXPR_STMT:     delete_ast(ast->expression); break;
+        case AST_RETURN_STMT:   delete_ast(ast->return_expr); break;
         case AST_INTEGER_CONST: break;
         case AST_BINARY_OP:
             delete_ast(ast->binary_left);
@@ -72,15 +83,22 @@ void delete_ast(AstNode *ast)
             delete_ast(ast->declaration_declarator);
             break;
         case AST_COMPOUND_STMT:
-            for (int i = 0; i < ast->statements->length; i++) {
+            for (int i = 0; i < ast->statements->length; i++)
                 delete_ast(ast->statements->items[i]);
-            }
             vector_free(ast->statements);
             break;
+        // Conditionals
+        case AST_IF_STMT:
+        case AST_WHILE_STMT:
+        case AST_DO_WHILE_STMT:
+            delete_ast(ast->cond);
+            delete_ast(ast->cond_body);
+            if (ast->cond_else != NULL)
+                delete_ast(ast->cond_else);
+            break;
         case AST_FUNCTION_DEF:
-            for (int i = 0; i < ast->func_params->length; i++) {
+            for (int i = 0; i < ast->func_params->length; i++)
                 delete_ast(ast->func_params->items[i]);
-            }
             vector_free(ast->func_params);
             delete_data_type(ast->func_type);
             free(ast->func_ident);
@@ -110,15 +128,12 @@ char *type_to_string(const DataType *type)
     }
 
     // Type qualifiers
-    if (type->type_qualifiers & TYPE_QUAL_CONST) {
+    if (type->type_qualifiers & TYPE_QUAL_CONST)
         strcat(type_qualifier, "const ");
-    }
-    if (type->type_qualifiers & TYPE_QUAL_RESTRICT) {
+    if (type->type_qualifiers & TYPE_QUAL_RESTRICT)
         strcat(type_qualifier, "restrict ");
-    }
-    if (type->type_qualifiers & TYPE_QUAL_VOLATILE) {
+    if (type->type_qualifiers & TYPE_QUAL_VOLATILE)
         strcat(type_qualifier, "volatile ");
-    }
 
     // Types
     switch (type->type) {
@@ -172,6 +187,24 @@ void print_ast(AstNode *ast)
             printf("(return-stmt ");
             if (ast->return_expr == NULL) printf("(null)");
             else print_ast(ast->return_expr);
+            printf(")");
+            break;
+        case AST_IF_STMT:
+            printf("(cond-if ");
+            goto print_cond;
+        case AST_WHILE_STMT:
+            printf("(cond-while ");
+            goto print_cond;
+        case AST_DO_WHILE_STMT:
+            printf("(cond-do-while ");
+        print_cond:
+            print_ast(ast->cond);
+            printf(" ");
+            print_ast(ast->cond_body);
+            if (ast->cond_else != NULL) {
+                printf(" ");
+                print_ast(ast->cond_else);
+            }
             printf(")");
             break;
         case AST_COMPOUND_STMT:
