@@ -13,8 +13,9 @@ Todo List
 - [ ] AST gen for arrays.
 - [ ] AST gen for pointers.
 - [ ] AST gen for old style function def.
+- [ ] fix memory leaks.
 - [x] fix error on empty statement (';').
-- [ ] add license to repo.
+- [x] add license to repo.
 - [ ] AST gen for statements.
     - [x] if else statements
     - [x] while loops
@@ -24,8 +25,7 @@ Todo List
     - [x] return
     - [x] label statements
     - [ ] for loops
-    - [ ] switch
-- [ ] fix memory leaks.
+    - [ ] switch, case and default
 - [x] code quality check.
 - [x] rewrite the type_to_string() funciton.
 - [x] fix parsing conflicts.

@@ -94,6 +94,7 @@ void delete_ast(AstNode *ast)
     // Conditionals
     case AST_IF_STMT:
     case AST_WHILE_STMT:
+    case AST_SWITCH_STMT:
     case AST_DO_WHILE_STMT:
         delete_ast(ast->cond);
         delete_ast(ast->cond_body);
@@ -203,6 +204,9 @@ void print_ast(AstNode *ast)
     // Conditionals
     case AST_IF_STMT:
         printf("(cond-if ");
+        goto print_cond;
+    case AST_SWITCH_STMT:
+        printf("(switch ");
         goto print_cond;
     case AST_WHILE_STMT:
         printf("(cond-while ");

@@ -1,5 +1,6 @@
 int main()
 {
-test:
-    1 + 1;
+    switch (1) {
+        1 + 1;
+    }
 }

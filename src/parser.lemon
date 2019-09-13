@@ -703,7 +703,10 @@ selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN statement(BODY)
 }
 
 // Switch statement
-selection_statement ::= KWD_SWITCH LPAREN expression RPAREN statement.
+selection_statement(A) ::= KWD_SWITCH LPAREN expression(EXPR) RPAREN
+                           statement(BODY). {
+    A = new_ast_conditional(AST_SWITCH_STMT, EXPR, BODY, NULL);
+}
 
 // While and do while
 iteration_statement(A) ::= KWD_WHILE LPAREN expression(COND) RPAREN
