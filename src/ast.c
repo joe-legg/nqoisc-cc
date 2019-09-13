@@ -71,9 +71,10 @@ void delete_ast(AstNode *ast)
 {
     switch (ast->node_type) {
     case AST_GOTO_STMT:
-    case AST_IDENTIFIER:    free(ast->identifier); break;
-    case AST_EXPR_STMT:     delete_ast(ast->expression); break;
-    case AST_RETURN_STMT:   delete_ast(ast->return_expr); break;
+    case AST_IDENTIFIER:   free(ast->identifier); break;
+    case AST_EXPR_STMT:    delete_ast(ast->expression); break;
+    case AST_RETURN_STMT:  delete_ast(ast->return_expr); break;
+    case AST_DEFAULT_STMT: delete_ast(ast->default_stmt); break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
         delete_ast(ast->label_stmt);
@@ -202,21 +203,26 @@ void print_ast(AstNode *ast)
         else print_ast(ast->return_expr);
         printf(")");
         break;
+    case AST_DEFAULT_STMT:
+        printf("(default-stmt ");
+        print_ast(ast->default_stmt);
+        printf(")");
+        break;
     // Conditionals
     case AST_IF_STMT:
-        printf("(cond-if ");
+        printf("(cond-if-stmt ");
         goto print_cond;
     case AST_CASE_STMT:
-        printf("(case ");
+        printf("(case-stmt ");
         goto print_cond;
     case AST_SWITCH_STMT:
-        printf("(switch ");
+        printf("(switch-stmt ");
         goto print_cond;
     case AST_WHILE_STMT:
-        printf("(cond-while ");
+        printf("(cond-while-stmt ");
         goto print_cond;
     case AST_DO_WHILE_STMT:
-        printf("(cond-do-while ");
+        printf("(cond-do-while-stmt ");
     print_cond:
         print_ast(ast->cond);
         printf(" ");

@@ -14,6 +14,7 @@ Todo List
 - [ ] AST gen for pointers.
 - [ ] AST gen for old style function def.
 - [ ] fix memory leaks.
+- [ ] remove return_expr in AstNode
 - [x] fix error on empty statement (';').
 - [x] add license to repo.
 - [ ] AST gen for statements.
@@ -24,8 +25,8 @@ Todo List
     - [x] continue, break
     - [x] return
     - [x] label statements
+    - [x] switch, case and default
     - [ ] for loops
-    - [ ] switch, case and default
 - [x] code quality check.
 - [x] rewrite the type_to_string() funciton.
 - [x] fix parsing conflicts.

@@ -97,6 +97,7 @@ typedef struct AstNode {
         AST_LABEL_STMT,
         AST_SWITCH_STMT,
         AST_CASE_STMT,
+        AST_DEFAULT_STMT,
 
         AST_DECLARATION,
 
@@ -118,6 +119,9 @@ typedef struct AstNode {
 
         // Exprssion statement
         struct AstNode *expression;
+
+        // Default for switch
+        struct AstNode *default_stmt;
 
         // Compound statement
         Vector *statements;

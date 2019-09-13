@@ -660,8 +660,10 @@ labeled_statement(A) ::= IDENT(IDENT) COLON statement(STMT). {
 labeled_statement(A) ::= KWD_CASE constant_expr(EXPR) COLON statement(STMT). {
     A = new_ast_conditional(AST_CASE_STMT, EXPR, STMT, NULL);
 }
-labeled_statement ::= KWD_DEFAULT COLON statement. {
-    // TODO
+labeled_statement(A) ::= KWD_DEFAULT COLON statement(STMT). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_DEFAULT_STMT;
+    A->default_stmt = STMT;
 }
 
 // Compound statement
