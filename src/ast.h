@@ -96,6 +96,7 @@ typedef struct AstNode {
         AST_CONTINUE_STMT,
         AST_LABEL_STMT,
         AST_SWITCH_STMT,
+        AST_CASE_STMT,
 
         AST_DECLARATION,
 
@@ -142,7 +143,7 @@ typedef struct AstNode {
             struct AstNode *func_body;
         };
 
-        // If, while, switch
+        // If, while, switch, case
         struct {
             struct AstNode *cond;
             struct AstNode *cond_body;
