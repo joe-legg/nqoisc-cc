@@ -114,9 +114,6 @@ typedef struct AstNode {
         // Identifier, goto
         char *identifier;
 
-        // Return statement
-        struct AstNode *return_expr;
-
         // Exprssion statement
         struct AstNode *expression;
 

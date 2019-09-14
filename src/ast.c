@@ -72,9 +72,9 @@ void delete_ast(AstNode *ast)
     switch (ast->node_type) {
     case AST_GOTO_STMT:
     case AST_IDENTIFIER:   free(ast->identifier); break;
-    case AST_EXPR_STMT:    delete_ast(ast->expression); break;
-    case AST_RETURN_STMT:  delete_ast(ast->return_expr); break;
     case AST_DEFAULT_STMT: delete_ast(ast->default_stmt); break;
+    case AST_EXPR_STMT:
+    case AST_RETURN_STMT: delete_ast(ast->expression); break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
         delete_ast(ast->label_stmt);
@@ -199,8 +199,8 @@ void print_ast(AstNode *ast)
         break;
     case AST_RETURN_STMT:
         printf("(return-stmt ");
-        if (ast->return_expr == NULL) printf("(null)");
-        else print_ast(ast->return_expr);
+        if (ast->expression == NULL) printf("(null)");
+        else print_ast(ast->expression);
         printf(")");
         break;
     case AST_DEFAULT_STMT:

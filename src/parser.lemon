@@ -751,12 +751,12 @@ jump_statement(A) ::= KWD_BREAK SEMICOLON. {
 jump_statement(A) ::= KWD_RETURN SEMICOLON. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_RETURN_STMT;
-    A->return_expr = NULL;
+    A->expression = NULL;
 }
 jump_statement(A) ::= KWD_RETURN expression(EXPR) SEMICOLON. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_RETURN_STMT;
-    A->return_expr = EXPR;
+    A->expression = EXPR;
 }
 
 /* Expressions */
