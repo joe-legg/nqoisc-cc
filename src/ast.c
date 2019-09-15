@@ -6,6 +6,14 @@
 
 /* New Ast Functions */
 
+AstNode *new_expr_stmt(AstNode *expr)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_EXPR_STMT;
+    node->expression = expr;
+    return node;
+}
+
 AstNode *new_ast_ident(const char *ident)
 {
     AstNode *node = malloc(sizeof(AstNode));
@@ -50,6 +58,27 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
     node->cond_body = cond_body;
     node->cond_else = cond_else;
     return node;
+}
+
+AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
+                          AstNode *body)
+{
+    AstNode *stmts = malloc(sizeof(AstNode));
+    stmts->node_type = AST_COMPOUND_STMT;
+    stmts->statements = new_vector();
+
+    vector_append(stmts->statements, clause_1);
+
+    if (expr_3 != NULL) {
+        if (body->statements == NULL) {
+            body->statements = new_vector();
+            vector_append(body->statements, expr_3);
+        }
+    }
+
+    vector_append(stmts->statements,
+                  new_ast_conditional(AST_WHILE_STMT, expr_2, body, NULL));
+    return stmts;
 }
 
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,

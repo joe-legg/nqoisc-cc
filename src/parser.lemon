@@ -692,9 +692,7 @@ block_item(A) ::= statement(STMT).   { A = STMT; }
 
 // Expr statement
 expression_statement(A) ::= expression(EXPR) SEMICOLON. {
-    A = malloc(sizeof(AstNode));
-    A->node_type = AST_EXPR_STMT;
-    A->expression = EXPR;
+    A = new_expr_stmt(EXPR);
 }
 expression_statement ::= SEMICOLON.
 
@@ -725,14 +723,24 @@ iteration_statement(A) ::= KWD_DO statement(BODY) KWD_WHILE LPAREN
 }
 
 // For loop
-iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                        expression RPAREN statement.
-iteration_statement ::= KWD_FOR LPAREN expression_statement expression_statement
-                        RPAREN statement.
-iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
-                        expression RPAREN statement.
-iteration_statement ::= KWD_FOR LPAREN declaration expression_statement
-                        RPAREN statement.
+iteration_statement(A) ::= KWD_FOR LPAREN expression_statement(EXPR1)
+                           expression_statement(EXPR2) expression(EXPR3) RPAREN
+                           statement(BODY). {
+    A = new_ast_for_loop(EXPR1, EXPR2, new_expr_stmt(EXPR3), BODY);
+}
+iteration_statement(A) ::= KWD_FOR LPAREN expression_statement(EXPR1)
+                           expression_statement(EXPR2) RPAREN statement(BODY). {
+    A = new_ast_for_loop(EXPR1, EXPR2, NULL, BODY);
+}
+iteration_statement(A) ::= KWD_FOR LPAREN declaration(DECL)
+                           expression_statement(EXPR2) expression(EXPR3) RPAREN
+                           statement(BODY). {
+    A = new_ast_for_loop(DECL, EXPR2, new_expr_stmt(EXPR3), BODY);
+}
+iteration_statement(A) ::= KWD_FOR LPAREN declaration(DECL)
+                           expression_statement(EXPR2) RPAREN statement(BODY). {
+    A = new_ast_for_loop(DECL, EXPR2, NULL, BODY);
+}
 
 // Jump statements
 jump_statement(A) ::= KWD_GOTO IDENT(IDENT) SEMICOLON. {

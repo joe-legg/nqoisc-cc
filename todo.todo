@@ -7,6 +7,7 @@ Todo List
 - [ ] ir gen.
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
+- [ ] test declarations in for loop.
 - [ ] finish declarations.
 - [ ] finish expression AST gen.
 - [ ] AST gen for variables/declrations.
