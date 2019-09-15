@@ -134,6 +134,7 @@ typedef struct AstNode {
         struct {
             DataType *declaration_type;
             struct AstNode *declaration_declarator;
+            struct AstNode *declaration_initializer;
         };
 
         // Function definition
@@ -164,7 +165,8 @@ AstNode *new_expr_stmt(AstNode *expr);
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
-AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator);
+AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
+                             AstNode *initializer);
 AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
                              AstNode *cond_else);
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,

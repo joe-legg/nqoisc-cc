@@ -1,5 +1,1 @@
-int main()
-{
-    for (int i; 10 < 2;) {
-    }
-}
+int i = 40 + 2;

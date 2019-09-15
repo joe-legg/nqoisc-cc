@@ -145,10 +145,35 @@ old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
 /* Declarations */
 
 declaration ::= declaration_specs SEMICOLON.
-declaration ::= declaration_specs init_declarator_list SEMICOLON.
+declaration(A) ::= declaration_specs(DECL_SPECS)
+                   init_declarator_list(INIT_DECL_LIST) SEMICOLON. {
+    for (int i = 0; i < INIT_DECL_LIST->length; i++) {
+        ((AstNode *)INIT_DECL_LIST->items[i])->declaration_type = DECL_SPECS;
+        A = INIT_DECL_LIST->items[i]; // WARNING THIS IS JUST FOR TESTING ------ IT WILL NOT WORK
+    }
+}
 
 declaration_list ::= declaration.
 declaration_list ::= declaration_list declaration.
+
+// Init declarator
+%type init_declarator_list { Vector * }
+init_declarator_list(A) ::= init_declarator(DECL). {
+    A = new_vector();
+    vector_append(A, DECL);
+}
+init_declarator_list(A) ::= init_declarator_list(DECL_LIST) COMMA
+                            init_declarator(NEW_DECL). {
+    vector_append(DECL_LIST, NEW_DECL);
+    A = DECL_LIST;
+}
+
+init_declarator(A) ::= declarator(DECL). {
+    A = new_ast_declaration(NULL, DECL, NULL);
+}
+init_declarator(A) ::= declarator(DECL) OP_EQUALS initializer(INIT). {
+    A = new_ast_declaration(NULL, DECL, INIT);
+}
 
 // Declaration specifiers
 %type declaration_specs { DataType * }
@@ -401,12 +426,6 @@ declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
 declaration_specs_list ::= KWD_INLINE.
 declaration_specs_list ::= KWD_INLINE declaration_specs_list.
 
-init_declarator_list ::= init_declarator.
-init_declarator_list ::= init_declarator_list COMMA init_declarator.
-
-init_declarator ::= declarator.
-init_declarator ::= declarator OP_EQUALS initializer.
-
 %type storage_class_specifier { int }
 storage_class_specifier(A) ::= KWD_TYPEDEF. {
     A = STORAGE_SPEC_TYPEDEF;
@@ -511,11 +530,11 @@ enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 
 /* Declarator */
 
-declarator ::= direct_declarator_head direct_declarator_tail.
-declarator ::= direct_declarator_head.
+declarator ::= direct_declarator_head direct_declarator_tail. // TODO
+declarator(A) ::= direct_declarator_head(HEAD). { A = HEAD; }
 
 // Direct declarator head
-direct_declarator_head ::= direct_declarator_head_no_pointer.
+direct_declarator_head ::= direct_declarator_head_no_pointer. // TODO
 direct_declarator_head ::= pointer direct_declarator_head_no_pointer.
 
 direct_declarator_head_no_pointer(A) ::= IDENT(IDENT). {
@@ -587,11 +606,11 @@ parameter_list(A) ::= parameter_list(PARAM_LIST) COMMA
 }
 
 parameter_declaration(A) ::= declaration_specs(DECL_SPECS). {
-    A = new_ast_declaration(DECL_SPECS, NULL);
+    A = new_ast_declaration(DECL_SPECS, NULL, NULL);
 }
 parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
                              declarator(DECLARATOR). {
-    A = new_ast_declaration(DECL_SPECS, DECLARATOR);
+    A = new_ast_declaration(DECL_SPECS, DECLARATOR, NULL);
 }
 
 // Type name

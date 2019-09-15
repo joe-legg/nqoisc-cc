@@ -22,12 +22,14 @@ AstNode *new_ast_ident(const char *ident)
     return node;
 }
 
-AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator)
+AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
+                             AstNode *initializer)
 {
     AstNode *node = malloc(sizeof(AstNode));
     node->node_type = AST_DECLARATION;
     node->declaration_type = decl_type;
     node->declaration_declarator = declarator;
+    node->declaration_initializer = initializer;
     return node;
 }
 
@@ -115,6 +117,8 @@ void delete_ast(AstNode *ast)
     case AST_DECLARATION:
         delete_data_type(ast->declaration_type);
         delete_ast(ast->declaration_declarator);
+        if (ast->declaration_initializer != NULL)
+            delete_ast(ast->declaration_initializer);
         break;
     case AST_COMPOUND_STMT:
         for (int i = 0; i < ast->statements->length; i++)
@@ -281,6 +285,10 @@ void print_ast(AstNode *ast)
         if (ast->declaration_declarator != NULL) {
             printf(" ");
             print_ast(ast->declaration_declarator);
+        }
+        if (ast->declaration_initializer != NULL) {
+            printf(" ");
+            print_ast(ast->declaration_initializer);
         }
         printf(")");
         break;
