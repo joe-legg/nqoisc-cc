@@ -867,10 +867,14 @@ relational_expr(A) ::= relational_expr(LHS) OP_GREATER_THAN_OR_EQUAL
     A = new_ast_binary_op(OP_GREATER_THAN_EQUAL, LHS, RHS);
 }
 
-// Shift expression TODO
+// Shift expression
 shift_expr(A) ::= additive_expr(ADD).  { A = ADD; }
-shift_expr ::= shift_expr OP_SHIFT_LEFT additive_expr.
-shift_expr ::= shift_expr OP_SHIFT_RIGHT additive_expr.
+shift_expr(A) ::= shift_expr(LHS) OP_SHIFT_LEFT additive_expr(RHS). {
+    A = new_ast_binary_op(OP_SHIFT_LEFT, LHS, RHS);
+}
+shift_expr(A) ::= shift_expr(LHS) OP_SHIFT_RIGHT additive_expr(RHS). {
+    A = new_ast_binary_op(OP_SHIFT_RIGHT, LHS, RHS);
+}
 
 // Addition
 additive_expr(A) ::= multiplicative_expr(MULT_EXPR). { A = MULT_EXPR; }

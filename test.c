@@ -1,1 +1,5 @@
-int i = 40 + 2;
+int main()
+{
+    int a = 1 >> 10;
+    int a = 1 << 10;
+}
