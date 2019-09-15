@@ -18,7 +18,7 @@ Todo List
 - [x] remove return_expr in AstNode
 - [x] fix error on empty statement (';').
 - [x] add license to repo.
-- [ ] AST gen for statements.
+- [x] AST gen for statements.
     - [x] if else statements
     - [x] while loops
     - [x] do while
@@ -27,7 +27,7 @@ Todo List
     - [x] return
     - [x] label statements
     - [x] switch, case and default
-    - [ ] for loops
+    - [x] for loops
 - [x] code quality check.
 - [x] rewrite the type_to_string() funciton.
 - [x] fix parsing conflicts.
