@@ -45,20 +45,15 @@ typedef struct DataType {
 enum {
     OP_PLUS,
     OP_MINUS,
-    UNARY_PLUS,
-    UNARY_MINUS,
     OP_MULT,
     OP_DIV,
     OP_MODULO,
-    UNARY_INC,
-    UNARY_DEC,
     OP_EQUALITY,
     OP_NOT_EQUAL,
     OP_GREATER_THAN,
     OP_LESS_THAN,
     OP_LESS_THAN_EQUAL,
     OP_GREATER_THAN_EQUAL,
-    UNARY_NOT,
     OP_LOGICAL_AND,
     OP_LOGICAL_OR,
     OP_BITWISE_NOT,
@@ -76,7 +71,15 @@ enum {
     OP_ASSIGN_OR,
     OP_ASSIGN_XOR,
     OP_ASSIGN_SHIFT_LEFT,
-    OP_ASSIGN_SHIFT_RIGHT
+    OP_ASSIGN_SHIFT_RIGHT,
+    UNARY_NOT,
+    UNARY_INC,
+    UNARY_DEC,
+    UNARY_PLUS,
+    UNARY_MINUS,
+    UNARY_ADDRESS,
+    UNARY_DEREF,
+    UNARY_BITWISE_NOT
 };
 
 typedef struct AstNode {
@@ -104,7 +107,8 @@ typedef struct AstNode {
         // Expressions
         AST_INTEGER_CONST,
         AST_IDENTIFIER,
-        AST_BINARY_OP
+        AST_BINARY_OP,
+        AST_UNARY_OP
     } node_type;
 
     union {
@@ -128,6 +132,11 @@ typedef struct AstNode {
             struct AstNode *binary_left;
             struct AstNode *binary_right;
             int binary_op;
+        };
+
+        struct {
+            struct AstNode *unary_expr;
+            int unary_op;
         };
 
         // Declaration
@@ -164,6 +173,7 @@ typedef struct AstNode {
 AstNode *new_expr_stmt(AstNode *expr);
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
+AstNode *new_ast_unary_op(int op, AstNode *expression);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
                              AstNode *initializer);

@@ -41,6 +41,15 @@ AstNode *new_ast_integer_const(long value)
     return node;
 }
 
+AstNode *new_ast_unary_op(int op, AstNode *expression)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_UNARY_OP;
+    node->unary_op = op;
+    node->unary_expr = expression;
+    return node;
+}
+
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
 {
     AstNode *node = malloc(sizeof(AstNode));
@@ -144,7 +153,11 @@ void delete_ast(AstNode *ast)
         free(ast->func_ident);
         delete_ast(ast->func_body);
         break;
-    default: ;
+    case AST_UNARY_OP:
+    case AST_CONTINUE_STMT:
+    case AST_INTEGER_CONST:
+    case AST_BREAK_STMT:
+        break;
     }
     free(ast);
 }
@@ -210,13 +223,18 @@ void print_ast(AstNode *ast)
     case AST_CONTINUE_STMT: printf("(continue)"); break;
     case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
     case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
+    case AST_INTEGER_CONST:
+        printf("(integer-val %lli)", ast->integer_const);
+        break;
     case AST_LABEL_STMT:
         printf("(label %s ", ast->label_ident);
         print_ast(ast->label_stmt);
         printf(")");
         break;
-    case AST_INTEGER_CONST:
-        printf("(integer-val %lli)", ast->integer_const);
+    case AST_UNARY_OP:
+        printf("(unary-op %d ", ast->unary_op);
+        print_ast(ast->unary_expr);
+        printf(")");
         break;
     case AST_BINARY_OP:
         printf("(binary-op %d ", ast->binary_op);

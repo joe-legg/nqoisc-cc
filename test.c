@@ -1,5 +1,10 @@
 int main()
 {
-    int a = 1 >> 10;
-    int a = 1 << 10;
+    // Using the number one because I haven't implemented identifiers yet
+    +1;
+    -1;
+    ++1;
+    --1;
+    &1;
+
 }

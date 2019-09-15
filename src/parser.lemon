@@ -898,21 +898,27 @@ multiplicative_expr(A) ::= multiplicative_expr(LHS) OP_MODULO cast_expr(RHS). {
     A = new_ast_binary_op(OP_MODULO, LHS, RHS);
 }
 
-// TODO finish expression parsing
 cast_expr(A) ::= unary_expr(UNARY). { A = UNARY; }
 cast_expr ::= LPAREN type_name RPAREN cast_expr.
 
-unary_op ::= OP_AND.
-unary_op ::= OP_ASTERISK.
-unary_op ::= OP_PLUS.
-unary_op ::= OP_MINUS.
-unary_op ::= OP_TILDE.
-unary_op ::= OP_NOT.
+%type unary_op { int }
+unary_op(A) ::= OP_AND.      { A = UNARY_ADDRESS; }
+unary_op(A) ::= OP_ASTERISK. { A = UNARY_DEREF; }
+unary_op(A) ::= OP_PLUS.     { A = UNARY_PLUS; }
+unary_op(A) ::= OP_MINUS.    { A = UNARY_MINUS; }
+unary_op(A) ::= OP_TILDE.    { A = UNARY_BITWISE_NOT; }
+unary_op(A) ::= OP_NOT.      { A = UNARY_NOT; }
 
 unary_expr(A) ::= postfix_expr(POSTFIX). { A = POSTFIX; }
-unary_expr ::= OP_PLUS_PLUS unary_expr.
-unary_expr ::= OP_MINUS_MINUS unary_expr.
-unary_expr ::= unary_op cast_expr.
+unary_expr(A) ::= OP_PLUS_PLUS unary_expr(EXPR). {
+    A = new_ast_unary_op(UNARY_INC, EXPR);
+}
+unary_expr(A) ::= OP_MINUS_MINUS unary_expr(EXPR). {
+    A = new_ast_unary_op(UNARY_DEC, EXPR);
+}
+unary_expr(A) ::= unary_op(OP) cast_expr(EXPR). {
+    A = new_ast_unary_op(OP, EXPR);
+}
 unary_expr ::= OP_SIZEOF unary_expr.
 unary_expr ::= OP_SIZEOF LPAREN type_name RPAREN.
 
