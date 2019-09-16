@@ -102,7 +102,9 @@ typedef struct AstNode {
         AST_CASE_STMT,
         AST_DEFAULT_STMT,
 
+        // Declarations
         AST_DECLARATION,
+        AST_DECL_LIST,
 
         // Expressions
         AST_INTEGER_CONST,
@@ -141,10 +143,13 @@ typedef struct AstNode {
 
         // Declaration
         struct {
-            DataType *declaration_type;
-            struct AstNode *declaration_declarator;
-            struct AstNode *declaration_initializer;
+            DataType *decl_type;
+            struct AstNode *decl_declarator;
+            struct AstNode *decl_initializer;
         };
+
+        // Declaration list
+        Vector *decl_list;
 
         // Function definition
         struct {

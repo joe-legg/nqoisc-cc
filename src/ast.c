@@ -27,9 +27,9 @@ AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
 {
     AstNode *node = malloc(sizeof(AstNode));
     node->node_type = AST_DECLARATION;
-    node->declaration_type = decl_type;
-    node->declaration_declarator = declarator;
-    node->declaration_initializer = initializer;
+    node->decl_type = decl_type;
+    node->decl_declarator = declarator;
+    node->decl_initializer = initializer;
     return node;
 }
 
@@ -123,11 +123,15 @@ void delete_ast(AstNode *ast)
         delete_ast(ast->binary_left);
         delete_ast(ast->binary_right);
         break;
+    case AST_DECL_LIST:
+        for (int i = 0; i < ast->decl_list->length; i++)
+            delete_ast(ast->decl_list->items[i]);
+        break;
     case AST_DECLARATION:
-        delete_data_type(ast->declaration_type);
-        delete_ast(ast->declaration_declarator);
-        if (ast->declaration_initializer != NULL)
-            delete_ast(ast->declaration_initializer);
+        delete_data_type(ast->decl_type);
+        delete_ast(ast->decl_declarator);
+        if (ast->decl_initializer != NULL)
+            delete_ast(ast->decl_initializer);
         break;
     case AST_COMPOUND_STMT:
         for (int i = 0; i < ast->statements->length; i++)
@@ -289,26 +293,31 @@ void print_ast(AstNode *ast)
         if (!ast->statements->length) {
             printf("(null)");
         } else {
-            print_ast(ast->statements->items[0]);
-            for (int i = 1; i < ast->statements->length; i++) {
-                printf(" ");
+            for (int i = 0; i < ast->statements->length; i++) {
                 print_ast(ast->statements->items[i]);
+                if (i != ast->statements->length - 1) printf(" ");
             }
         }
         printf(")");
         break;
     case AST_DECLARATION:
         printf("(declaration ");
-        print_data_type(ast->declaration_type);
-        if (ast->declaration_declarator != NULL) {
+        print_data_type(ast->decl_type);
+        if (ast->decl_declarator != NULL) {
             printf(" ");
-            print_ast(ast->declaration_declarator);
+            print_ast(ast->decl_declarator);
         }
-        if (ast->declaration_initializer != NULL) {
+        if (ast->decl_initializer != NULL) {
             printf(" ");
-            print_ast(ast->declaration_initializer);
+            print_ast(ast->decl_initializer);
         }
         printf(")");
+        break;
+    case AST_DECL_LIST:
+        for (int i = 0; i < ast->decl_list->length; i++) {
+            print_ast(ast->decl_list->items[i]);
+            if (i != ast->decl_list->length - 1) printf(" ");
+        }
         break;
     case AST_FUNCTION_DEF:
         printf("(function-def %s ", ast->func_ident); // Name
@@ -318,10 +327,9 @@ void print_ast(AstNode *ast)
         if (!ast->func_params->length) {
             printf("(null)");
         } else {
-            print_ast(ast->func_params->items[0]);
-            for (int i = 1; i < ast->func_params->length; i++) {
-                printf(" ");
+            for (int i = 0; i < ast->func_params->length; i++) {
                 print_ast(ast->func_params->items[i]);
+                if (i != ast->func_params->length - 1) printf(" ");
             }
         }
         printf(") ");

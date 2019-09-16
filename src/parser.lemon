@@ -144,12 +144,24 @@ old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
 
 /* Declarations */
 
-declaration ::= declaration_specs SEMICOLON.
+declaration ::= declaration_specs SEMICOLON. {
+    warning(cur_filename, cur_line_num,
+            "declaration does not declare anything.");
+}
 declaration(A) ::= declaration_specs(DECL_SPECS)
                    init_declarator_list(INIT_DECL_LIST) SEMICOLON. {
     for (int i = 0; i < INIT_DECL_LIST->length; i++) {
-        ((AstNode *)INIT_DECL_LIST->items[i])->declaration_type = DECL_SPECS;
-        A = INIT_DECL_LIST->items[i]; // WARNING THIS IS JUST FOR TESTING ------ IT WILL NOT WORK
+        ((AstNode *)INIT_DECL_LIST->items[i])->decl_type =
+                malloc(sizeof(DataType));
+        memcpy(((AstNode *)INIT_DECL_LIST->items[i])->decl_type, DECL_SPECS,
+               sizeof(DataType));
+    }
+    if (INIT_DECL_LIST->length > 1) {
+        A = malloc(sizeof(AstNode));
+        A->node_type = AST_DECL_LIST;
+        A->decl_list = INIT_DECL_LIST;
+    } else {
+        A = INIT_DECL_LIST->items[0];
     }
 }
 
