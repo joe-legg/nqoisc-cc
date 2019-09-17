@@ -109,6 +109,9 @@ void delete_data_type(DataType *type) { free(type); }
 
 void delete_ast(AstNode *ast)
 {
+    // Because of this there is no need to check for null children
+    if (ast == NULL) return;
+
     switch (ast->node_type) {
     case AST_GOTO_STMT:
     case AST_IDENTIFIER:   free(ast->identifier); break;
@@ -130,8 +133,7 @@ void delete_ast(AstNode *ast)
     case AST_DECLARATION:
         delete_data_type(ast->decl_type);
         delete_ast(ast->decl_declarator);
-        if (ast->decl_initializer != NULL)
-            delete_ast(ast->decl_initializer);
+        delete_ast(ast->decl_initializer);
         break;
     case AST_COMPOUND_STMT:
         for (int i = 0; i < ast->statements->length; i++)
@@ -146,8 +148,7 @@ void delete_ast(AstNode *ast)
     case AST_DO_WHILE_STMT:
         delete_ast(ast->cond);
         delete_ast(ast->cond_body);
-        if (ast->cond_else != NULL)
-            delete_ast(ast->cond_else);
+        delete_ast(ast->cond_else);
         break;
     case AST_FUNCTION_DEF:
         for (int i = 0; i < ast->func_params->length; i++)
