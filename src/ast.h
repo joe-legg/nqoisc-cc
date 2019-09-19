@@ -86,6 +86,7 @@ typedef struct AstNode {
     enum {
         // Definitions
         AST_FUNCTION_DEF,
+        AST_FUNC_DECLARATION,
 
         // Statements
         AST_RETURN_STMT,
@@ -151,7 +152,7 @@ typedef struct AstNode {
         // Declaration list
         Vector *decl_list;
 
-        // Function definition
+        // Function definition and declaration
         struct {
             char *func_ident;
             DataType *func_type;

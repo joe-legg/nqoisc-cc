@@ -150,6 +150,7 @@ void delete_ast(AstNode *ast)
         delete_ast(ast->cond_body);
         delete_ast(ast->cond_else);
         break;
+    case AST_FUNC_DECLARATION:
     case AST_FUNCTION_DEF:
         for (int i = 0; i < ast->func_params->length; i++)
             delete_ast(ast->func_params->items[i]);
@@ -319,6 +320,21 @@ void print_ast(AstNode *ast)
             print_ast(ast->decl_list->items[i]);
             if (i != ast->decl_list->length - 1) printf(" ");
         }
+        break;
+    case AST_FUNC_DECLARATION:
+        printf("(func-declaration %s ", ast->func_ident); // Name
+        print_data_type(ast->func_type); // Type
+        // Print parameters
+        printf(" (parameters ");
+        if (!ast->func_params->length) {
+            printf("(null)");
+        } else {
+            for (int i = 0; i < ast->func_params->length; i++) {
+                print_ast(ast->func_params->items[i]);
+                if (i != ast->func_params->length - 1) printf(" ");
+            }
+        }
+        printf("))");
         break;
     case AST_FUNCTION_DEF:
         printf("(function-def %s ", ast->func_ident); // Name

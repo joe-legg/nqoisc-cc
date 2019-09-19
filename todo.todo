@@ -11,6 +11,7 @@ Todo List
 - [ ] AST gen for old style function def.
 - [ ] finish expression AST gen.
 - [ ] finish declarations.
+    - [x] function declarations.
     - [ ] AST gen for arrays.
     - [ ] AST gen for pointers.
 - [ ] fix memory leaks.

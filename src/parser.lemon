@@ -151,10 +151,21 @@ declaration ::= declaration_specs SEMICOLON. {
 declaration(A) ::= declaration_specs(DECL_SPECS)
                    init_declarator_list(INIT_DECL_LIST) SEMICOLON. {
     for (int i = 0; i < INIT_DECL_LIST->length; i++) {
-        ((AstNode *)INIT_DECL_LIST->items[i])->decl_type =
-                malloc(sizeof(DataType));
-        memcpy(((AstNode *)INIT_DECL_LIST->items[i])->decl_type, DECL_SPECS,
-               sizeof(DataType));
+        // If it is a function declaration
+        if (((AstNode *)INIT_DECL_LIST->items[i])->node_type ==
+            AST_FUNC_DECLARATION) {
+
+            ((AstNode *)INIT_DECL_LIST->items[i])->func_type =
+                    malloc(sizeof(DataType));
+            memcpy(((AstNode *)INIT_DECL_LIST->items[i])->func_type, DECL_SPECS,
+                   sizeof(DataType));
+        } else {
+            // Normal vaiable declaration
+            ((AstNode *)INIT_DECL_LIST->items[i])->decl_type =
+                    malloc(sizeof(DataType));
+            memcpy(((AstNode *)INIT_DECL_LIST->items[i])->decl_type, DECL_SPECS,
+                   sizeof(DataType));
+        }
     }
     if (INIT_DECL_LIST->length > 1) {
         A = malloc(sizeof(AstNode));
@@ -181,9 +192,16 @@ init_declarator_list(A) ::= init_declarator_list(DECL_LIST) COMMA
 }
 
 init_declarator(A) ::= declarator(DECL). {
-    A = new_ast_declaration(NULL, DECL, NULL);
+    if (DECL->node_type == AST_FUNC_DECLARATION) {
+        A = DECL;
+    } else {
+        A = new_ast_declaration(NULL, DECL, NULL);
+    }
 }
 init_declarator(A) ::= declarator(DECL) OP_EQUALS initializer(INIT). {
+    if (DECL->node_type == AST_FUNC_DECLARATION)
+        error(cur_filename, cur_line_num,
+              "function \"%s\" initialized like a variable.");
     A = new_ast_declaration(NULL, DECL, INIT);
 }
 
@@ -542,12 +560,22 @@ enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 
 /* Declarator */
 
-declarator ::= direct_declarator_head direct_declarator_tail. // TODO
+declarator(A) ::= direct_declarator_head(HEAD) direct_declarator_tail(TAIL). {
+    if (TAIL->node_type == AST_FUNCTION_DEF) {
+        A = TAIL;
+        A->node_type = AST_FUNC_DECLARATION;
+        A->func_ident = strdup(HEAD->identifier);
+        delete_ast(HEAD);
+        A->func_body = NULL;
+    }
+}
 declarator(A) ::= direct_declarator_head(HEAD). { A = HEAD; }
 
 // Direct declarator head
-direct_declarator_head ::= direct_declarator_head_no_pointer. // TODO
-direct_declarator_head ::= pointer direct_declarator_head_no_pointer.
+direct_declarator_head(A) ::= direct_declarator_head_no_pointer(HEAD). {
+    A = HEAD;
+}
+direct_declarator_head ::= pointer direct_declarator_head_no_pointer. // TODO
 
 direct_declarator_head_no_pointer(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
@@ -562,7 +590,9 @@ direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
 direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).      { A = ARRAY; }
 direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
 direct_declarator_tail(A) ::= old_func_direct_declarator_tail(TAIL). {
-    A = TAIL;
+    error(cur_filename, cur_line_num,
+          "a parameter list without types is only allowed in a function "
+          "definition");
 }
 
 // Arrays

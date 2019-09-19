@@ -1,1 +1,5 @@
-int a = 10, b = 10;
+int test(a);
+
+int main()
+{
+}
