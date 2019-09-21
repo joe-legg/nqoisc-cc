@@ -1,4 +1,4 @@
 int main()
 {
-    0 <<= 10;
+    return 0xff;
 }

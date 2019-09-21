@@ -1015,10 +1015,12 @@ constant ::= CHAR.
 constant ::= ENUMERATION_CONSTANT.
 
 integer_const(A) ::= DECIMAL_CONST(CONST). {
-    A = new_ast_integer_const(atoi(CONST));
+    A = new_ast_integer_const(atoll(CONST));
 }
 integer_const ::= OCTAL_CONST.
-integer_const ::= HEXADECIMAL_CONST.
+integer_const(A) ::= HEXADECIMAL_CONST(CONST). {
+    A = new_ast_integer_const(strtol(CONST, NULL, 16));
+}
 // TODO: check integer constants
 
 floating_const ::= DECIMAL_FLOAT.
