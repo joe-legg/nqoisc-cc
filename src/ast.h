@@ -110,6 +110,7 @@ typedef struct AstNode {
 
         // Expressions
         AST_INTEGER_CONST,
+        AST_STR_LIT,
         AST_IDENTIFIER,
         AST_BINARY_OP,
         AST_UNARY_OP
@@ -118,6 +119,9 @@ typedef struct AstNode {
     union {
         // Integer, long or character
         long long integer_const;
+
+        // String literals
+        char *str_lit;
 
         // Identifier, goto
         char *identifier;
@@ -178,6 +182,7 @@ typedef struct AstNode {
 
 // AST Functions
 AstNode *new_expr_stmt(AstNode *expr);
+AstNode *new_ast_string_lit(char *str);
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_unary_op(int op, AstNode *expression);
@@ -189,12 +194,12 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
                           AstNode *body);
 
-void delete_ast(AstNode *ast);
-void delete_data_type(DataType *type);
-
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers);
+
+void delete_ast(AstNode *ast);
+void delete_data_type(DataType *type);
 
 // AST Printing
 char *type_to_string(const DataType *type); // Used for error messages

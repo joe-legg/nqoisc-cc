@@ -8,6 +8,7 @@ Todo List
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
 - [ ] AST gen for old style function def.
+- [ ] edit lexer to remove quote marks from strings.
 - [ ] finish expression AST gen.
 - [ ] finish declarations.
     - [x] function declarations.

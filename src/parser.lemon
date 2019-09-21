@@ -1005,8 +1005,12 @@ postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.
 
 primary_expr ::= IDENT.
 primary_expr(A) ::= constant(CONST). { A = CONST; }
-primary_expr ::= STR_LIT.
-primary_expr ::= LPAREN expression RPAREN.
+primary_expr(A) ::= STR_LIT(STR). {
+    A = new_ast_string_lit(STR);
+}
+primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. {
+    A = EXPR; // TODO: Check this later
+}
 
 // Constants
 constant(A) ::= integer_const(CONST). { A = CONST; }

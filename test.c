@@ -1,4 +1,4 @@
 int main()
 {
-    return 012;
+    return "This is a test string.";
 }

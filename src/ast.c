@@ -33,6 +33,14 @@ AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
     return node;
 }
 
+AstNode *new_ast_string_lit(char *str)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_STR_LIT;
+    node->str_lit = str;
+    return node;
+}
+
 AstNode *new_ast_integer_const(long value)
 {
     AstNode *node = malloc(sizeof(AstNode));
@@ -114,10 +122,11 @@ void delete_ast(AstNode *ast)
 
     switch (ast->node_type) {
     case AST_GOTO_STMT:
+    case AST_STR_LIT:      free(ast->str_lit); break;
     case AST_IDENTIFIER:   free(ast->identifier); break;
     case AST_DEFAULT_STMT: delete_ast(ast->default_stmt); break;
     case AST_EXPR_STMT:
-    case AST_RETURN_STMT: delete_ast(ast->expression); break;
+    case AST_RETURN_STMT:  delete_ast(ast->expression); break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
         delete_ast(ast->label_stmt);
@@ -228,6 +237,7 @@ void print_ast(AstNode *ast)
     case AST_BREAK_STMT:    printf("(break)"); break;
     case AST_CONTINUE_STMT: printf("(continue)"); break;
     case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
+    case AST_STR_LIT:       printf("(string \"%s\")", ast->str_lit); break;
     case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
     case AST_INTEGER_CONST:
         printf("(integer-val %lli)", ast->integer_const);
