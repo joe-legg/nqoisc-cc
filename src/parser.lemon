@@ -589,7 +589,7 @@ direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
 // Direct declarator tail
 direct_declarator_tail(A) ::= array_declarator_tail(ARRAY).      { A = ARRAY; }
 direct_declarator_tail(A) ::= func_direct_declarator_tail(TAIL). { A = TAIL; }
-direct_declarator_tail(A) ::= old_func_direct_declarator_tail(TAIL). {
+direct_declarator_tail ::= old_func_direct_declarator_tail. {
     error(cur_filename, cur_line_num,
           "a parameter list without types is only allowed in a function "
           "definition");
@@ -836,21 +836,47 @@ expression(A) ::= assignment_expr(ASSIGNMENT). { A = ASSIGNMENT; }
 expression ::= expression COMMA assignment_expr. // TODO
 
 // Assignment operators
-assignment_op ::= OP_EQUALS.
-assignment_op ::= OP_TIMES_EQUALS.
-assignment_op ::= OP_DIVIDE_EQUALS.
-assignment_op ::= OP_MODULO_EQUALS.
-assignment_op ::= OP_PLUS_EQUALS.
-assignment_op ::= OP_MINUS_EQUALS.
-assignment_op ::= OP_SHIFT_LEFT_EQUALS.
-assignment_op ::= OP_SHIFT_RIGHT_EQUALS.
-assignment_op ::= OP_AND_EQUALS.
-assignment_op ::= OP_XOR_EQUALS.
-assignment_op ::= OP_OR_EQUALS.
+%type assignment_op { int }
+assignment_op(A) ::= OP_EQUALS. {
+    A = OP_ASSIGN_EQUAL;
+}
+assignment_op(A) ::= OP_TIMES_EQUALS. {
+    A = OP_ASSIGN_MULT;
+}
+assignment_op(A) ::= OP_DIVIDE_EQUALS. {
+    A = OP_ASSIGN_DIV;
+}
+assignment_op(A) ::= OP_MODULO_EQUALS. {
+    A = OP_ASSIGN_MODULO;
+}
+assignment_op(A) ::= OP_PLUS_EQUALS. {
+    A = OP_ASSIGN_PLUS;
+}
+assignment_op(A) ::= OP_MINUS_EQUALS. {
+    A = OP_ASSIGN_MINUS;
+}
+assignment_op(A) ::= OP_SHIFT_LEFT_EQUALS. {
+    A = OP_ASSIGN_SHIFT_LEFT;
+}
+assignment_op(A) ::= OP_SHIFT_RIGHT_EQUALS. {
+    A = OP_ASSIGN_SHIFT_RIGHT;
+}
+assignment_op(A) ::= OP_AND_EQUALS. {
+    A = OP_ASSIGN_AND;
+}
+assignment_op(A) ::= OP_XOR_EQUALS. {
+    A = OP_ASSIGN_XOR;
+}
+assignment_op(A) ::= OP_OR_EQUALS. {
+    A = OP_ASSIGN_OR;
+}
 
 // Assignment expression
 assignment_expr(A) ::= conditional_expr(COND). { A = COND; }
-assignment_expr ::= unary_expr assignment_op assignment_expr.
+assignment_expr(A) ::= unary_expr(UNARY) assignment_op(OP)
+                       assignment_expr(ASSIGN). {
+    A = new_ast_binary_op(OP, UNARY, ASSIGN);
+}
 
 conditional_expr(A) ::= logical_or_expr(LOGICAL_OR). { A = LOGICAL_OR; }
 conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON

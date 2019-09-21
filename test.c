@@ -1,5 +1,4 @@
-int test(a);
-
 int main()
 {
+    0 <<= 10;
 }

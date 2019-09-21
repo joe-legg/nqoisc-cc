@@ -7,7 +7,6 @@ Todo List
 - [ ] ir gen.
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
-- [ ] test declarations in for loop.
 - [ ] AST gen for old style function def.
 - [ ] finish expression AST gen.
 - [ ] finish declarations.
@@ -15,6 +14,7 @@ Todo List
     - [ ] AST gen for arrays.
     - [ ] AST gen for pointers.
 - [ ] fix memory leaks.
+- [x] test declarations in for loop.
 - [x] remove return_expr in AstNode
 - [x] fix error on empty statement (';').
 - [x] add license to repo.
