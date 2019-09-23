@@ -101,19 +101,24 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
 }
 
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
-                        int type_qualifiers)
+                        int type_qualifiers, DataType *pointer)
 {
     DataType *new_type = malloc(sizeof(DataType));
     new_type->type = type;
     new_type->is_unsigned = is_unsigned;
     new_type->storage_specs = storage_specs;
     new_type->type_qualifiers = type_qualifiers;
+    new_type->pointer = pointer;
     return new_type;
 }
 
 /* Delete AST */
 
-void delete_data_type(DataType *type) { free(type); }
+void delete_data_type(DataType *type)
+{
+    if (type->pointer != NULL) delete_data_type(type->pointer);
+    free(type);
+}
 
 void delete_ast(AstNode *ast)
 {
@@ -134,6 +139,11 @@ void delete_ast(AstNode *ast)
     case AST_BINARY_OP:
         delete_ast(ast->binary_left);
         delete_ast(ast->binary_right);
+        break;
+    case AST_DECLARATOR_HEAD:
+        if (ast->declarator_head_pointer != NULL)
+            delete_data_type(ast->declarator_head_pointer);
+        free(ast->declarator_head_ident);
         break;
     case AST_DECL_LIST:
         for (int i = 0; i < ast->decl_list->length; i++)
@@ -183,8 +193,26 @@ char *type_to_string(const DataType *type)
 {
     char *sign_str = type->is_unsigned ? "unsigned" : "signed";
     char *type_spec_str;
-    char type_qualifier[25] = { 0 };
     char type_str[25];
+    char type_qualifier[25] = { 0 };
+
+    // If it is a pointer
+    if (type->pointer != NULL) {
+        // Type qualifiers
+        if (type->type_qualifiers & TYPE_QUAL_CONST)
+            strcat(type_qualifier, "const ");
+        if (type->type_qualifiers & TYPE_QUAL_RESTRICT)
+            strcat(type_qualifier, "restrict ");
+        if (type->type_qualifiers & TYPE_QUAL_VOLATILE)
+            strcat(type_qualifier, "volatile ");
+
+        char *pointer_str = type_to_string(type->pointer);
+
+        char final_str[strlen(pointer_str) + 25];
+        sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
+        printf("\nfinal_str = %s\n", final_str);
+        return strdup(final_str);
+    }
 
     // Storage specifiers
     switch (type->storage_specs) {
@@ -323,6 +351,13 @@ void print_ast(AstNode *ast)
             printf(" ");
             print_ast(ast->decl_initializer);
         }
+        printf(")");
+        break;
+    case AST_DECLARATOR_HEAD:
+        printf("(declarator-head %s ",
+                ast->declarator_head_ident);
+        if (ast->declarator_head_pointer != NULL)
+            print_data_type(ast->declarator_head_pointer);
         printf(")");
         break;
     case AST_DECL_LIST:

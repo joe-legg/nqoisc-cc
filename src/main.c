@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     if (argc == 2)
         ast = parse(argv[1]);
     print_ast(ast);
-    printf("\nAST Printing done.\n");
+    printf("\nAST printing done.\n");
     delete_ast(ast);
     //ast_to_ir(ast);
     //ir_print();

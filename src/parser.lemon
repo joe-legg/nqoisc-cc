@@ -151,20 +151,30 @@ declaration ::= declaration_specs SEMICOLON. {
 declaration(A) ::= declaration_specs(DECL_SPECS)
                    init_declarator_list(INIT_DECL_LIST) SEMICOLON. {
     for (int i = 0; i < INIT_DECL_LIST->length; i++) {
-        // If it is a function declaration
-        if (((AstNode *)INIT_DECL_LIST->items[i])->node_type ==
-            AST_FUNC_DECLARATION) {
+        AstNode *declaration = ((AstNode *)INIT_DECL_LIST->items[i]);
 
-            ((AstNode *)INIT_DECL_LIST->items[i])->func_type =
-                    malloc(sizeof(DataType));
-            memcpy(((AstNode *)INIT_DECL_LIST->items[i])->func_type, DECL_SPECS,
-                   sizeof(DataType));
+        // Function declarator
+        if (declaration->node_type == AST_FUNC_DECLARATION) {
+            declaration->func_type = malloc(sizeof(DataType));
+            memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
+            // TODO: pointer return type
         } else {
-            // Normal vaiable declaration
-            ((AstNode *)INIT_DECL_LIST->items[i])->decl_type =
-                    malloc(sizeof(DataType));
-            memcpy(((AstNode *)INIT_DECL_LIST->items[i])->decl_type, DECL_SPECS,
-                   sizeof(DataType));
+            // If it is a pointer
+            if (declaration->decl_declarator->declarator_head_pointer != NULL) {
+                DataType *pointer_type = malloc(sizeof(DataType));
+                memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
+                declaration->decl_type = new_data_type(TYPE_POINTER, 0, 0, 0,
+                                                       pointer_type);
+            } else {
+                // Normal vaiable declaration
+                declaration->decl_type = malloc(sizeof(DataType));
+                memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
+            }
+            // Set the declarator to just an identifier
+            char *ident = strdup(declaration->decl_declarator->
+                                 declarator_head_ident);
+            delete_ast(declaration->decl_declarator);
+            declaration->decl_declarator = new_ast_ident(ident);
         }
     }
     if (INIT_DECL_LIST->length > 1) {
@@ -372,7 +382,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         error(cur_filename, cur_line_num,
               "cannot specify a size for for \"%s\".",
               type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers)));
+                             type_qualifiers, NULL)));
     }
 
     if (type == TYPE_DOUBLE && is_short) {
@@ -385,7 +395,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         error(cur_filename, cur_line_num,
               "cannot specify a sign for \"%s\".",
               type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers)));
+                             type_qualifiers, NULL)));
     }
 
     if (type == TYPE_LONG || type == TYPE_INT) {
@@ -405,7 +415,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
 
     // If only sign is specified set type = sign
     A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned, storage_specs,
-                      type_qualifiers);
+                      type_qualifiers, NULL);
 }
 
 %type declaration_specs_list { Vector * }
@@ -575,11 +585,17 @@ declarator(A) ::= direct_declarator_head(HEAD). { A = HEAD; }
 direct_declarator_head(A) ::= direct_declarator_head_no_pointer(HEAD). {
     A = HEAD;
 }
-direct_declarator_head ::= pointer direct_declarator_head_no_pointer. // TODO
+direct_declarator_head(A) ::= pointer(POINTER)
+                              direct_declarator_head_no_pointer(HEAD). {
+    HEAD->declarator_head_pointer = POINTER;
+    A = HEAD;
+}
 
 direct_declarator_head_no_pointer(A) ::= IDENT(IDENT). {
-    A = new_ast_ident(IDENT);
-    free(IDENT);
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_DECLARATOR_HEAD;
+    A->declarator_head_ident = IDENT;
+    A->declarator_head_pointer = NULL;
 }
 direct_declarator_head_no_pointer(A) ::= LPAREN direct_declarator_head(HEAD)
                                          RPAREN. {
@@ -611,14 +627,29 @@ array_declarator_single ::= LSQUARE OP_ASTERISK RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list OP_ASTERISK RSQUARE.
 
 // Pointer
-pointer ::= OP_ASTERISK. // TODO
-pointer ::= OP_ASTERISK type_qualifier_list.
-pointer ::= OP_ASTERISK pointer.
-pointer ::= OP_ASTERISK type_qualifier_list pointer.
+%type pointer { DataType * }
+pointer(A) ::= OP_ASTERISK. {
+    A = new_data_type(TYPE_POINTER, 0, 0, 0, NULL);
+}
+pointer(A) ::= OP_ASTERISK type_qualifier_list(QUALIFERS). {
+    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFERS, NULL);
+}
+pointer(A) ::= OP_ASTERISK pointer(POINTER). {
+    A = new_data_type(TYPE_POINTER, 0, 0, 0, POINTER);
+}
+pointer(A) ::= OP_ASTERISK type_qualifier_list(QUALIFIERS) pointer(POINTER). {
+    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFIERS, POINTER);
+}
 
 // Type qualifiers
-type_qualifier_list ::= type_qualifier. // TODO
-type_qualifier_list ::= type_qualifier_list type_qualifier.
+%type type_qualifier_list { int }
+type_qualifier_list(A) ::= type_qualifier(QUALIFIER). {
+    A = QUALIFIER;
+}
+type_qualifier_list(A) ::= type_qualifier_list(QUALIFIERS)
+                           type_qualifier(NEW_QUALIFIER). {
+    A = QUALIFIERS | NEW_QUALIFIER;
+}
 
 %type type_qualifier { int }
 type_qualifier(A) ::= KWD_CONST. {

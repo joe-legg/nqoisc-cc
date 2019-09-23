@@ -28,7 +28,7 @@ enum {
     STORAGE_SPEC_REGISTER,
 
     // Type qualifiers
-    TYPE_QUAL_CONST = 0xff0000,
+    TYPE_QUAL_CONST    = 0xff0000,
     TYPE_QUAL_RESTRICT = 0x00ff00,
     TYPE_QUAL_VOLATILE = 0x0000ff
 };
@@ -38,7 +38,7 @@ typedef struct DataType {
     int is_unsigned; // 1 if unsigned
     int storage_specs; // 0 if there are no storage_specs
     int type_qualifiers;
-    //struct DataType *pointer; // TODO: possiably replace with pointer_cnt var
+    struct DataType *pointer;
 } DataType;
 
 // Operators for the AST
@@ -105,6 +105,7 @@ typedef struct AstNode {
         AST_DEFAULT_STMT,
 
         // Declarations
+        AST_DECLARATOR_HEAD,
         AST_DECLARATION,
         AST_DECL_LIST,
 
@@ -135,6 +136,12 @@ typedef struct AstNode {
         // Compound statement
         Vector *statements;
 
+        // Declarator head
+        struct {
+            char *declarator_head_ident;
+            DataType *declarator_head_pointer;
+        };
+
         // Binary operator
         struct {
             struct AstNode *binary_left;
@@ -142,6 +149,7 @@ typedef struct AstNode {
             int binary_op;
         };
 
+        // Unary operator
         struct {
             struct AstNode *unary_expr;
             int unary_op;
@@ -196,7 +204,7 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
 
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
-                        int type_qualifiers);
+                        int type_qualifiers, DataType *pointer);
 
 void delete_ast(AstNode *ast);
 void delete_data_type(DataType *type);

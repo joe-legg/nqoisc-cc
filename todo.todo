@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] rename compiler.
 - [ ] improve errors.
 - [ ] start implementing semantic checks - check_ast()
 - [ ] typedefs.
@@ -14,6 +15,9 @@ Todo List
     - [x] function declarations.
     - [ ] AST gen for arrays.
     - [ ] AST gen for pointers.
+        - [ ] pointer to normal variables.
+        - [ ] pointer return functions.
+        - [ ] array pointers.
 - [ ] fix memory leaks.
 - [x] test declarations in for loop.
 - [x] remove return_expr in AstNode
