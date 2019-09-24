@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] implement preprocessor.
 - [ ] rename compiler.
 - [ ] improve errors.
 - [ ] start implementing semantic checks - check_ast()
@@ -16,7 +17,7 @@ Todo List
     - [ ] AST gen for arrays.
     - [ ] AST gen for pointers.
         - [x] pointer to normal variables.
-        - [ ] pointer return functions.
+        - [x] functions returning pointers.
         - [ ] array pointers.
 - [ ] fix memory leaks.
 - [x] test declarations in for loop.

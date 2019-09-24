@@ -206,6 +206,8 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
                           AstNode *body);
 
+AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head);
+
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers, DataType *pointer);

@@ -155,9 +155,21 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
 
         // Function declarator
         if (declaration->node_type == AST_FUNC_DECLARATION) {
-            declaration->func_type = malloc(sizeof(DataType));
-            memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
-            // TODO: pointer return type
+            // Function returning a pointer
+            if (declaration->func_type != NULL) {
+                // Loop over the pointer to set the pointer type
+                DataType *last_pointer = declaration->func_type;
+                while (last_pointer->pointer != NULL) {
+                    last_pointer = last_pointer->pointer;
+                }
+                last_pointer->pointer = malloc(sizeof(DataType));
+                memcpy(last_pointer->pointer, DECL_SPECS, sizeof(DataType));
+            // Normal return type. Not a pointer
+            } else {
+                declaration->func_type = malloc(sizeof(DataType));
+                memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
+            }
+        // Normal variable declaration
         } else {
             // If it is a pointer
             if (declaration->decl_declarator->declarator_head_pointer != NULL) {
@@ -187,11 +199,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 declaration->decl_type = malloc(sizeof(DataType));
                 memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
 
-                // Remove the pointer from the declarator head.
-                char *ident = strdup(declaration->decl_declarator->
-                                     declarator_head_ident);
-                delete_ast(declaration->decl_declarator);
-                declaration->decl_declarator = new_ast_ident(ident);
+                ast_declarator_head_to_identifier(declaration->decl_declarator);
             }
         }
     }
@@ -593,8 +601,10 @@ declarator(A) ::= direct_declarator_head(HEAD) direct_declarator_tail(TAIL). {
     if (TAIL->node_type == AST_FUNCTION_DEF) {
         A = TAIL;
         A->node_type = AST_FUNC_DECLARATION;
-        A->func_ident = strdup(HEAD->identifier);
-        delete_ast(HEAD);
+        A->func_ident = HEAD->identifier;
+        if (HEAD->declarator_head_pointer != NULL)
+            A->func_type = HEAD->declarator_head_pointer;
+        free(HEAD);
         A->func_body = NULL;
     }
 }
@@ -702,6 +712,7 @@ parameter_declaration(A) ::= declaration_specs(DECL_SPECS). {
 }
 parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
                              declarator(DECLARATOR). {
+    ast_declarator_head_to_identifier(DECLARATOR);
     A = new_ast_declaration(DECL_SPECS, DECLARATOR, NULL);
 }
 
