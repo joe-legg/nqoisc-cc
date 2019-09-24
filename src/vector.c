@@ -4,6 +4,7 @@
 Vector *new_vector()
 {
     Vector *vector = malloc(sizeof(Vector));
+    vector->items = NULL;
     vector->length = 0;
     return vector;
 }

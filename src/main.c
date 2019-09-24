@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
         ast = parse(argv[1]);
     print_ast(ast);
     printf("\nAST printing done.\n");
-    //delete_ast(ast);
+    delete_ast(ast);
     //ast_to_ir(ast);
     //ir_print();
 }
