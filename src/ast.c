@@ -210,7 +210,6 @@ char *type_to_string(const DataType *type)
 
         char final_str[strlen(pointer_str) + 25];
         sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
-        printf("\nfinal_str = %s\n", final_str);
         return strdup(final_str);
     }
 

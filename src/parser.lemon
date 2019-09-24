@@ -163,20 +163,39 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
             if (declaration->decl_declarator->declarator_head_pointer != NULL) {
                 DataType *pointer_type = malloc(sizeof(DataType));
                 memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
-                declaration->decl_type = new_data_type(TYPE_POINTER, 0, 0, 0,
-                                                       pointer_type);
+
+                // Loop over the pointer to set the pointer type
+                DataType *last_pointer = declaration->decl_declarator->
+                                         declarator_head_pointer;
+                while (last_pointer->pointer != NULL) {
+                    last_pointer = last_pointer->pointer;
+                }
+                last_pointer->pointer = pointer_type;
+                declaration->decl_type = malloc(sizeof(DataType));
+                memcpy(declaration->decl_type,
+                       declaration->decl_declarator->declarator_head_pointer,
+                       sizeof(DataType));
+
+                // Remove the pointer from the declarator head.
+                char *ident = strdup(declaration->decl_declarator->
+                                     declarator_head_ident);
+                free(declaration->decl_declarator->declarator_head_ident);
+                free(declaration->decl_declarator);
+                declaration->decl_declarator = new_ast_ident(ident);
             } else {
                 // Normal vaiable declaration
                 declaration->decl_type = malloc(sizeof(DataType));
                 memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
+
+                // Remove the pointer from the declarator head.
+                char *ident = strdup(declaration->decl_declarator->
+                                     declarator_head_ident);
+                delete_ast(declaration->decl_declarator);
+                declaration->decl_declarator = new_ast_ident(ident);
             }
-            // Set the declarator to just an identifier
-            char *ident = strdup(declaration->decl_declarator->
-                                 declarator_head_ident);
-            delete_ast(declaration->decl_declarator);
-            declaration->decl_declarator = new_ast_ident(ident);
         }
     }
+
     if (INIT_DECL_LIST->length > 1) {
         A = malloc(sizeof(AstNode));
         A->node_type = AST_DECL_LIST;

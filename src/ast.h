@@ -38,6 +38,10 @@ typedef struct DataType {
     int is_unsigned; // 1 if unsigned
     int storage_specs; // 0 if there are no storage_specs
     int type_qualifiers;
+
+    // Pointers are stored as a linked-list-like data structure
+    // This is probably not the best way to do it but it was
+    // the best I could think of.
     struct DataType *pointer;
 } DataType;
 
