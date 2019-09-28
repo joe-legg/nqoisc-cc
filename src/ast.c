@@ -37,6 +37,12 @@ AstNode *new_ast_string_lit(char *str)
 {
     AstNode *node = malloc(sizeof(AstNode));
     node->node_type = AST_STR_LIT;
+
+    // Remove quotation marks from string. This is needed because of a badly
+    // writen regex in lexer.l
+    memmove(str, str + 1, strlen(str));
+    str[strlen(str) - 1] = '\0';
+
     node->str_lit = str;
     return node;
 }

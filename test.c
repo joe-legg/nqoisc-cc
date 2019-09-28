@@ -1,1 +1,4 @@
-int *b(int *a);
+int main()
+{
+    return "asdf";
+}
