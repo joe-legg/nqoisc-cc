@@ -92,6 +92,7 @@ typedef struct AstNode {
         // Definitions
         AST_FUNCTION_DEF,
         AST_FUNC_DECLARATION,
+        AST_FUNC_CALL,
 
         // Statements
         AST_RETURN_STMT,
@@ -175,6 +176,12 @@ typedef struct AstNode {
             DataType *func_type;
             Vector *func_params;
             struct AstNode *func_body;
+        };
+
+        // Function call
+        struct {
+            char *func_call_ident;
+            Vector *func_call_args;
         };
 
         // If, while, switch, case

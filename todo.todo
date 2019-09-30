@@ -4,22 +4,21 @@ Todo List
 - [ ] rename compiler.
 - [ ] improve errors.
 - [ ] start implementing semantic checks - check_ast()
-- [ ] typedefs.
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
 - [ ] compile return 42 program.
 - [ ] AST gen old style function definitions.
 - [ ] AST gen for old style function def.
-- [x] edit lexer to remove quote marks from strings.
+- [ ] fix memory leaks.
+- [ ] ast gen for typedefs.
 - [ ] finish expression AST gen.
 - [ ] finish declarations.
-    - [x] function declarations.
     - [ ] AST gen for arrays.
-    - [ ] AST gen for pointers.
+    - [x] function declarations.
+    - [x] AST gen for pointers.
         - [x] pointer to normal variables.
         - [x] functions returning pointers.
-        - [ ] array pointers.
-- [ ] fix memory leaks.
+- [x] edit lexer to remove quote marks from strings.
 - [x] test declarations in for loop.
 - [x] remove return_expr in AstNode
 - [x] fix error on empty statement (';').

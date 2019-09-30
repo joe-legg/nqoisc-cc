@@ -191,6 +191,10 @@ void delete_ast(AstNode *ast)
         free(ast->func_ident);
         delete_ast(ast->func_body);
         break;
+    case AST_FUNC_CALL:
+        free(ast->func_call_ident);
+        vector_free(ast->func_call_args);
+        break;
     case AST_UNARY_OP:
     case AST_CONTINUE_STMT:
     case AST_INTEGER_CONST:
@@ -409,6 +413,16 @@ void print_ast(AstNode *ast)
         printf(") ");
         print_ast(ast->func_body); // Body
         printf(")");
+        break;
+    case AST_FUNC_CALL:
+        printf("(func-call %s (args ", ast->func_call_ident);
+        if (ast->func_call_args != NULL) {
+            for (int i = 0; i < ast->func_call_args->length; i++) {
+                print_ast(ast->func_call_args->items[i]);
+                if (i != ast->func_call_args->length - 1) printf(" ");
+            }
+        }
+        printf("))");
         break;
     }
 }
