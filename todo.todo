@@ -1,12 +1,13 @@
 Todo List
 #########################################
-- [ ] implement preprocessor.
+- [ ] compile return 42 program.
+- [ ] start implementing a preprocessor.
 - [ ] rename compiler.
 - [ ] improve errors.
 - [ ] start implementing semantic checks - check_ast()
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
-- [ ] compile return 42 program.
+- [ ] start implementing a symbol table.
 - [ ] AST gen old style function definitions.
 - [ ] AST gen for old style function def.
 - [ ] fix memory leaks.
@@ -20,7 +21,7 @@ Todo List
         - [ ] array subscripting.
     - [ ] sizeof operator.
     - [ ] cast expressions.
-    - [ ] conditional expression.
+    - [x] conditional expression.
     - [ ] comma separated expressions.
     - [ ] constants.
         - [ ] characters.
