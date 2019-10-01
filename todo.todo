@@ -13,8 +13,8 @@ Todo List
 - [ ] ast gen for typedefs.
 - [ ] finish expression AST gen.
     - [ ] postfix expressions.
-        - [ ] increment.
-        - [ ] decrement.
+        - [x] increment.
+        - [x] decrement.
         - [ ] structure and union access.
         - [ ] compound literals.
         - [ ] array subscripting.

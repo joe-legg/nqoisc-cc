@@ -1086,10 +1086,14 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
 }
 postfix_expr ::= postfix_expr DOT IDENT.
 postfix_expr ::= postfix_expr OP_ARROW IDENT.
-postfix_expr ::= postfix_expr OP_PLUS_PLUS.
-postfix_expr ::= postfix_expr OP_MINUS_MINUS.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list RBRACE.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.
+postfix_expr(A) ::= postfix_expr(EXPR) OP_PLUS_PLUS. {
+    A = new_ast_unary_op(UNARY_INC, EXPR);
+}
+postfix_expr(A) ::= postfix_expr(EXPR) OP_MINUS_MINUS. {
+    A = new_ast_unary_op(UNARY_DEC, EXPR);
+}
 
 primary_expr(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
