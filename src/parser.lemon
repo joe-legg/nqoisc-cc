@@ -1105,9 +1105,7 @@ primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. {
 // Constants
 constant(A) ::= integer_const(CONST). { A = CONST; }
 constant ::= floating_const.
-constant ::= CHAR. {
-
-}
+constant ::= CHAR.
 constant ::= ENUMERATION_CONSTANT.
 
 integer_const(A) ::= DECIMAL_CONST(CONST). {

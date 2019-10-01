@@ -12,6 +12,20 @@ Todo List
 - [ ] fix memory leaks.
 - [ ] ast gen for typedefs.
 - [ ] finish expression AST gen.
+    - [ ] postfix expressions.
+        - [ ] increment.
+        - [ ] decrement.
+        - [ ] structure and union access.
+        - [ ] compound literals.
+        - [ ] array subscripting.
+    - [ ] sizeof operator.
+    - [ ] cast expressions.
+    - [ ] conditional expression.
+    - [ ] comma separated expressions.
+    - [ ] constants.
+        - [ ] characters.
+        - [ ] floating point numbers.
+        - [ ] enum constants.
 - [ ] finish declarations.
     - [ ] AST gen for arrays.
     - [x] function declarations.
@@ -40,7 +54,7 @@ Todo List
     - [x] fix array parsing.
 - [x] AST gen for function parameters.
 - [x] AST gen for decl specs.
-    - [ ] inline keyword. - Do this in check_ast()
+    - [ ] inline keyword.
     - [x] AST gen for type qualifiers.
     - [x] AST gen for storage class specifiers.
     - [x] AST gen for type specs.
