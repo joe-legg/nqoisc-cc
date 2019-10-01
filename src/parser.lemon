@@ -943,8 +943,10 @@ assignment_expr(A) ::= unary_expr(UNARY) assignment_op(OP)
 }
 
 conditional_expr(A) ::= logical_or_expr(LOGICAL_OR). { A = LOGICAL_OR; }
-conditional_expr ::= logical_or_expr QUESTION_MARK expression COLON
-                     conditional_expr.
+conditional_expr(A) ::= logical_or_expr(COND) QUESTION_MARK expression(BODY)
+                        COLON conditional_expr(ELSE_BODY). {
+    A = new_ast_conditional(AST_CONDITIONAL_EXPR, COND, BODY, ELSE_BODY);
+}
 
 logical_or_expr(A) ::= logical_and_expr(LOGICAL_AND). { A = LOGICAL_AND; }
 logical_or_expr(A) ::= logical_or_expr(LHS) OP_LOGICAL_OR

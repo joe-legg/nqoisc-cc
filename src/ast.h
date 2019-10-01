@@ -115,6 +115,7 @@ typedef struct AstNode {
         AST_DECL_LIST,
 
         // Expressions
+        AST_CONDITIONAL_EXPR,
         AST_INTEGER_CONST,
         AST_STR_LIT,
         AST_IDENTIFIER,
