@@ -85,6 +85,16 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
     return node;
 }
 
+AstNode *new_ast_struct_member_access(AstNode *structure,
+                                      char *struct_member_ident)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_STRUCT_MEMBER_ACCESS;
+    node->structure = structure;
+    node->struct_member_ident = struct_member_ident;
+    return node;
+}
+
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
                           AstNode *body)
 {
@@ -171,6 +181,10 @@ void delete_ast(AstNode *ast)
         for (int i = 0; i < ast->statements->length; i++)
             delete_ast(ast->statements->items[i]);
         vector_free(ast->statements);
+        break;
+    case AST_STRUCT_MEMBER_ACCESS:
+        delete_ast(ast->structure);
+        free(ast->struct_member_ident);
         break;
     // Conditionals
     case AST_IF_STMT:
@@ -358,6 +372,11 @@ void print_ast(AstNode *ast)
                 if (i != ast->statements->length - 1) printf(" ");
             }
         }
+        printf(")");
+        break;
+    case AST_STRUCT_MEMBER_ACCESS:
+        printf("(struct-member-access \"%s\" ", ast->struct_member_ident);
+        print_ast(ast->structure);
         printf(")");
         break;
     case AST_DECLARATION:

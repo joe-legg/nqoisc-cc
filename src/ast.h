@@ -118,6 +118,7 @@ typedef struct AstNode {
         AST_CONDITIONAL_EXPR,
         AST_INTEGER_CONST,
         AST_STR_LIT,
+        AST_STRUCT_MEMBER_ACCESS,
         AST_IDENTIFIER,
         AST_BINARY_OP,
         AST_UNARY_OP
@@ -197,6 +198,12 @@ typedef struct AstNode {
             char *label_ident;
             struct AstNode *label_stmt;
         };
+
+        // Structure or union member access
+        struct {
+            struct AstNode *structure;
+            char *struct_member_ident;
+        };
     };
 } AstNode;
 
@@ -206,6 +213,8 @@ AstNode *new_ast_string_lit(char *str);
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_unary_op(int op, AstNode *expression);
+AstNode *new_ast_struct_member_access(AstNode *structure,
+                                      char *struct_member_ident);
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right);
 AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
                              AstNode *initializer);

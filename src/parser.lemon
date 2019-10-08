@@ -1067,6 +1067,8 @@ argument_expr_list(A) ::= argument_expr_list(EXPR_LIST) COMMA
     A = EXPR_LIST;
 }
 
+/* Postfix expressions */
+
 postfix_expr(A) ::= primary_expr(PRIMARY). { A = PRIMARY; }
 postfix_expr ::= postfix_expr LSQUARE expression RSQUARE. // TODO
 postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN argument_expr_list(ARGS)
@@ -1086,7 +1088,12 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
     A->func_call_ident = POSTFIX->identifier;
     A->func_call_args = new_vector();
 }
-postfix_expr ::= postfix_expr DOT IDENT.
+
+// Structure or union access
+postfix_expr(A) ::= postfix_expr(STRUCT) DOT IDENT(IDENT). {
+    printf("test\n");
+    A = new_ast_struct_member_access(STRUCT, IDENT);
+}
 postfix_expr ::= postfix_expr OP_ARROW IDENT.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list RBRACE.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.

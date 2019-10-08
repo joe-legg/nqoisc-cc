@@ -7,11 +7,12 @@ Todo List
 - [ ] start implementing semantic checks - check_ast()
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
+- [ ] AST gen for enums.
 - [ ] start implementing a symbol table.
-- [ ] AST gen old style function definitions.
-- [ ] AST gen for old style function def.
 - [ ] fix memory leaks.
 - [ ] ast gen for typedefs.
+- [ ] ast gen for structs.
+- [ ] AST gen for old style function definitions.
 - [ ] finish expression AST gen.
     - [ ] postfix expressions.
         - [x] increment.

@@ -1,4 +1,5 @@
 int main()
 {
-    return 10 == 10 ? 42 : 0;
+    test_struct.member;
+    //test_struct->member();
 }
