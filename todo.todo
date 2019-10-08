@@ -17,9 +17,9 @@ Todo List
     - [ ] postfix expressions.
         - [x] increment.
         - [x] decrement.
-        - [ ] structure and union access.
-        - [ ] compound literals.
+        - [x] structure and union access.
         - [ ] array subscripting.
+        - [ ] compound literals.
     - [ ] sizeof operator.
     - [ ] cast expressions.
     - [x] conditional expression.
