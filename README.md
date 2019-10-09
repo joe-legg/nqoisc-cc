@@ -9,7 +9,7 @@ instructions.
 - Aims to implement the C99 standard.
 
 ## Compiling
-Run ```make``` to build jcc from source.
+Run ```build.sh``` to build jcc from source.
 
 ## The Instruction Set
 The insruction set is based on [brainfuck](https://esolangs.org/wiki/Brainfuck).
