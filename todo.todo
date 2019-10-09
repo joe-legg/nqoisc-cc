@@ -20,8 +20,8 @@ odo List
         - [x] structure and union access.
         - [ ] array subscripting.
     - [ ] constants.
+        - [x] floating point numbers.
         - [ ] characters.
-        - [ ] floating point numbers.
         - [ ] enum constants.
         - [ ] compound literals. - Not sure what this means.
     - [ ] sizeof operator.
@@ -63,7 +63,6 @@ odo List
 - [x] fix function definition parsing.
 - [x] create AST for return 42 program.
 - [x] rename decl to declaration.
-- [x] finish parsing constants.
 - [x] add comments to parser.
 - [x] fix if/else parsing.
 - [x] parse statements.
