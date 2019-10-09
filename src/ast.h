@@ -118,6 +118,7 @@ typedef struct AstNode {
         // Expressions
         AST_CONDITIONAL_EXPR,
         AST_INTEGER_CONST,
+        AST_FLOAT_CONST,
         AST_STR_LIT,
         AST_STRUCT_MEMBER_ACCESS,
         AST_IDENTIFIER,
@@ -128,6 +129,9 @@ typedef struct AstNode {
     union {
         // Integer, long or character
         long long integer_const;
+
+        // Floating point and double constants
+        long double float_const;
 
         // String literals
         char *str_lit;
@@ -212,6 +216,7 @@ typedef struct AstNode {
 AstNode *new_expr_stmt(AstNode *expr);
 AstNode *new_ast_string_lit(char *str);
 AstNode *new_ast_ident(const char *ident);
+AstNode *new_ast_float_const(long double value);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_unary_op(int op, AstNode *expression);
 AstNode *new_ast_struct_member_access(AstNode *structure,

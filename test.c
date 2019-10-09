@@ -1,4 +1,5 @@
-int main()
+float get_pi()
 {
-    test(sizeof asdf);
+    3.1415926535;
+    0x10.1p0;
 }

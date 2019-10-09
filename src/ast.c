@@ -55,6 +55,14 @@ AstNode *new_ast_integer_const(long value)
     return node;
 }
 
+AstNode *new_ast_float_const(long double value)
+{
+    AstNode *node = malloc(sizeof(AstNode));
+    node->node_type = AST_FLOAT_CONST;
+    node->float_const = value;
+    return node;
+}
+
 AstNode *new_ast_unary_op(int op, AstNode *expression)
 {
     AstNode *node = malloc(sizeof(AstNode));
@@ -213,6 +221,7 @@ void delete_ast(AstNode *ast)
     case AST_UNARY_OP:
     case AST_CONTINUE_STMT:
     case AST_INTEGER_CONST:
+    case AST_FLOAT_CONST:
     case AST_BREAK_STMT:
         break;
     }
@@ -298,8 +307,11 @@ void print_ast(AstNode *ast)
     case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
     case AST_STR_LIT:       printf("(string \"%s\")", ast->str_lit); break;
     case AST_IDENTIFIER:    printf("(identifier %s)", ast->identifier); break;
+    case AST_FLOAT_CONST:
+        printf("(float-const %.10Lf)", ast->float_const);
+        break;
     case AST_INTEGER_CONST:
-        printf("(integer-val %lli)", ast->integer_const);
+        printf("(integer-const %lli)", ast->integer_const);
         break;
     case AST_LABEL_STMT:
         printf("(label %s ", ast->label_ident);
@@ -335,23 +347,12 @@ void print_ast(AstNode *ast)
         printf(")");
         break;
     // Conditionals
-    case AST_IF_STMT:
-        printf("(cond-if-stmt ");
-        goto print_cond;
-    case AST_CASE_STMT:
-        printf("(case-stmt ");
-        goto print_cond;
-    case AST_SWITCH_STMT:
-        printf("(switch-stmt ");
-        goto print_cond;
-    case AST_WHILE_STMT:
-        printf("(cond-while-stmt ");
-        goto print_cond;
-    case AST_DO_WHILE_STMT:
-        printf("(cond-do-while-stmt ");
-        goto print_cond;
-    case AST_CONDITIONAL_EXPR:
-        printf("(cond-expr ");
+    case AST_IF_STMT:          printf("(cond-if-stmt "); goto print_cond;
+    case AST_CASE_STMT:        printf("(case-stmt "); goto print_cond;
+    case AST_SWITCH_STMT:      printf("(switch-stmt "); goto print_cond;
+    case AST_WHILE_STMT:       printf("(cond-while-stmt "); goto print_cond;
+    case AST_DO_WHILE_STMT:    printf("(cond-do-while-stmt "); goto print_cond;
+    case AST_CONDITIONAL_EXPR: printf("(cond-expr ");
     print_cond:
         print_ast(ast->cond);
         printf(" ");

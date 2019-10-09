@@ -515,25 +515,10 @@ storage_class_specifier(A) ::= KWD_REGISTER. {
     warning(cur_filename, cur_line_num, "register keyword is not supported.");
 }
 
-%type specifier_qualifier_list { Vector * }
-specifier_qualifier_list(A) ::= type_specifier(TYPE_SPEC). {
-    A = new_vector();
-    vector_append(A, (int *)TYPE_SPEC);
-}
-specifier_qualifier_list(A) ::= type_specifier(NEW_SPEC)
-                                specifier_qualifier_list(LIST). {
-    vector_append(LIST, (int *)NEW_SPEC);
-    A = LIST;
-}
-specifier_qualifier_list(A) ::= type_qualifier(TYPE_QUAL). {
-    A = new_vector();
-    vector_append(A, (int *)TYPE_QUAL);
-}
-specifier_qualifier_list(A) ::= type_qualifier(NEW_QUAL)
-                                specifier_qualifier_list(LIST). {
-    vector_append(LIST, (int *)NEW_QUAL);
-    A = LIST;
-}
+specifier_qualifier_list ::= type_specifier.
+specifier_qualifier_list ::= type_specifier specifier_qualifier_list.
+specifier_qualifier_list ::= type_qualifier.
+specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
 // Type specifiers
 %type type_specifier { int }
@@ -735,9 +720,8 @@ parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
 }
 
 // Type name
-%type type_name { Vector * }
-type_name(A) ::= specifier_qualifier_list(LIST). { A = LIST; }
-type_name ::= specifier_qualifier_list abstract_declarator. // TODO
+type_name ::= specifier_qualifier_list.
+type_name ::= specifier_qualifier_list abstract_declarator.
 
 // Direct abstract declarator
 direct_abstract_declarator ::= LPAREN abstract_declarator RPAREN.
@@ -1072,7 +1056,7 @@ unary_expr(A) ::= unary_op(OP) cast_expr(EXPR). {
 unary_expr(A) ::= OP_SIZEOF unary_expr(EXPR). {
     A = new_ast_unary_op(UNARY_SIZEOF, EXPR);
 }
-unary_expr(A) ::= OP_SIZEOF LPAREN type_name(TYPE) RPAREN. {
+unary_expr(A) ::= OP_SIZEOF LPAREN type_name RPAREN. {
     // TODO: Finish this. Maybe calculate the size of the type at compile time.
     A = new_ast_unary_op(UNARY_SIZEOF, NULL);
 }
@@ -1154,5 +1138,9 @@ integer_const(A) ::= HEXADECIMAL_CONST(CONST). {
     A = new_ast_integer_const(strtol(CONST, NULL, 16));
 }
 
-floating_const ::= DECIMAL_FLOAT.
-floating_const ::= HEXADECIMAL_FLOAT.
+floating_const(A) ::= DECIMAL_FLOAT(CONST). {
+    A = new_ast_float_const(strtold(CONST, NULL));
+}
+floating_const(A) ::= HEXADECIMAL_FLOAT(CONST). {
+    A = new_ast_float_const(strtold(CONST, NULL));
+}

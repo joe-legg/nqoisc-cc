@@ -1,4 +1,4 @@
-Todo List
+odo List
 #########################################
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
@@ -19,15 +19,15 @@ Todo List
         - [x] decrement.
         - [x] structure and union access.
         - [ ] array subscripting.
-        - [ ] compound literals.
-    - [ ] sizeof operator.
-    - [ ] cast expressions.
-    - [x] conditional expression.
-    - [ ] comma separated expressions.
     - [ ] constants.
         - [ ] characters.
         - [ ] floating point numbers.
         - [ ] enum constants.
+        - [ ] compound literals. - Not sure what this means.
+    - [ ] sizeof operator.
+    - [ ] cast expressions.
+    - [x] conditional expression.
+    - [ ] comma separated expressions.
 - [ ] finish declarations.
     - [ ] AST gen for arrays.
     - [x] function declarations.
