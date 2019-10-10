@@ -1,5 +1,5 @@
-float get_pi()
+char test_char()
 {
-    3.1415926535;
-    0x10.1p0;
+    return 'a';
+    return 'abc';
 }

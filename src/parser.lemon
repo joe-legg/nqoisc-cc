@@ -1125,7 +1125,12 @@ primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. {
 // Constants
 constant(A) ::= integer_const(CONST). { A = CONST; }
 constant ::= floating_const.
-constant ::= CHAR.
+constant(A) ::= CHAR(CHAR). {
+    if (strlen(CHAR) > 3)
+        warning(cur_filename, cur_line_num,
+                "multi-character character constants are not supported.");
+    A = new_ast_integer_const(CHAR[1]);
+}
 constant ::= ENUMERATION_CONSTANT.
 
 integer_const(A) ::= DECIMAL_CONST(CONST). {

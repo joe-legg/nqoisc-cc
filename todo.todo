@@ -8,6 +8,7 @@ odo List
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
 - [ ] AST gen for enums.
+    - [ ] enum constants.
 - [ ] start implementing a symbol table.
 - [ ] fix memory leaks.
 - [ ] ast gen for typedefs.
@@ -21,8 +22,7 @@ odo List
         - [ ] array subscripting.
     - [ ] constants.
         - [x] floating point numbers.
-        - [ ] characters.
-        - [ ] enum constants.
+        - [x] characters.
         - [ ] compound literals. - Not sure what this means.
     - [ ] sizeof operator.
     - [ ] cast expressions.
