@@ -112,8 +112,20 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
-function_definition ::= declaration_specs old_func_declarator declaration_list // TODO
-                        compound_statement.
+function_definition(A) ::= declaration_specs(DECL_SPECS)
+                           old_func_declarator(DECLARATOR)
+                           declaration_list(DECLARATION_LIST)
+                           compound_statement(BODY). {
+    A = DECLARATOR;
+
+    if (DECLARATOR->func_params->length != DECLARATION_LIST->length)
+        error(cur_filename, cur_line_num, "length of parameter in function "
+              "declarator does not match the length of the parameters in the "
+              "declaration list.");
+    A->func_params = DECLARATION_LIST;
+    A->func_type = DECL_SPECS;
+    A->func_body = BODY;
+}
 
 /* Function declarators */
 
@@ -139,11 +151,20 @@ func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
 }
 
 // Old style function declarator
-old_func_declarator ::= direct_declarator_head // TODO
-                        old_func_direct_declarator_tail.
+old_func_declarator(A) ::= direct_declarator_head(HEAD)
+                           old_func_direct_declarator_tail(TAIL). {
+    A = malloc(sizeof(AstNode));
+    A->node_type = AST_FUNCTION_DEF;
+    A->func_ident = HEAD->identifier;
+    A->func_params = TAIL;
+}
 
 // Old style tail
-old_func_direct_declarator_tail ::= LPAREN identifier_list RPAREN.
+%type old_func_direct_declarator_tail { Vector * }
+old_func_direct_declarator_tail(A) ::= LPAREN identifier_list(IDENT_LIST)
+                                       RPAREN. {
+    A = IDENT_LIST;
+}
 
 /* Declarations */
 
@@ -216,8 +237,15 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
     }
 }
 
-declaration_list ::= declaration.
-declaration_list ::= declaration_list declaration.
+%type declaration_list { Vector * }
+declaration_list(A) ::= declaration(DECL). {
+    A = new_vector();
+    vector_append(A, DECL);
+}
+declaration_list(A) ::= declaration_list(LIST) declaration(NEW_DECL). {
+    vector_append(LIST, NEW_DECL);
+    A = LIST;
+}
 
 // Init declarator
 %type init_declarator_list { Vector * }
@@ -744,8 +772,15 @@ abstract_declarator ::= direct_abstract_declarator.
 abstract_declarator ::= pointer direct_abstract_declarator.
 
 // Identifier list
-identifier_list ::= IDENT.
-identifier_list ::= identifier_list COMMA IDENT.
+%type identifier_list { Vector * }
+identifier_list(A) ::= IDENT(IDENT). {
+    A = new_vector();
+    vector_append(A, IDENT);
+}
+identifier_list(A) ::= identifier_list(LIST) COMMA IDENT(IDENT). {
+    vector_append(LIST, IDENT);
+    A = LIST;
+}
 
 // Initializer
 initializer ::= assignment_expr.

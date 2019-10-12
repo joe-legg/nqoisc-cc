@@ -1,5 +1,5 @@
-char test_char()
+int main(argc, argv)
+    int argc;
+    char **argv;
 {
-    return 'a';
-    return 'abc';
 }

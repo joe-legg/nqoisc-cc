@@ -7,6 +7,7 @@ odo List
 - [ ] start implementing semantic checks - check_ast()
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
+- [ ] variable function arguments.
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] start implementing a symbol table.
@@ -26,8 +27,8 @@ odo List
         - [ ] compound literals. - Not sure what this means.
     - [ ] sizeof operator.
     - [ ] cast expressions.
-    - [x] conditional expression.
     - [ ] comma separated expressions.
+    - [x] conditional expression.
 - [ ] finish declarations.
     - [ ] AST gen for arrays.
     - [x] function declarations.
