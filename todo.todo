@@ -15,7 +15,7 @@ odo List
 - [ ] ast gen for typedefs.
 - [ ] ast gen for structs.
 - [ ] fix functions returning pointers.
-- [ ] AST gen for old style function definitions.
+- [x] AST gen for old style function definitions.
 - [ ] finish expression AST gen.
     - [ ] postfix expressions.
         - [x] increment.

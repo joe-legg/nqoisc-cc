@@ -125,7 +125,9 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     } else {
         for (int i = 0; i < DECLARATION_LIST->length; i++) {
             // Check that the identifiers match
-            if (strcmp(((AstNode *)DECLARATION_LIST->items[i])->decl_declarator->identifier, ((char *)DECLARATOR->func_params->items[i])) != 0) {
+            if (strcmp(((AstNode *)DECLARATION_LIST->items[i])->decl_declarator
+                ->identifier,
+                ((char *)DECLARATOR->func_params->items[i])) != 0) {
                 error(cur_filename, cur_line_num, "identifiers do not match in "
                       "function call.");
             }
