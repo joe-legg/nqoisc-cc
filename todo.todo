@@ -11,10 +11,10 @@ odo List
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] start implementing a symbol table.
-- [ ] fix memory leaks.
 - [ ] ast gen for typedefs.
 - [ ] ast gen for structs.
-- [ ] fix functions returning pointers.
+- [ ] fix memory leaks.
+- [x] fix functions returning pointers.
 - [x] AST gen for old style function definitions.
 - [ ] finish expression AST gen.
     - [ ] postfix expressions.

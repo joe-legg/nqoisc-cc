@@ -108,8 +108,20 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
         error(cur_filename, cur_line_num,
               "invalid storage class specifier for function definition.");
     }
+
+    // Set the function return type
+    // Function returning pointer
+    if (DECLARATOR->func_type != NULL) {
+        DataType *last_pointer = DECLARATOR->func_type; // TODO: create a function for this
+        while (last_pointer->pointer != NULL)
+            last_pointer = last_pointer->pointer;
+        last_pointer->pointer = malloc(sizeof(DataType));
+        last_pointer->pointer = DECL_SPECS;
+    } else {
+        A->func_type = DECL_SPECS;
+    }
+
     A->func_params = DECLARATOR->func_params;
-    A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
 function_definition(A) ::= declaration_specs(DECL_SPECS)
@@ -134,8 +146,18 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
         }
     }
 
+    // Function returning pointer
+    if (DECLARATOR->func_type != NULL) {
+        DataType *last_pointer = DECLARATOR->func_type;
+        while (last_pointer->pointer != NULL)
+            last_pointer = last_pointer->pointer;
+        last_pointer->pointer = malloc(sizeof(DataType));
+        last_pointer->pointer = DECL_SPECS;
+    } else {
+        A->func_type = DECL_SPECS;
+    }
+
     A->func_params = DECLARATION_LIST;
-    A->func_type = DECL_SPECS;
     A->func_body = BODY;
 }
 
@@ -143,9 +165,8 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
 
 func_declarator(A) ::= direct_declarator_head(HEAD)
                        func_direct_declarator_tail(TAIL). {
-    A = malloc(sizeof(AstNode));
+    A = HEAD;
     A->node_type = AST_FUNCTION_DEF;
-    A->func_ident = HEAD->identifier;
     A->func_params = TAIL->func_params;
     free(TAIL);
 }
@@ -165,7 +186,7 @@ func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
 // Old style function declarator
 old_func_declarator(A) ::= direct_declarator_head(HEAD)
                            old_func_direct_declarator_tail(TAIL). {
-    A = malloc(sizeof(AstNode));
+    A = HEAD;
     A->node_type = AST_FUNCTION_DEF;
     A->func_ident = HEAD->identifier;
     A->func_params = TAIL;
@@ -645,8 +666,11 @@ declarator(A) ::= direct_declarator_head(HEAD) direct_declarator_tail(TAIL). {
         A = TAIL;
         A->node_type = AST_FUNC_DECLARATION;
         A->func_ident = HEAD->identifier;
+        // Function returning a pointer
         if (HEAD->declarator_head_pointer != NULL)
             A->func_type = HEAD->declarator_head_pointer;
+        else
+            A->func_type = NULL;
         free(HEAD);
         A->func_body = NULL;
     }
