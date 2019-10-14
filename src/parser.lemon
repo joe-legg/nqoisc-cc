@@ -38,6 +38,7 @@ extern int yylex();
 extern char *yytext;
 extern FILE *yyin;
 extern int yylineno;
+extern void yylex_destroy();
 
 AstNode *parse(char *filename)
 {
@@ -60,6 +61,7 @@ AstNode *parse(char *filename)
     ParseFree(parser, free);
     free(yytext);
     fclose(yyin);
+    yylex_destroy();
 
     return ast_root_node;
 }

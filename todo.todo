@@ -13,6 +13,7 @@ odo List
 - [ ] start implementing a symbol table.
 - [ ] ast gen for typedefs.
 - [ ] ast gen for structs.
+- [ ] cleanup pointer AST gen.
 - [ ] fix memory leaks.
 - [x] fix functions returning pointers.
 - [x] AST gen for old style function definitions.
