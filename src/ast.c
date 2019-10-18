@@ -418,6 +418,7 @@ void print_ast(AstNode *ast)
             print_ast(ast->decl_list->items[i]);
             if (i != ast->decl_list->length - 1) printf(" ");
         }
+        vector_free(ast->decl_list);
         break;
     case AST_FUNC_DECLARATION:
         printf("(func-declaration %s ", ast->func_ident); // Name

@@ -51,6 +51,7 @@ AstNode *parse(char *filename)
     // ParseTrace(stdout, "Parser: ");
 
     while ((token_id = yylex())) {
+        free(cur_tok_str);
         cur_tok_str = strdup(yytext);
         cur_line_num = yylineno;
         Parse(parser, token_id, cur_tok_str);
@@ -59,8 +60,6 @@ AstNode *parse(char *filename)
     // Cleanup
     Parse(parser, 0, NULL);
     ParseFree(parser, free);
-    free(yytext);
-    fclose(yyin);
     yylex_destroy();
 
     return ast_root_node;
@@ -72,7 +71,7 @@ AstNode *parse(char *filename)
 %token_type   { char * }
 %default_type { AstNode * }
 
-// Define the token unknown
+// Define the token "unknown"
 %nonassoc UNKNOWN.
 
 %right KWD_IF KWD_ELSE.
@@ -263,12 +262,15 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         }
     }
 
+    delete_data_type(DECL_SPECS);
+
     if (INIT_DECL_LIST->length > 1) {
         A = malloc(sizeof(AstNode));
         A->node_type = AST_DECL_LIST;
         A->decl_list = INIT_DECL_LIST;
     } else {
         A = INIT_DECL_LIST->items[0];
+        vector_free(INIT_DECL_LIST);
     }
 }
 
@@ -445,6 +447,8 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
         }
     }
+
+    vector_free(TYPE_LIST);
 
     if (type == -1) {
         if (is_short) {
