@@ -13,7 +13,14 @@ instructions.
 - Aims to implement the C99 standard.
 
 ## Compiling
-Run ```build.sh``` to build jcc from source.
+To compile jcc you will need the following software installed:
+- The [lemon](https://www.hwaci.com/sw/lemon/) parser generator.
+- flex - lexer generator.
+- gcc.
+
+Run `build.sh` to build jcc from source.
+
+Currently, jcc does not have a makefile but at some point, I will write one.
 
 ## The Instruction Set
 The insruction set is based on [brainfuck](https://esolangs.org/wiki/Brainfuck).
@@ -29,7 +36,7 @@ Opcode  Imm 30-bit
 |--------|-------------|-----------------------------------------------------------|
 | 00     |  right imm  |  Move the cell pointer to the right by imm.               |
 | 01     |  add   imm  |  Add imm to the cell under the pointer.                   |
-| 10     |  bnz   imm  |  Set the instruction pointer to instruction pointer + imm if the current cell is equal to zero.                    |
+| 10     |  bnz   imm  |  Set the instruction pointer to instruction pointer + imm if the current cell is equal to zero. |
 
 Any I/O is memory mapped.
 
