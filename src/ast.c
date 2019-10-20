@@ -229,7 +229,7 @@ void delete_ast(AstNode *ast)
         break;
     case AST_FUNC_CALL:
         free(ast->func_call_ident);
-        vector_free(ast->func_call_args);
+        vector_free(ast->func_call_args); // TODO: fix this memory leak
         break;
     case AST_UNARY_OP:
     case AST_CONTINUE_STMT:
@@ -264,6 +264,7 @@ char *type_to_string(const DataType *type)
 
         char final_str[strlen(pointer_str) + 25];
         sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
+        free(pointer_str);
         return strdup(final_str);
     }
 

@@ -51,7 +51,6 @@ AstNode *parse(char *filename)
     // ParseTrace(stdout, "Parser: ");
 
     while ((token_id = yylex())) {
-        free(cur_tok_str);
         cur_tok_str = strdup(yytext);
         cur_line_num = yylineno;
         Parse(parser, token_id, cur_tok_str);
@@ -68,8 +67,9 @@ AstNode *parse(char *filename)
 }
 
 %token_prefix TOK_
-%token_type   { char * }
-%default_type { AstNode * }
+%token_type       { char * }
+%token_destructor { free($$); }
+%default_type     { AstNode * }
 
 // Define the token "unknown"
 %nonassoc UNKNOWN.
@@ -252,6 +252,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 free(declaration->decl_declarator->declarator_head_ident);
                 free(declaration->decl_declarator);
                 declaration->decl_declarator = new_ast_ident(ident);
+                free(ident);
             } else {
                 // Normal vaiable declaration
                 declaration->decl_type = malloc(sizeof(DataType));
@@ -448,6 +449,9 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         }
     }
 
+    // Delete the TYPE_LIST
+    for (int i = 0; i < TYPE_LIST->length; i++)
+        free(TYPE_LIST->items[i]);
     vector_free(TYPE_LIST);
 
     if (type == -1) {

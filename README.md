@@ -1,4 +1,8 @@
 # jcc (Joes C Compiler)
+Note: Currently the compiler is still in development. The parser is almost
+finished. Once the parser has fineshed I will work on implementing a
+prepocessor.
+
 A small c compiler designed to target an instruction set with only three
 instructions.
 
