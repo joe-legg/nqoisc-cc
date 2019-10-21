@@ -1,1 +1,8 @@
-int *const* test;
+int test()
+{
+}
+
+int main()
+{
+    test();
+}

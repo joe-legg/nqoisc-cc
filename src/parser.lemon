@@ -59,6 +59,7 @@ AstNode *parse(char *filename)
     // Cleanup
     Parse(parser, 0, NULL);
     ParseFree(parser, free);
+    fclose(yyin);
     yylex_destroy();
 
     return ast_root_node;
@@ -142,7 +143,7 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                 ->identifier,
                 ((char *)DECLARATOR->func_params->items[i])) != 0) {
                 error(cur_filename, cur_line_num, "identifiers do not match in "
-                      "function call.");
+                      "function definition.");
             }
         }
     }
@@ -1163,7 +1164,8 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN argument_expr_list(ARGS)
     // TODO: check that the postfix is an ident. Currently if the postfix is
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
-    A->func_call_ident = POSTFIX->identifier;
+    A->func_call_ident = strdup(POSTFIX->identifier);
+    delete_ast(POSTFIX);
     A->func_call_args = ARGS;
 }
 postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
@@ -1171,7 +1173,8 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
     // TODO: check that the postfix is an ident. Currently if the postfix is
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
-    A->func_call_ident = POSTFIX->identifier;
+    A->func_call_ident = strdup(POSTFIX->identifier);
+    delete_ast(POSTFIX);
     A->func_call_args = new_vector();
 }
 

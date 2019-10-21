@@ -229,7 +229,9 @@ void delete_ast(AstNode *ast)
         break;
     case AST_FUNC_CALL:
         free(ast->func_call_ident);
-        vector_free(ast->func_call_args); // TODO: fix this memory leak
+        for (int i = 0; i < ast->func_call_args->length; i++)
+            delete_ast(ast->func_call_args->items[i]);
+        vector_free(ast->func_call_args);
         break;
     case AST_UNARY_OP:
     case AST_CONTINUE_STMT:
