@@ -126,10 +126,12 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
 
 AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head)
 {
-    char *ident = strdup(declarator_head->declarator_head_ident);
+    AstNode *ident = new_ast_ident(declarator_head->declarator_head_ident);
     delete_ast(declarator_head);
-    return new_ast_ident(ident);
+    return ident;
 }
+
+/* Data types */
 
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers, DataType *pointer)
@@ -143,8 +145,7 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs,
     return new_type;
 }
 
-/* Compare DataTypes */
-
+// Compare data types
 int cmp_data_types(DataType *type_a, DataType *type_b)
 {
     if (type_a->type == type_b->type                       ||
@@ -156,13 +157,13 @@ int cmp_data_types(DataType *type_a, DataType *type_b)
     return 0;
 }
 
-/* Delete AST */
-
 void delete_data_type(DataType *type)
 {
     if (type->pointer != NULL) delete_data_type(type->pointer);
     free(type);
 }
+
+/* Delete AST */
 
 void delete_ast(AstNode *ast)
 {

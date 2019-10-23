@@ -259,6 +259,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 declaration->decl_type = malloc(sizeof(DataType));
                 memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
 
+                declaration->decl_declarator =
                 ast_declarator_head_to_identifier(declaration->decl_declarator);
             }
         }
