@@ -1197,14 +1197,11 @@ postfix_expr(A) ::= postfix_expr(EXPR) OP_MINUS_MINUS. {
 
 primary_expr(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
+    free(IDENT);
 }
 primary_expr(A) ::= constant(CONST). { A = CONST; }
-primary_expr(A) ::= STR_LIT(STR). {
-    A = new_ast_string_lit(STR);
-}
-primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. {
-    A = EXPR;
-}
+primary_expr(A) ::= STR_LIT(STR).    { A = new_ast_string_lit(STR); }
+primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. { A = EXPR; }
 
 // Constants
 constant(A) ::= integer_const(CONST). { A = CONST; }
