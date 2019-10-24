@@ -127,7 +127,7 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
 AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head)
 {
     AstNode *ident = new_ast_ident(declarator_head->declarator_head_ident);
-    delete_ast(declarator_head);
+    free_ast(declarator_head);
     return ident;
 }
 
@@ -167,15 +167,15 @@ int cmp_data_types(DataType *type_a, DataType *type_b)
     return 0;
 }
 
-void delete_data_type(DataType *type)
+void free_data_type(DataType *type)
 {
-    if (type->pointer != NULL) delete_data_type(type->pointer);
+    if (type->pointer != NULL) free_data_type(type->pointer);
     free(type);
 }
 
-/* Delete AST */
+/* Free AST */
 
-void delete_ast(AstNode *ast)
+void free_ast(AstNode *ast)
 {
     // Because of this there is no need to check for null children
     if (ast == NULL) return;
@@ -184,38 +184,38 @@ void delete_ast(AstNode *ast)
     case AST_GOTO_STMT:
     case AST_STR_LIT:      free(ast->str_lit); break;
     case AST_IDENTIFIER:   free(ast->identifier); break;
-    case AST_DEFAULT_STMT: delete_ast(ast->default_stmt); break;
+    case AST_DEFAULT_STMT: free_ast(ast->default_stmt); break;
     case AST_EXPR_STMT:
-    case AST_RETURN_STMT:  delete_ast(ast->expression); break;
+    case AST_RETURN_STMT:  free_ast(ast->expression); break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
-        delete_ast(ast->label_stmt);
+        free_ast(ast->label_stmt);
         break;
     case AST_BINARY_OP:
-        delete_ast(ast->binary_left);
-        delete_ast(ast->binary_right);
+        free_ast(ast->binary_left);
+        free_ast(ast->binary_right);
         break;
     case AST_DECLARATOR_HEAD:
         if (ast->declarator_head_pointer != NULL)
-            delete_data_type(ast->declarator_head_pointer);
+            free_data_type(ast->declarator_head_pointer);
         free(ast->declarator_head_ident);
         break;
     case AST_DECL_LIST:
         for (int i = 0; i < ast->decl_list->length; i++)
-            delete_ast(ast->decl_list->items[i]);
+            free_ast(ast->decl_list->items[i]);
         break;
     case AST_DECLARATION:
-        delete_data_type(ast->decl_type);
-        delete_ast(ast->decl_declarator);
-        delete_ast(ast->decl_initializer);
+        free_data_type(ast->decl_type);
+        free_ast(ast->decl_declarator);
+        free_ast(ast->decl_initializer);
         break;
     case AST_COMPOUND_STMT:
         for (int i = 0; i < ast->statements->length; i++)
-            delete_ast(ast->statements->items[i]);
+            free_ast(ast->statements->items[i]);
         vector_free(ast->statements);
         break;
     case AST_STRUCT_MEMBER_ACCESS:
-        delete_ast(ast->structure);
+        free_ast(ast->structure);
         free(ast->struct_member_ident);
         break;
     // Conditionals
@@ -225,23 +225,23 @@ void delete_ast(AstNode *ast)
     case AST_SWITCH_STMT:
     case AST_DO_WHILE_STMT:
     case AST_CONDITIONAL_EXPR:
-        delete_ast(ast->cond);
-        delete_ast(ast->cond_body);
-        delete_ast(ast->cond_else);
+        free_ast(ast->cond);
+        free_ast(ast->cond_body);
+        free_ast(ast->cond_else);
         break;
     case AST_FUNC_DECLARATION:
     case AST_FUNCTION_DEF:
         for (int i = 0; i < ast->func_params->length; i++)
-            delete_ast(ast->func_params->items[i]);
+            free_ast(ast->func_params->items[i]);
         vector_free(ast->func_params);
-        delete_data_type(ast->func_type);
+        free_data_type(ast->func_type);
         free(ast->func_ident);
-        delete_ast(ast->func_body);
+        free_ast(ast->func_body);
         break;
     case AST_FUNC_CALL:
         free(ast->func_call_ident);
         for (int i = 0; i < ast->func_call_args->length; i++)
-            delete_ast(ast->func_call_args->items[i]);
+            free_ast(ast->func_call_args->items[i]);
         vector_free(ast->func_call_args);
         break;
     case AST_UNARY_OP:

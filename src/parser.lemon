@@ -1046,7 +1046,7 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN argument_expr_list(ARGS)
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
     A->func_call_ident = strdup(POSTFIX->identifier);
-    delete_ast(POSTFIX);
+    free_ast(POSTFIX);
     A->func_call_args = ARGS;
 }
 postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
@@ -1055,7 +1055,7 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
     A->func_call_ident = strdup(POSTFIX->identifier);
-    delete_ast(POSTFIX);
+    free_ast(POSTFIX);
     A->func_call_args = new_vector();
 }
 

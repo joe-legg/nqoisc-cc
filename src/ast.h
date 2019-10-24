@@ -238,9 +238,9 @@ void set_pointer_type(DataType *pointer, DataType *type);
 // Return 1 if both types are equal
 int cmp_data_types(DataType *type_a, DataType *type_b);
 
-// Delete functions
-void delete_ast(AstNode *ast);
-void delete_data_type(DataType *type);
+// Free functions
+void free_ast(AstNode *ast);
+void free_data_type(DataType *type);
 
 // Printing
 char *type_to_string(const DataType *type); // Used for error messages
