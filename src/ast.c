@@ -152,7 +152,6 @@ void set_pointer_type(DataType *pointer, DataType *type)
     DataType *last_pointer = pointer;
     while (last_pointer->pointer != NULL)
         last_pointer = last_pointer->pointer;
-    last_pointer->pointer = malloc(sizeof(DataType));
     last_pointer->pointer = type;
 }
 

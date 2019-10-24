@@ -1,3 +1,1 @@
-auto auto int test()
-{
-}
+int *a;

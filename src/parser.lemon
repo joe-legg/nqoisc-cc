@@ -216,11 +216,9 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 set_pointer_type(declaration->decl_declarator->
                                  declarator_head_pointer, DECL_SPECS);
 
-                // Remove the pointer from the declarator head.
-                declaration->decl_type = malloc(sizeof(DataType));
-                memcpy(declaration->decl_type,
-                       declaration->decl_declarator->declarator_head_pointer,
-                       sizeof(DataType));
+                // Remove the pointer from the declarator head
+                declaration->decl_type = declaration->decl_declarator->
+                                         declarator_head_pointer;
 
                 char *ident = strdup(declaration->decl_declarator->
                                      declarator_head_ident);
@@ -272,11 +270,10 @@ init_declarator_list(A) ::= init_declarator_list(DECL_LIST) COMMA
 }
 
 init_declarator(A) ::= declarator(DECL). {
-    if (DECL->node_type == AST_FUNC_DECLARATION) {
+    if (DECL->node_type == AST_FUNC_DECLARATION)
         A = DECL;
-    } else {
+    else
         A = new_ast_declaration(NULL, DECL, NULL);
-    }
 }
 init_declarator(A) ::= declarator(DECL) OP_EQUALS initializer(INIT). {
     if (DECL->node_type == AST_FUNC_DECLARATION)
