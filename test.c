@@ -1,3 +1,3 @@
-int test(int a)
+auto auto int test()
 {
 }

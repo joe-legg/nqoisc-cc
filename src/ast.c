@@ -145,6 +145,17 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs,
     return new_type;
 }
 
+// This function is needed because pointer data types
+// are stored as linked lists.
+void set_pointer_type(DataType *pointer, DataType *type)
+{
+    DataType *last_pointer = pointer;
+    while (last_pointer->pointer != NULL)
+        last_pointer = last_pointer->pointer;
+    last_pointer->pointer = malloc(sizeof(DataType));
+    last_pointer->pointer = type;
+}
+
 // Compare data types
 int cmp_data_types(DataType *type_a, DataType *type_b)
 {

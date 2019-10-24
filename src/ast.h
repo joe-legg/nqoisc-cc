@@ -234,7 +234,7 @@ AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head);
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers, DataType *pointer);
-
+void set_pointer_type(DataType *pointer, DataType *type);
 // Return 1 if both types are equal
 int cmp_data_types(DataType *type_a, DataType *type_b);
 

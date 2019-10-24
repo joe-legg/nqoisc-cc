@@ -103,7 +103,6 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            compound_statement(BODY). {
     A = DECLARATOR;
     // Check storage-class specifiers
-    // TODO: move this to check_ast()
     if (DECL_SPECS->storage_specs &&
         (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
         DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN)) {
@@ -113,17 +112,11 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
 
     // Set the function return type
     // Function returning pointer
-    if (DECLARATOR->func_type != NULL) {
-        DataType *last_pointer = DECLARATOR->func_type; // TODO: create a function for this
-        while (last_pointer->pointer != NULL)
-            last_pointer = last_pointer->pointer;
-        last_pointer->pointer = malloc(sizeof(DataType));
-        last_pointer->pointer = DECL_SPECS;
-    } else {
+    if (A->func_type != NULL)
+        set_pointer_type(A->func_type, DECL_SPECS);
+    else
         A->func_type = DECL_SPECS;
-    }
 
-    A->func_params = DECLARATOR->func_params;
     A->func_body = BODY;
 }
 function_definition(A) ::= declaration_specs(DECL_SPECS)
@@ -132,7 +125,7 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            compound_statement(BODY). {
     A = DECLARATOR;
 
-    if (DECLARATOR->func_params->length != DECLARATION_LIST->length) {
+    if (A->func_params->length != DECLARATION_LIST->length) {
         error(cur_filename, cur_line_num, "length of parameter in function "
               "declarator does not match the length of the parameters in the "
               "declaration list.");
@@ -141,7 +134,7 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
             // Check that the identifiers match
             if (strcmp(((AstNode *)DECLARATION_LIST->items[i])->decl_declarator
                 ->identifier,
-                ((char *)DECLARATOR->func_params->items[i])) != 0) {
+                ((char *)A->func_params->items[i])) != 0) {
                 error(cur_filename, cur_line_num, "identifiers do not match in "
                       "function definition.");
             }
@@ -149,15 +142,10 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     }
 
     // Function returning pointer
-    if (DECLARATOR->func_type != NULL) {
-        DataType *last_pointer = DECLARATOR->func_type;
-        while (last_pointer->pointer != NULL)
-            last_pointer = last_pointer->pointer;
-        last_pointer->pointer = malloc(sizeof(DataType));
-        last_pointer->pointer = DECL_SPECS;
-    } else {
+    if (A->func_type != NULL)
+        set_pointer_type(A->func_type, DECL_SPECS);
+    else
         A->func_type = DECL_SPECS;
-    }
 
     A->func_params = DECLARATION_LIST;
     A->func_body = BODY;
@@ -216,14 +204,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         if (declaration->node_type == AST_FUNC_DECLARATION) {
             // Function returning a pointer
             if (declaration->func_type != NULL) {
-                // Loop over the pointer to set the pointer type
-                DataType *last_pointer = declaration->func_type;
-                while (last_pointer->pointer != NULL) {
-                    last_pointer = last_pointer->pointer;
-                }
-                last_pointer->pointer = malloc(sizeof(DataType));
-                memcpy(last_pointer->pointer, DECL_SPECS, sizeof(DataType));
-            // Normal return type. Not a pointer
+                set_pointer_type(declaration->func_type, DECL_SPECS);
             } else {
                 declaration->func_type = malloc(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
@@ -232,22 +213,15 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         } else {
             // If it is a pointer
             if (declaration->decl_declarator->declarator_head_pointer != NULL) {
-                DataType *pointer_type = malloc(sizeof(DataType));
-                memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
+                set_pointer_type(declaration->decl_declarator->
+                                 declarator_head_pointer, DECL_SPECS);
 
-                // Loop over the pointer to set the pointer type
-                DataType *last_pointer = declaration->decl_declarator->
-                                         declarator_head_pointer;
-                while (last_pointer->pointer != NULL) {
-                    last_pointer = last_pointer->pointer;
-                }
-                last_pointer->pointer = pointer_type;
+                // Remove the pointer from the declarator head.
                 declaration->decl_type = malloc(sizeof(DataType));
                 memcpy(declaration->decl_type,
                        declaration->decl_declarator->declarator_head_pointer,
                        sizeof(DataType));
 
-                // Remove the pointer from the declarator head.
                 char *ident = strdup(declaration->decl_declarator->
                                      declarator_head_ident);
                 free(declaration->decl_declarator->declarator_head_ident);
@@ -264,8 +238,6 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
             }
         }
     }
-
-    delete_data_type(DECL_SPECS);
 
     if (INIT_DECL_LIST->length > 1) {
         A = malloc(sizeof(AstNode));
@@ -325,61 +297,43 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     int storage_specs = 0;
     int type_qualifiers = 0;
 
-    // NOTE: This is probably not the best way to do but is was the best I could
-    //       think of also this is probably the worst code in the compiler.
     // Parse the list of types.
     for (int i = 0; i < TYPE_LIST->length; i++) {
-        switch (*(int *)TYPE_LIST->items[i]) {
+        int cur_specifier = *(int *)TYPE_LIST->items[i];
+
+        switch (cur_specifier) {
         case TYPE_INT:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = TYPE_INT;
-            break;
         case TYPE_VOID:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = TYPE_VOID;
-            break;
         case TYPE_CHAR:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = TYPE_CHAR;
-            break;
         case TYPE_FLOAT:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = TYPE_FLOAT;
-            break;
         case TYPE_DOUBLE:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = TYPE_DOUBLE;
-            break;
         case TYPE_BOOL:
             if (type > -1)
                 error(cur_filename, cur_line_num,
                       "multiple data types in declaration specifiers.");
             else
-                type = TYPE_BOOL;
+                type = cur_specifier;
             break;
+        case STORAGE_SPEC_TYPEDEF:
+        case STORAGE_SPEC_EXTERN:
+        case STORAGE_SPEC_STATIC:
+        case STORAGE_SPEC_AUTO:
+        case STORAGE_SPEC_REGISTER:
+            if (storage_specs)
+                error(cur_filename, cur_line_num,
+                      "multiple storage specifiers in declaration specifiers.");
+            else storage_specs = cur_specifier;
+            break;
+        case TYPE_QUAL_CONST:    type_qualifiers |= TYPE_QUAL_CONST; break;
+        case TYPE_QUAL_VOLATILE: type_qualifiers |= TYPE_QUAL_VOLATILE; break;
+        case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
         case TYPE_SHORT:
-            if (is_short) {
+            if (is_short)
                 error(cur_filename, cur_line_num,
                       "\"short\" appears more than once in declaration "
                       "specifiers.");
-            } else {
+            else
                 is_short = 1;
-            }
             break;
         case TYPE_LONG: long_cnt++; break;
         case TYPE_SIGNED:
@@ -404,50 +358,6 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                 is_unsigned = 1;
             }
             break;
-
-        case STORAGE_SPEC_TYPEDEF:
-            if (storage_specs) {
-                error(cur_filename, cur_line_num,
-                      "duplicate \"typedef\" in declaration specifiers.");
-            } else {
-                storage_specs = STORAGE_SPEC_TYPEDEF;
-            }
-            break;
-        case STORAGE_SPEC_EXTERN:
-            if (storage_specs) {
-                error(cur_filename, cur_line_num,
-                      "duplicate \"extern\" in declaration specifiers.");
-            } else {
-                storage_specs = STORAGE_SPEC_EXTERN;
-            }
-            break;
-        case STORAGE_SPEC_STATIC:
-            if (storage_specs) {
-                error(cur_filename, cur_line_num,
-                      "duplicate \"static\" in declaration specifiers.");
-            } else {
-                storage_specs = STORAGE_SPEC_STATIC;
-            }
-            break;
-        case STORAGE_SPEC_AUTO:
-            if (storage_specs) {
-                error(cur_filename, cur_line_num,
-                      "duplicate \"auto\" in declaration specifiers.");
-            } else {
-                storage_specs = STORAGE_SPEC_AUTO;
-            }
-            break;
-        case STORAGE_SPEC_REGISTER:
-            if (storage_specs) {
-                error(cur_filename, cur_line_num,
-                      "duplicate \"register\" in declaration specifiers.");
-            } else {
-                storage_specs = STORAGE_SPEC_REGISTER;
-            }
-            break;
-        case TYPE_QUAL_CONST:    type_qualifiers |= TYPE_QUAL_CONST; break;
-        case TYPE_QUAL_VOLATILE: type_qualifiers |= TYPE_QUAL_VOLATILE; break;
-        case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
         }
     }
 
@@ -455,6 +365,9 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
     for (int i = 0; i < TYPE_LIST->length; i++)
         free(TYPE_LIST->items[i]);
     vector_free(TYPE_LIST);
+
+    // NOTE: This next section of the code is probably the worst code in the
+    //       compiler. YOU HAVE BEEN WARNED.
 
     if (type == -1) {
         if (is_short) {
@@ -471,9 +384,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
         }
     }
 
-    if (is_short && type == TYPE_INT) {
-        type = TYPE_SHORT;
-    }
+    if (is_short && type == TYPE_INT) type = TYPE_SHORT;
 
     if (long_cnt > 2) {
         error(cur_filename, cur_line_num,
@@ -521,8 +432,8 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
                       type_qualifiers, NULL);
 }
 
-%type declaration_specs_list { Vector * }
 // Storage class specifiers
+%type declaration_specs_list { Vector * }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC). {
     void *new_spec = malloc(sizeof(int));
     *((int *)new_spec) = SPEC;
@@ -570,18 +481,10 @@ declaration_specs_list ::= KWD_INLINE.
 declaration_specs_list ::= KWD_INLINE declaration_specs_list.
 
 %type storage_class_specifier { int }
-storage_class_specifier(A) ::= KWD_TYPEDEF. {
-    A = STORAGE_SPEC_TYPEDEF;
-}
-storage_class_specifier(A) ::= KWD_EXTERN. {
-    A = STORAGE_SPEC_EXTERN;
-}
-storage_class_specifier(A) ::= KWD_STATIC. {
-    A = STORAGE_SPEC_STATIC;
-}
-storage_class_specifier(A) ::= KWD_AUTO. {
-    A = STORAGE_SPEC_AUTO;
-}
+storage_class_specifier(A) ::= KWD_TYPEDEF. { A = STORAGE_SPEC_TYPEDEF; }
+storage_class_specifier(A) ::= KWD_EXTERN.  { A = STORAGE_SPEC_EXTERN; }
+storage_class_specifier(A) ::= KWD_STATIC.  { A = STORAGE_SPEC_STATIC; }
+storage_class_specifier(A) ::= KWD_AUTO.    { A = STORAGE_SPEC_AUTO; }
 storage_class_specifier(A) ::= KWD_REGISTER. {
     A = STORAGE_SPEC_REGISTER;
     // TODO: Maybe remove this warning
@@ -595,36 +498,16 @@ specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
 // Type specifiers
 %type type_specifier { int }
-type_specifier(A) ::= KWD_VOID. {
-    A = TYPE_VOID;
-}
-type_specifier(A) ::= KWD_CHAR. {
-    A = TYPE_CHAR;
-}
-type_specifier(A) ::= KWD_SHORT. {
-    A = TYPE_SHORT;
-}
-type_specifier(A) ::= KWD_LONG. {
-    A = TYPE_LONG;
-}
-type_specifier(A) ::= KWD_INT. {
-    A = TYPE_INT;
-}
-type_specifier(A) ::= KWD_FLOAT. {
-    A = TYPE_FLOAT;
-}
-type_specifier(A) ::= KWD_DOUBLE. {
-    A = TYPE_DOUBLE;
-}
-type_specifier(A) ::= KWD_SIGNED. {
-    A = TYPE_SIGNED;
-}
-type_specifier(A) ::= KWD_UNSIGNED. {
-    A = TYPE_UNSIGNED;
-}
-type_specifier(A) ::= KWD_BOOL. {
-    A = TYPE_BOOL;
-}
+type_specifier(A) ::= KWD_VOID.     { A = TYPE_VOID; }
+type_specifier(A) ::= KWD_CHAR.     { A = TYPE_CHAR; }
+type_specifier(A) ::= KWD_SHORT.    { A = TYPE_SHORT; }
+type_specifier(A) ::= KWD_LONG.     { A = TYPE_LONG; }
+type_specifier(A) ::= KWD_INT.      { A = TYPE_INT; }
+type_specifier(A) ::= KWD_FLOAT.    { A = TYPE_FLOAT; }
+type_specifier(A) ::= KWD_DOUBLE.   { A = TYPE_DOUBLE; }
+type_specifier(A) ::= KWD_SIGNED.   { A = TYPE_SIGNED; }
+type_specifier(A) ::= KWD_UNSIGNED. { A = TYPE_UNSIGNED; }
+type_specifier(A) ::= KWD_BOOL.     { A = TYPE_BOOL; }
 type_specifier ::= KWD_IMAGINARY. {
     error(cur_filename, cur_line_num, "complex types not supported.");
 }
