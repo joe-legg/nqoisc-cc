@@ -1,1 +1,3 @@
-int a = 32;
+int test(int a)
+{
+}

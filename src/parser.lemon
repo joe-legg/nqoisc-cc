@@ -177,7 +177,7 @@ func_declarator(A) ::= direct_declarator_head(HEAD)
 func_direct_declarator_tail(A) ::= LPAREN parameter_type_list(PARAMS) RPAREN. {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
-    A->func_params = PARAMS->func_params;
+    A->func_params = PARAMS;
 }
 func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
     A = malloc(sizeof(AstNode));
@@ -771,18 +771,18 @@ type_qualifier(A) ::= KWD_VOLATILE. {
 }
 
 // Parameters
+%type parameter_type_list { Vector * }
 parameter_type_list(A) ::= parameter_list(PARAMS). { A = PARAMS; }
 parameter_type_list ::= parameter_list COMMA ELLIPSIS. // TODO
 
+%type parameter_list { Vector * }
 parameter_list(A) ::= parameter_declaration(PARAM). {
-    A = malloc(sizeof(AstNode));
-    A->node_type = AST_FUNCTION_DEF;
-    A->func_params = new_vector();
-    vector_append(A->func_params, PARAM);
+    A = new_vector();
+    vector_append(A, PARAM);
 }
 parameter_list(A) ::= parameter_list(PARAM_LIST) COMMA
                       parameter_declaration(NEW_PARAM). {
-    vector_append(PARAM_LIST->func_params, NEW_PARAM);
+    vector_append(PARAM_LIST, NEW_PARAM);
     A = PARAM_LIST;
 }
 
@@ -791,7 +791,7 @@ parameter_declaration(A) ::= declaration_specs(DECL_SPECS). {
 }
 parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
                              declarator(DECLARATOR). {
-    ast_declarator_head_to_identifier(DECLARATOR);
+    DECLARATOR = ast_declarator_head_to_identifier(DECLARATOR);
     A = new_ast_declaration(DECL_SPECS, DECLARATOR, NULL);
 }
 
