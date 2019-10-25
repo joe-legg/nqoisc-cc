@@ -243,6 +243,8 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         }
     }
 
+    free_data_type(DECL_SPECS);
+
     if (INIT_DECL_LIST->length > 1) {
         A = malloc(sizeof(AstNode));
         A->node_type = AST_DECL_LIST;
