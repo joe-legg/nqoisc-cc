@@ -204,7 +204,10 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         if (declaration->node_type == AST_FUNC_DECLARATION) {
             // Function returning a pointer
             if (declaration->func_type != NULL) {
-                set_pointer_type(declaration->func_type, DECL_SPECS);
+                DataType *pointer_type = malloc(sizeof(DataType));
+                memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
+
+                set_pointer_type(declaration->func_type, pointer_type);
             } else {
                 declaration->func_type = malloc(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
@@ -213,8 +216,11 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         } else {
             // If it is a pointer
             if (declaration->decl_declarator->declarator_head_pointer != NULL) {
+                DataType *pointer_type = malloc(sizeof(DataType));
+                memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
+
                 set_pointer_type(declaration->decl_declarator->
-                                 declarator_head_pointer, DECL_SPECS);
+                                 declarator_head_pointer, pointer_type);
 
                 // Remove the pointer from the declarator head
                 declaration->decl_type = declaration->decl_declarator->
