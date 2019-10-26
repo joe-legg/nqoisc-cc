@@ -190,6 +190,9 @@ void free_ast(AstNode *ast)
     case AST_DEFAULT_STMT: free_ast(ast->default_stmt); break;
     case AST_EXPR_STMT:
     case AST_RETURN_STMT:  free_ast(ast->expression); break;
+    case AST_UNARY_OP:
+        free(ast->unary_expr);
+        break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
         free_ast(ast->label_stmt);
@@ -248,7 +251,6 @@ void free_ast(AstNode *ast)
             free_ast(ast->func_call_args->items[i]);
         vector_free(ast->func_call_args);
         break;
-    case AST_UNARY_OP:
     case AST_CONTINUE_STMT:
     case AST_INTEGER_CONST:
     case AST_FLOAT_CONST:
