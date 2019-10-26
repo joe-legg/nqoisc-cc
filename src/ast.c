@@ -114,7 +114,9 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
     vector_append(stmts->statements, clause_1);
 
     if (expr_3 != NULL) {
-        if (body->statements == NULL) {
+        if (body == NULL) {
+            body = malloc(sizeof(AstNode));
+            body->node_type = AST_COMPOUND_STMT;
             body->statements = new_vector();
             vector_append(body->statements, expr_3);
         }
