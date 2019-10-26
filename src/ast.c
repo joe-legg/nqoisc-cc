@@ -40,7 +40,7 @@ AstNode *new_ast_string_lit(char *str)
     node->node_type = AST_STR_LIT;
 
     // Remove quotation marks from string. This is needed because of a badly
-    // writen regex in lexer.l
+    // writen regex in lexer.l TODO: rewrite the string regex
     memmove(str, str + 1, strlen(str));
     str[strlen(str) - 1] = '\0';
 

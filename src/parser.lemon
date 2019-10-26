@@ -776,10 +776,12 @@ block_item_list(A) ::= block_item(ITEM). {
     A = malloc(sizeof(AstNode));
     A->node_type = AST_COMPOUND_STMT;
     A->statements = new_vector();
-    vector_append(A->statements, ITEM);
+    if (ITEM != NULL)
+        vector_append(A->statements, ITEM);
 }
 block_item_list(A) ::= block_item_list(ITEM_LIST) block_item(NEW_ITEM). {
-    vector_append(ITEM_LIST->statements, NEW_ITEM);
+    if (NEW_ITEM != NULL)
+        vector_append(ITEM_LIST->statements, NEW_ITEM);
     A = ITEM_LIST;
 }
 
@@ -1086,7 +1088,7 @@ postfix_expr(A) ::= postfix_expr(EXPR) OP_MINUS_MINUS. {
 
 primary_expr(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
-    free(IDENT);
+    free(IDENT); // TODO: this might not be needed
 }
 primary_expr(A) ::= constant(CONST). { A = CONST; }
 primary_expr(A) ::= STR_LIT(STR).    { A = new_ast_string_lit(STR); }
