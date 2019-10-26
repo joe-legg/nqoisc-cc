@@ -790,7 +790,7 @@ block_item(A) ::= statement(STMT).   { A = STMT; }
 expression_statement(A) ::= expression(EXPR) SEMICOLON. {
     A = new_expr_stmt(EXPR);
 }
-expression_statement ::= SEMICOLON.
+expression_statement(A) ::= SEMICOLON. { A = NULL; }
 
 // If else
 selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN

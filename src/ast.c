@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "ast.h"
+#include "error.h"
 
 /* New Ast Functions */
 
@@ -329,6 +330,11 @@ static void print_data_type(const DataType *type)
 
 void print_ast(AstNode *ast)
 {
+    if (ast == NULL) {
+        printf("(null)");
+        return;
+    }
+
     switch (ast->node_type) {
     case AST_BREAK_STMT:    printf("(break)"); break;
     case AST_CONTINUE_STMT: printf("(continue)"); break;
@@ -365,8 +371,7 @@ void print_ast(AstNode *ast)
         break;
     case AST_RETURN_STMT:
         printf("(return-stmt ");
-        if (ast->expression == NULL) printf("(null)");
-        else print_ast(ast->expression);
+        print_ast(ast->expression);
         printf(")");
         break;
     case AST_DEFAULT_STMT:
