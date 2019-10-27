@@ -14,8 +14,8 @@ Todo List
 - [ ] ast gen for typedefs.
 - [ ] ast gen for structs.
 - [ ] look at the todos in the code.
-- [ ] create a test system.
 - [ ] fix memory leaks. - THERE ARE A LOT OF MEMORY LEAKS
+- [x] create a test system.
 - [x] rename delete_ functions to free_
 - [x] fix functions returning pointers.
 - [x] AST gen for old style function definitions.
@@ -78,5 +78,4 @@ Long Term Todo
 #########################################
 - [ ] Optimization with genetic algorithm. - Not sure that this is possiable
 - [ ] c11 standard
-
-- [ ] redo declaration specs pasing.
+- [ ] rewrite declaration specs pasing.
