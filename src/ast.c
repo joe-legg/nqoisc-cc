@@ -191,7 +191,7 @@ void free_ast(AstNode *ast)
     case AST_EXPR_STMT:
     case AST_RETURN_STMT:  free_ast(ast->expression); break;
     case AST_UNARY_OP:
-        free(ast->unary_expr);
+        free_ast(ast->unary_expr);
         break;
     case AST_LABEL_STMT:
         free(ast->label_ident);

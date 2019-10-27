@@ -124,7 +124,6 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            declaration_list(DECLARATION_LIST)
                            compound_statement(BODY). {
     A = DECLARATOR;
-
     if (A->func_params->length != DECLARATION_LIST->length) {
         error(cur_filename, cur_line_num, "length of parameter in function "
               "declarator does not match the length of the parameters in the "
@@ -476,7 +475,7 @@ declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL). {
     vector_append(A, new_qualifier);
 }
 declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
-                           declaration_specs_list(DECL_SPECS). {
+                              declaration_specs_list(DECL_SPECS). {
     void *new_qualifier = malloc(sizeof(int));
     *((int *)new_qualifier) = TYPE_QUAL;
     vector_append(DECL_SPECS, new_qualifier);
@@ -1112,6 +1111,7 @@ integer_const(A) ::= DECIMAL_CONST(CONST). {
 }
 integer_const(A) ::= OCTAL_CONST(CONST). {
     A = new_ast_integer_const(strtol(CONST, NULL, 8));
+    free(CONST);
 }
 integer_const(A) ::= HEXADECIMAL_CONST(CONST). {
     A = new_ast_integer_const(strtol(CONST, NULL, 16));
