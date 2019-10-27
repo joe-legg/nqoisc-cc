@@ -1,0 +1,6 @@
+struct Test {
+}
+
+int main()
+{
+}
