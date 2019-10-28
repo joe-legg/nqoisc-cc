@@ -491,7 +491,6 @@ storage_class_specifier(A) ::= KWD_STATIC.  { A = STORAGE_SPEC_STATIC; }
 storage_class_specifier(A) ::= KWD_AUTO.    { A = STORAGE_SPEC_AUTO; }
 storage_class_specifier(A) ::= KWD_REGISTER. {
     A = STORAGE_SPEC_REGISTER;
-    // TODO: Maybe remove this warning
     warning(cur_filename, cur_line_num, "register keyword is not supported.");
 }
 
@@ -1087,7 +1086,7 @@ postfix_expr(A) ::= postfix_expr(EXPR) OP_MINUS_MINUS. {
 
 primary_expr(A) ::= IDENT(IDENT). {
     A = new_ast_ident(IDENT);
-    free(IDENT); // TODO: this might not be needed
+    free(IDENT);
 }
 primary_expr(A) ::= constant(CONST). { A = CONST; }
 primary_expr(A) ::= STR_LIT(STR).    { A = new_ast_string_lit(STR); }
@@ -1115,6 +1114,7 @@ integer_const(A) ::= OCTAL_CONST(CONST). {
 }
 integer_const(A) ::= HEXADECIMAL_CONST(CONST). {
     A = new_ast_integer_const(strtol(CONST, NULL, 16));
+    free(CONST);
 }
 
 floating_const(A) ::= DECIMAL_FLOAT(CONST). {
