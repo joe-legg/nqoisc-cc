@@ -14,6 +14,12 @@ static char *cur_tok_str;
 // Root node for the AST
 static AstNode *ast_root_node;
 
+// Declaration specifier type
+typedef union DeclSpec {
+    int type;
+    AstNode *other;
+} DeclSpec;
+
 }
 
 %syntax_error {
@@ -303,7 +309,7 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
 
     // Parse the list of types.
     for (int i = 0; i < TYPE_LIST->length; i++) {
-        int cur_specifier = *(int *)TYPE_LIST->items[i];
+        int cur_specifier = ((DeclSpec *)TYPE_LIST->items[i])->type;
 
         switch (cur_specifier) {
         case TYPE_INT:
@@ -439,45 +445,45 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
 // Storage class specifiers
 %type declaration_specs_list { Vector * }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC). {
-    void *new_spec = malloc(sizeof(int));
-    *((int *)new_spec) = SPEC;
+    void *new_spec = malloc(sizeof(DeclSpec));
+    ((DeclSpec *)new_spec)->type = SPEC;
     A = new_vector();
     vector_append(A, new_spec);
 }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC)
                               declaration_specs_list(DECL_SPECS). {
-    void *new_spec = malloc(sizeof(int));
-    *((int *)new_spec) = SPEC;
+    void *new_spec = malloc(sizeof(DeclSpec));
+    ((DeclSpec *)new_spec)->type = SPEC;
     vector_append(DECL_SPECS, new_spec);
     A = DECL_SPECS;
 }
 
 // Type specifiers
 declaration_specs_list(A) ::= type_specifier(TYPE). {
-    void *new_type = malloc(sizeof(int));
-    *((int *)new_type) = TYPE;
+    void *new_type = malloc(sizeof(DeclSpec));
+    memcpy(new_type, &TYPE, sizeof(DeclSpec));
     A = new_vector();
     vector_append(A, new_type);
 }
-declaration_specs_list(A) ::= type_specifier(NEW_TYPE)
+declaration_specs_list(A) ::= type_specifier(TYPE)
                               declaration_specs_list(DECL_SPECS). {
-    void *new_type = malloc(sizeof(int));
-    *((int *)new_type) = NEW_TYPE;
+    void *new_type = malloc(sizeof(DeclSpec));
+    memcpy(new_type, &TYPE, sizeof(DeclSpec));
     vector_append(DECL_SPECS, new_type);
     A = DECL_SPECS;
 }
 
 // Type qualifiers
 declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL). {
-    void *new_qualifier = malloc(sizeof(int));
-    *((int *)new_qualifier) = TYPE_QUAL;
+    void *new_qualifier = malloc(sizeof(DeclSpec));
+    ((DeclSpec *)new_qualifier)->type = TYPE_QUAL;
     A = new_vector();
     vector_append(A, new_qualifier);
 }
 declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
                               declaration_specs_list(DECL_SPECS). {
-    void *new_qualifier = malloc(sizeof(int));
-    *((int *)new_qualifier) = TYPE_QUAL;
+    void *new_qualifier = malloc(sizeof(DeclSpec));
+    ((DeclSpec *)new_qualifier)->type = TYPE_QUAL;
     vector_append(DECL_SPECS, new_qualifier);
     A = DECL_SPECS;
 }
@@ -500,17 +506,17 @@ specifier_qualifier_list ::= type_qualifier.
 specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
 
 // Type specifiers
-%type type_specifier { int }
-type_specifier(A) ::= KWD_VOID.     { A = TYPE_VOID; }
-type_specifier(A) ::= KWD_CHAR.     { A = TYPE_CHAR; }
-type_specifier(A) ::= KWD_SHORT.    { A = TYPE_SHORT; }
-type_specifier(A) ::= KWD_LONG.     { A = TYPE_LONG; }
-type_specifier(A) ::= KWD_INT.      { A = TYPE_INT; }
-type_specifier(A) ::= KWD_FLOAT.    { A = TYPE_FLOAT; }
-type_specifier(A) ::= KWD_DOUBLE.   { A = TYPE_DOUBLE; }
-type_specifier(A) ::= KWD_SIGNED.   { A = TYPE_SIGNED; }
-type_specifier(A) ::= KWD_UNSIGNED. { A = TYPE_UNSIGNED; }
-type_specifier(A) ::= KWD_BOOL.     { A = TYPE_BOOL; }
+%type type_specifier { DeclSpec }
+type_specifier(A) ::= KWD_VOID.     { A.type = TYPE_VOID; }
+type_specifier(A) ::= KWD_CHAR.     { A.type = TYPE_CHAR; }
+type_specifier(A) ::= KWD_SHORT.    { A.type = TYPE_SHORT; }
+type_specifier(A) ::= KWD_LONG.     { A.type = TYPE_LONG; }
+type_specifier(A) ::= KWD_INT.      { A.type = TYPE_INT; }
+type_specifier(A) ::= KWD_FLOAT.    { A.type = TYPE_FLOAT; }
+type_specifier(A) ::= KWD_DOUBLE.   { A.type = TYPE_DOUBLE; }
+type_specifier(A) ::= KWD_SIGNED.   { A.type = TYPE_SIGNED; }
+type_specifier(A) ::= KWD_UNSIGNED. { A.type = TYPE_UNSIGNED; }
+type_specifier(A) ::= KWD_BOOL.     { A.type = TYPE_BOOL; }
 type_specifier ::= KWD_IMAGINARY. {
     error(cur_filename, cur_line_num, "complex types not supported.");
 }
@@ -521,7 +527,8 @@ type_specifier ::= TYPEDEF_NAME.
 type_specifier ::= struct_or_union_specifier.
 type_specifier ::= enum_specifier.
 
-// Structs
+/* Structs and Unions */
+
 struct_or_union_specifier ::= struct_or_union IDENT LBRACE
                               struct_declaration_list RBRACE.
 struct_or_union_specifier ::= struct_or_union LBRACE struct_declaration_list
@@ -544,7 +551,8 @@ struct_declarator ::= declarator.
 struct_declarator ::= COLON constant_expr.
 struct_declarator ::= declarator COLON constant_expr.
 
-// Enums
+/* Enums */
+
 enum_specifier ::= KWD_ENUM LBRACE enumerator_list RBRACE.
 enum_specifier ::= KWD_ENUM IDENT LBRACE enumerator_list RBRACE.
 enum_specifier ::= KWD_ENUM LBRACE enumerator_list COMMA RBRACE.
