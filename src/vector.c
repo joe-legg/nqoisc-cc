@@ -4,7 +4,9 @@
 Vector *new_vector()
 {
     Vector *vector = malloc(sizeof(Vector));
-    vector->items = NULL;
+    // Initial capacity
+    vector->capacity = 4;
+    vector->items = malloc(sizeof(void *) * vector->capacity);
     vector->length = 0;
     return vector;
 }
@@ -12,8 +14,14 @@ Vector *new_vector()
 void vector_append(Vector *vect, void *item)
 {
     if (vect == NULL) return;
-    vect->items = realloc(vect->items, ++vect->length * sizeof(void *));
-    vect->items[vect->length - 1] = item;
+
+    // Resize the vector
+    if (vect->length == vect->capacity) {
+        vect->capacity *= 2;
+        vect->items = realloc(vect->items, vect->capacity * sizeof(void *));
+    }
+
+    vect->items[vect->length++] = item;
 }
 
 void vector_delete(Vector *vect, int index)

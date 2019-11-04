@@ -4,6 +4,7 @@
 typedef struct Vector {
     void **items;
     int length;
+    int capacity;
 } Vector;
 
 Vector *new_vector();
