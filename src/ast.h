@@ -113,6 +113,7 @@ typedef struct AstNode {
         // Declarations
         AST_DECLARATOR_HEAD,
         AST_DECLARATION,
+        AST_TYPEDEF,
         AST_DECL_LIST,
 
         // Expressions
@@ -167,7 +168,7 @@ typedef struct AstNode {
             int unary_op;
         };
 
-        // Declaration
+        // Declaration, typedef
         struct {
             DataType *decl_type;
             struct AstNode *decl_declarator;

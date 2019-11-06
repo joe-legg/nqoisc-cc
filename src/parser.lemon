@@ -212,6 +212,30 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 declaration->func_type = malloc_or_die(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
             }
+        // Typedef
+        } else if (DECL_SPECS->storage_specs == STORAGE_SPEC_TYPEDEF) {
+            if (declaration->decl_initializer != NULL)
+                error(cur_filename, cur_line_num,
+                      "typedef must not contain an initializer.");
+
+            declaration->node_type = AST_TYPEDEF;
+            declaration->decl_type = malloc_or_die(sizeof(DataType));
+
+            // Pointer
+            if (declaration->decl_declarator->declarator_head_pointer != NULL) {
+                memcpy(declaration->decl_type,
+                       declaration->decl_declarator->declarator_head_pointer,
+                       sizeof(DataType));
+                DataType *pointer_type = malloc_or_die(sizeof(DataType));
+                memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
+                set_pointer_type(declaration->decl_type, pointer_type);
+            // Non-pointer typedef
+            } else {
+                memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
+            }
+
+            declaration->decl_declarator =
+                ast_declarator_head_to_identifier(declaration->decl_declarator);
         // Normal variable declaration
         } else {
             // If it is a pointer
@@ -226,6 +250,8 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 declaration->decl_type = declaration->decl_declarator->
                                          declarator_head_pointer;
 
+                // TODO: try and replace this code with
+                //       ast_declarator_head_to_identifier
                 char *ident = strdup(declaration->decl_declarator->
                                      declarator_head_ident);
                 free(declaration->decl_declarator->declarator_head_ident);

@@ -212,6 +212,7 @@ void free_ast(AstNode *ast)
             free_ast(ast->decl_list->items[i]);
         vector_free(ast->decl_list);
         break;
+    case AST_TYPEDEF:
     case AST_DECLARATION:
         free_data_type(ast->decl_type);
         free_ast(ast->decl_declarator);
@@ -290,7 +291,7 @@ char *type_to_string(const DataType *type)
 
     // Storage specifiers
     switch (type->storage_specs) {
-    case STORAGE_SPEC_TYPEDEF:  /* TODO */ break;
+    case STORAGE_SPEC_TYPEDEF:  type_spec_str = "typedef "; break;
     case STORAGE_SPEC_EXTERN:   type_spec_str = "extern "; break;
     case STORAGE_SPEC_STATIC:   type_spec_str = "static "; break;
     case STORAGE_SPEC_AUTO:     type_spec_str = "auto "; break;
@@ -418,8 +419,9 @@ void print_ast(AstNode *ast)
         print_ast(ast->structure);
         printf(")");
         break;
-    case AST_DECLARATION:
-        printf("(declaration ");
+    case AST_TYPEDEF:     printf("(typedef "); goto print_declaration;
+    case AST_DECLARATION: printf("(declaration ");
+    print_declaration:
         print_data_type(ast->decl_type);
         if (ast->decl_declarator != NULL) {
             printf(" ");

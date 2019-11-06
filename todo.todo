@@ -13,10 +13,10 @@ Todo List
 - [ ] implement a symbol table.
     - [ ] implement a hash table.
 - [x] replace malloc() with malloc_or_die()
-- [ ] ast gen for typedefs.
+- [x] ast gen for typedefs.
 - [ ] ast gen for structs.
-- [ ] look at the todos in the code.
-- [ ] fix memory leaks. - THERE ARE A LOT OF MEMORY LEAKS
+- [x] look at the todos in the code.
+- [x] fix memory leaks. - THERE ARE A LOT OF MEMORY LEAKS
 - [x] create a test system.
 - [x] rename delete_ functions to free_
 - [x] fix functions returning pointers.
