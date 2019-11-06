@@ -12,7 +12,7 @@ Todo List
     - [ ] enum constants.
 - [ ] implement a symbol table.
     - [ ] implement a hash table.
-- [ ] replace malloc() with malloc_or_exit()
+- [x] replace malloc() with malloc_or_die()
 - [ ] ast gen for typedefs.
 - [ ] ast gen for structs.
 - [ ] look at the todos in the code.

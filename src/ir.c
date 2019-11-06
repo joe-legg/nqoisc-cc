@@ -3,6 +3,7 @@
 
 #include "ir.h"
 #include "error.h"
+#include "malloc_or_die.h"
 
 static Vector *ir_instrs; // List of instructions
 
@@ -10,7 +11,7 @@ static Vector *ir_instrs; // List of instructions
 
 IrValue *ir_new_var(char *ident)
 {
-    IrValue *val = malloc(sizeof(IrValue));
+    IrValue *val = malloc_or_die(sizeof(IrValue));
     val->type = IR_VAR;
     val->var_ident = ident;
     return val;
@@ -18,7 +19,7 @@ IrValue *ir_new_var(char *ident)
 
 IrValue *ir_new_integer(int value)
 {
-    IrValue *val = malloc(sizeof(IrValue));
+    IrValue *val = malloc_or_die(sizeof(IrValue));
     val->type = IR_INT;
     val->int_value = value;
     return val;
@@ -27,7 +28,7 @@ IrValue *ir_new_integer(int value)
 
 void ir_new_func_header(char *ident, DataType *type, Vector *params)
 {
-    IrInstr *instr = malloc(sizeof(IrInstr));
+    IrInstr *instr = malloc_or_die(sizeof(IrInstr));
     instr->operation = IR_FUNC_HEADER;
     instr->func_ident = ident;
     instr->func_type = type;
@@ -37,7 +38,7 @@ void ir_new_func_header(char *ident, DataType *type, Vector *params)
 
 void ir_new_instruction(int op, IrValue *arg1, IrValue *arg2, IrValue *result)
 {
-    IrInstr *instr = malloc(sizeof(IrInstr));
+    IrInstr *instr = malloc_or_die(sizeof(IrInstr));
     instr->operation = op;
     instr->arg1 = arg1;
     instr->arg2 = arg2;

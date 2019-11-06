@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include "vector.h"
+#include "malloc_or_die.h"
 
 Vector *new_vector()
 {
-    Vector *vector = malloc(sizeof(Vector));
+    Vector *vector = malloc_or_die(sizeof(Vector));
     // Initial capacity
     vector->capacity = 4;
-    vector->items = malloc(sizeof(void *) * vector->capacity);
+    vector->items = malloc_or_die(sizeof(void *) * vector->capacity);
     vector->length = 0;
     return vector;
 }

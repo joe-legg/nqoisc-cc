@@ -4,12 +4,13 @@
 
 #include "ast.h"
 #include "error.h"
+#include "malloc_or_die.h"
 
 /* New Ast Functions */
 
 AstNode *new_expr_stmt(AstNode *expr)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_EXPR_STMT;
     node->expression = expr;
     return node;
@@ -17,7 +18,7 @@ AstNode *new_expr_stmt(AstNode *expr)
 
 AstNode *new_ast_ident(const char *ident)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_IDENTIFIER;
     node->identifier = strdup(ident);
     return node;
@@ -26,7 +27,7 @@ AstNode *new_ast_ident(const char *ident)
 AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
                              AstNode *initializer)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_DECLARATION;
     node->decl_type = decl_type;
     node->decl_declarator = declarator;
@@ -36,7 +37,7 @@ AstNode *new_ast_declaration(DataType *decl_type, AstNode *declarator,
 
 AstNode *new_ast_string_lit(char *str)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_STR_LIT;
 
     // Remove quotation marks from string. This is needed because of a badly
@@ -50,7 +51,7 @@ AstNode *new_ast_string_lit(char *str)
 
 AstNode *new_ast_integer_const(long value)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_INTEGER_CONST;
     node->integer_const = value;
     return node;
@@ -58,7 +59,7 @@ AstNode *new_ast_integer_const(long value)
 
 AstNode *new_ast_float_const(long double value)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_FLOAT_CONST;
     node->float_const = value;
     return node;
@@ -66,7 +67,7 @@ AstNode *new_ast_float_const(long double value)
 
 AstNode *new_ast_unary_op(int op, AstNode *expression)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_UNARY_OP;
     node->unary_op = op;
     node->unary_expr = expression;
@@ -75,7 +76,7 @@ AstNode *new_ast_unary_op(int op, AstNode *expression)
 
 AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_BINARY_OP;
     node->binary_left = left;
     node->binary_right = right;
@@ -86,7 +87,7 @@ AstNode *new_ast_binary_op(int op, AstNode *left, AstNode *right)
 AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
                              AstNode *cond_else)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = node_type;
     node->cond = cond;
     node->cond_body = cond_body;
@@ -97,7 +98,7 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
 AstNode *new_ast_struct_member_access(AstNode *structure,
                                       char *struct_member_ident)
 {
-    AstNode *node = malloc(sizeof(AstNode));
+    AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_STRUCT_MEMBER_ACCESS;
     node->structure = structure;
     node->struct_member_ident = struct_member_ident;
@@ -107,7 +108,7 @@ AstNode *new_ast_struct_member_access(AstNode *structure,
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
                           AstNode *body)
 {
-    AstNode *stmts = malloc(sizeof(AstNode));
+    AstNode *stmts = malloc_or_die(sizeof(AstNode));
     stmts->node_type = AST_COMPOUND_STMT;
     stmts->statements = new_vector();
 
@@ -115,7 +116,7 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
 
     if (expr_3 != NULL) {
         if (body == NULL) {
-            body = malloc(sizeof(AstNode));
+            body = malloc_or_die(sizeof(AstNode));
             body->node_type = AST_COMPOUND_STMT;
             body->statements = new_vector();
             vector_append(body->statements, expr_3);
@@ -139,7 +140,7 @@ AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head)
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers, DataType *pointer)
 {
-    DataType *new_type = malloc(sizeof(DataType));
+    DataType *new_type = malloc_or_die(sizeof(DataType));
     new_type->type = type;
     new_type->is_unsigned = is_unsigned;
     new_type->storage_specs = storage_specs;

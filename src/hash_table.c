@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "malloc_or_die.h"
+
 static unsigned int hash(const char *key)
 {
     int hash = 2166136261;
@@ -15,18 +17,18 @@ static unsigned int hash(const char *key)
 
 HashTable *new_hash_table(int initial_size)
 {
-    HashTable *ht = malloc(sizeof(HashTable));
+    HashTable *ht = malloc_or_die(sizeof(HashTable));
     ht->table_size = initial_size;
-    ht->entries = malloc(sizeof(void *) * initial_size);
+    ht->entries = malloc_or_die(sizeof(void *) * initial_size);
     for (int i = 0; i < initial_size; i++) ht->entries[i] = NULL;
     return ht;
 }
 
 static HashTableEntry *new_hash_table_entry(const char *key, const void *value)
 {
-    HashTableEntry *hte = malloc(sizeof(HashTableEntry));
-    hte->key = malloc(sizeof(char) * strlen(key) + 1);
-    hte->value = malloc(sizeof(void *));
+    HashTableEntry *hte = malloc_or_die(sizeof(HashTableEntry));
+    hte->key = malloc_or_die(sizeof(char) * strlen(key) + 1);
+    hte->value = malloc_or_die(sizeof(void *));
 
     strcpy(hte->key, key);
     memcpy(hte->value, value, sizeof(void *));
@@ -84,7 +86,7 @@ void hash_table_insert(HashTable *hash_table, const char *key,
         // Update value if the key already exists
         if (strcmp(entry->key, key) == 0) {
             free(entry->value);
-            entry->value = malloc(sizeof(void *));
+            entry->value = malloc_or_die(sizeof(void *));
             memcpy(entry->value, value, sizeof(void *));
             return;
         }

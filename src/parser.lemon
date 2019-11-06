@@ -5,6 +5,7 @@
 
 #include "ast.h"
 #include "error.h"
+#include "malloc_or_die.h"
 
 // Location info
 static char *cur_filename;
@@ -44,7 +45,7 @@ AstNode *parse(char *filename)
 {
     cur_filename = filename;
     yyin = fopen(filename, "r");
-    void *parser = ParseAlloc(malloc);
+    void *parser = ParseAlloc(malloc_or_die);
     int token_id;
 
     // Uncomment for debugging
@@ -82,7 +83,7 @@ program ::= translation_unit(TRANSLATION_UNIT). {
 }
 
 translation_unit(A) ::= external_declaration(EXTERN_DECL). {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_COMPOUND_STMT;
     A->statements = new_vector();
     vector_append(A->statements, EXTERN_DECL);
@@ -162,12 +163,12 @@ func_declarator(A) ::= direct_declarator_head(HEAD)
 
 // Tail
 func_direct_declarator_tail(A) ::= LPAREN parameter_type_list(PARAMS) RPAREN. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
     A->func_params = PARAMS;
 }
 func_direct_declarator_tail(A) ::= LPAREN RPAREN. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_FUNCTION_DEF;
     A->func_params = new_vector();
 }
@@ -203,19 +204,19 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         if (declaration->node_type == AST_FUNC_DECLARATION) {
             // Function returning a pointer
             if (declaration->func_type != NULL) {
-                DataType *pointer_type = malloc(sizeof(DataType));
+                DataType *pointer_type = malloc_or_die(sizeof(DataType));
                 memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
 
                 set_pointer_type(declaration->func_type, pointer_type);
             } else {
-                declaration->func_type = malloc(sizeof(DataType));
+                declaration->func_type = malloc_or_die(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
             }
         // Normal variable declaration
         } else {
             // If it is a pointer
             if (declaration->decl_declarator->declarator_head_pointer != NULL) {
-                DataType *pointer_type = malloc(sizeof(DataType));
+                DataType *pointer_type = malloc_or_die(sizeof(DataType));
                 memcpy(pointer_type, DECL_SPECS, sizeof(DataType));
 
                 set_pointer_type(declaration->decl_declarator->
@@ -233,7 +234,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 free(ident);
             } else {
                 // Normal vaiable declaration
-                declaration->decl_type = malloc(sizeof(DataType));
+                declaration->decl_type = malloc_or_die(sizeof(DataType));
                 memcpy(declaration->decl_type, DECL_SPECS, sizeof(DataType));
 
                 declaration->decl_declarator =
@@ -245,7 +246,7 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
     free_data_type(DECL_SPECS);
 
     if (INIT_DECL_LIST->length > 1) {
-        A = malloc(sizeof(AstNode));
+        A = malloc_or_die(sizeof(AstNode));
         A->node_type = AST_DECL_LIST;
         A->decl_list = INIT_DECL_LIST;
     } else {
@@ -440,13 +441,13 @@ declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
 %type declaration_specs_list { Vector * }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC). {
     A = new_vector();
-    int *new_spec = malloc(sizeof(int));
+    int *new_spec = malloc_or_die(sizeof(int));
     *new_spec = SPEC;
     vector_append(A, (void *)new_spec);
 }
 declaration_specs_list(A) ::= storage_class_specifier(SPEC)
                               declaration_specs_list(DECL_SPECS). {
-    int *new_spec = malloc(sizeof(int));
+    int *new_spec = malloc_or_die(sizeof(int));
     *new_spec = SPEC;
     vector_append(DECL_SPECS, (void *)new_spec);
     A = DECL_SPECS;
@@ -454,14 +455,14 @@ declaration_specs_list(A) ::= storage_class_specifier(SPEC)
 
 // Type specifiers
 declaration_specs_list(A) ::= type_specifier(TYPE). {
-    int *new_type = malloc(sizeof(int));
+    int *new_type = malloc_or_die(sizeof(int));
     *new_type = TYPE;
     A = new_vector();
     vector_append(A, (void *)new_type);
 }
 declaration_specs_list(A) ::= type_specifier(TYPE)
                               declaration_specs_list(DECL_SPECS). {
-    int *new_type = malloc(sizeof(int));
+    int *new_type = malloc_or_die(sizeof(int));
     *new_type = TYPE;
     vector_append(DECL_SPECS, (void *)new_type);
     A = DECL_SPECS;
@@ -469,14 +470,14 @@ declaration_specs_list(A) ::= type_specifier(TYPE)
 
 // Type qualifiers
 declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL). {
-    int *new_qual = malloc(sizeof(int));
+    int *new_qual = malloc_or_die(sizeof(int));
     *new_qual = TYPE_QUAL;
     A = new_vector();
     vector_append(A, (void *)new_qual);
 }
 declaration_specs_list(A) ::= type_qualifier(TYPE_QUAL)
                               declaration_specs_list(DECL_SPECS). {
-    int *new_qual = malloc(sizeof(int));
+    int *new_qual = malloc_or_die(sizeof(int));
     *new_qual = TYPE_QUAL;
     vector_append(DECL_SPECS, (void *)new_qual);
     A = DECL_SPECS;
@@ -586,7 +587,7 @@ direct_declarator_head(A) ::= pointer(POINTER)
 }
 
 direct_declarator_head_no_pointer(A) ::= IDENT(IDENT). {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_DECLARATOR_HEAD;
     A->declarator_head_ident = IDENT;
     A->declarator_head_pointer = NULL;
@@ -740,7 +741,7 @@ statement(A) ::= jump_statement(STMT).       { A = STMT; }
 
 // Labeled statement
 labeled_statement(A) ::= IDENT(IDENT) COLON statement(STMT). {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_LABEL_STMT;
     A->label_ident = IDENT;
     A->label_stmt = STMT;
@@ -749,14 +750,14 @@ labeled_statement(A) ::= KWD_CASE constant_expr(EXPR) COLON statement(STMT). {
     A = new_ast_conditional(AST_CASE_STMT, EXPR, STMT, NULL);
 }
 labeled_statement(A) ::= KWD_DEFAULT COLON statement(STMT). {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_DEFAULT_STMT;
     A->default_stmt = STMT;
 }
 
 // Compound statement
 compound_statement(A) ::= LBRACE RBRACE. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_COMPOUND_STMT;
     A->statements = new_vector();
 }
@@ -765,7 +766,7 @@ compound_statement(A) ::= LBRACE block_item_list(BLOCK_ITEM_LIST) RBRACE. {
 }
 
 block_item_list(A) ::= block_item(ITEM). {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_COMPOUND_STMT;
     A->statements = new_vector();
     if (ITEM != NULL)
@@ -834,25 +835,25 @@ iteration_statement(A) ::= KWD_FOR LPAREN declaration(DECL)
 
 // Jump statements
 jump_statement(A) ::= KWD_GOTO IDENT(IDENT) SEMICOLON. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_GOTO_STMT;
     A->identifier = IDENT;
 }
 jump_statement(A) ::= KWD_CONTINUE SEMICOLON. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_CONTINUE_STMT;
 }
 jump_statement(A) ::= KWD_BREAK SEMICOLON. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_BREAK_STMT;
 }
 jump_statement(A) ::= KWD_RETURN SEMICOLON. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_RETURN_STMT;
     A->expression = NULL;
 }
 jump_statement(A) ::= KWD_RETURN expression(EXPR) SEMICOLON. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     A->node_type = AST_RETURN_STMT;
     A->expression = EXPR;
 }
@@ -1043,7 +1044,7 @@ postfix_expr(A) ::= primary_expr(PRIMARY). { A = PRIMARY; }
 postfix_expr ::= postfix_expr LSQUARE expression RSQUARE. // TODO
 postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN argument_expr_list(ARGS)
                     RPAREN. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     // TODO: check that the postfix is an ident. Currently if the postfix is
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
@@ -1052,7 +1053,7 @@ postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN argument_expr_list(ARGS)
     A->func_call_args = ARGS;
 }
 postfix_expr(A) ::= postfix_expr(POSTFIX) LPAREN RPAREN. {
-    A = malloc(sizeof(AstNode));
+    A = malloc_or_die(sizeof(AstNode));
     // TODO: check that the postfix is an ident. Currently if the postfix is
     //       not an ident the program crashes.
     A->node_type = AST_FUNC_CALL;
