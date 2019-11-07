@@ -27,13 +27,12 @@ Todo List
         - [x] decrement.
         - [x] structure and union access.
         - [ ] array subscripting.
-    - [ ] constants.
+    - [x] constants.
         - [x] floating point numbers.
         - [x] characters.
-        - [ ] compound literals. - Not sure what this means.
     - [ ] sizeof operator.
     - [ ] cast expressions.
-    - [ ] comma separated expressions.
+    - [x] comma expressions.
     - [x] conditional expression.
 - [ ] finish declarations.
     - [ ] AST gen for arrays.

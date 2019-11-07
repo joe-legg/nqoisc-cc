@@ -889,7 +889,9 @@ jump_statement(A) ::= KWD_RETURN expression(EXPR) SEMICOLON. {
 constant_expr(A) ::= conditional_expr(COND). { A = COND; }
 
 expression(A) ::= assignment_expr(ASSIGNMENT). { A = ASSIGNMENT; }
-expression ::= expression COMMA assignment_expr. // TODO
+expression(A) ::= expression(LHS) COMMA assignment_expr(RHS). {
+    A = new_ast_binary_op(OP_COMMA, LHS, RHS);
+}
 
 // Assignment operators
 %type assignment_op { int }
