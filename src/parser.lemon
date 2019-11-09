@@ -15,6 +15,18 @@ static char *cur_tok_str;
 // Root node for the AST
 static AstNode *ast_root_node;
 
+static void check_function_specifiers(DataType *type)
+{
+    // TODO: check that DECL_SPECS does not contain an array.
+    // Check storage-class specifiers
+    if (type->storage_specs &&
+        type->storage_specs != STORAGE_SPEC_STATIC &&
+        type->storage_specs != STORAGE_SPEC_EXTERN) {
+        error(cur_filename, cur_line_num,
+              "invalid storage class specifier for function definition.");
+    }
+}
+
 }
 
 %syntax_error {
@@ -105,15 +117,8 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = DECLARATOR;
-    // TODO: check that DECL_SPECS does not contain an array.
-    //       It might be a good idea to put function type checks in a function.
-    // Check storage-class specifiers
-    if (DECL_SPECS->storage_specs &&
-        DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
-        DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN) {
-        error(cur_filename, cur_line_num,
-              "invalid storage class specifier for function definition.");
-    }
+
+    check_function_specifiers(DECL_SPECS);
 
     // Check the parameters
     // Void parameters
@@ -143,7 +148,8 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            old_func_declarator(DECLARATOR)
                            declaration_list(DECLARATION_LIST)
                            compound_statement(BODY). {
-    // TODO: check storage-class specifiers
+    check_function_specifiers(DECL_SPECS);
+
     A = DECLARATOR;
     if (A->func_params->length != DECLARATION_LIST->length) {
         error(cur_filename, cur_line_num, "length of parameter in function "
@@ -222,6 +228,8 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
 
         // Function declarator
         if (declaration->node_type == AST_FUNC_DECLARATION) {
+            check_function_specifiers(DECL_SPECS);
+
             // Function returning a pointer
             if (declaration->func_type != NULL) {
                 DataType *pointer_type = malloc_or_die(sizeof(DataType));
@@ -231,15 +239,6 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
             } else {
                 declaration->func_type = malloc_or_die(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
-            }
-
-            // Check storage-class specifiers
-            if (DECL_SPECS->storage_specs &&
-                DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
-                DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN) {
-                error(cur_filename, cur_line_num,
-                      "invalid storage class specifier for function"
-                      " declaration.");
             }
 
         // Typedef
