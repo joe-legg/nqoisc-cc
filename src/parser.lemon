@@ -105,8 +105,8 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
     A = DECLARATOR;
     // Check storage-class specifiers
     if (DECL_SPECS->storage_specs &&
-        (DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
-        DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN)) {
+        DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
+        DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN) {
         error(cur_filename, cur_line_num,
               "invalid storage class specifier for function definition.");
     }
@@ -212,6 +212,16 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
                 declaration->func_type = malloc_or_die(sizeof(DataType));
                 memcpy(declaration->func_type, DECL_SPECS, sizeof(DataType));
             }
+
+            // Check storage-class specifiers
+            if (DECL_SPECS->storage_specs &&
+                DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
+                DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN) {
+                error(cur_filename, cur_line_num,
+                      "invalid storage class specifier for function"
+                      " declaration.");
+            }
+
         // Typedef
         } else if (DECL_SPECS->storage_specs == STORAGE_SPEC_TYPEDEF) {
             if (declaration->decl_initializer != NULL)
