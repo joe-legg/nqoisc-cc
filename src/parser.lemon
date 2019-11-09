@@ -45,6 +45,8 @@ AstNode *parse(char *filename)
 {
     cur_filename = filename;
     yyin = fopen(filename, "r");
+    if (yyin == NULL) error("--", -1, "Failed to open file \"%s\".", filename);
+
     void *parser = ParseAlloc(malloc_or_die);
     int token_id;
 
@@ -103,12 +105,29 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            func_declarator(DECLARATOR)
                            compound_statement(BODY). {
     A = DECLARATOR;
+    // TODO: check that DECL_SPECS does not contain an array.
+    //       It might be a good idea to put function type checks in a function.
     // Check storage-class specifiers
     if (DECL_SPECS->storage_specs &&
         DECL_SPECS->storage_specs != STORAGE_SPEC_STATIC &&
         DECL_SPECS->storage_specs != STORAGE_SPEC_EXTERN) {
         error(cur_filename, cur_line_num,
               "invalid storage class specifier for function definition.");
+    }
+
+    // Check the parameters
+    // Void parameters
+    if (A->func_params->length == 1 &&
+        ((AstNode *)A->func_params->items[0])->decl_declarator == NULL &&
+        ((AstNode *)A->func_params->items[0])->decl_type->type == TYPE_VOID) {
+
+        free_ast(((AstNode *)A->func_params->items[0]));
+        A->func_params->length = 0;
+    } else {
+        for (int i = 0; i < A->func_params->length; i++) {
+            if (((AstNode *)A->func_params->items[i])->decl_declarator == NULL)
+                error(cur_filename, cur_line_num, "parameter name omitted.");
+        }
     }
 
     // Set the function return type
@@ -124,6 +143,7 @@ function_definition(A) ::= declaration_specs(DECL_SPECS)
                            old_func_declarator(DECLARATOR)
                            declaration_list(DECLARATION_LIST)
                            compound_statement(BODY). {
+    // TODO: check storage-class specifiers
     A = DECLARATOR;
     if (A->func_params->length != DECLARATION_LIST->length) {
         error(cur_filename, cur_line_num, "length of parameter in function "

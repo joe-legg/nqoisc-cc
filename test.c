@@ -1,1 +1,3 @@
-auto int test();
+void test()
+{
+}
