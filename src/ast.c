@@ -194,6 +194,10 @@ void free_ast(AstNode *ast)
     case AST_UNARY_OP:
         free_ast(ast->unary_expr);
         break;
+    case AST_CAST_EXPR:
+        free_data_type(ast->cast_type);
+        free_ast(ast->cast_expr);
+        break;
     case AST_LABEL_STMT:
         free(ast->label_ident);
         free_ast(ast->label_stmt);
@@ -352,6 +356,13 @@ void print_ast(AstNode *ast)
         break;
     case AST_INTEGER_CONST:
         printf("(integer-const %lli)", ast->integer_const);
+        break;
+    case AST_CAST_EXPR:
+        printf("(cast-expr ");
+        print_data_type(ast->cast_type);
+        printf(" ");
+        print_ast(ast->cast_expr);
+        printf(")");
         break;
     case AST_LABEL_STMT:
         printf("(label %s ", ast->label_ident);

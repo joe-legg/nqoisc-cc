@@ -119,11 +119,12 @@ typedef struct AstNode {
 
         // Expressions
         AST_CONDITIONAL_EXPR,
+        AST_STRUCT_MEMBER_ACCESS,
         AST_INTEGER_CONST,
         AST_FLOAT_CONST,
         AST_STR_LIT,
-        AST_STRUCT_MEMBER_ACCESS,
         AST_IDENTIFIER,
+        AST_CAST_EXPR,
         AST_BINARY_OP,
         AST_UNARY_OP
     } node_type;
@@ -167,6 +168,12 @@ typedef struct AstNode {
         struct {
             struct AstNode *unary_expr;
             int unary_op;
+        };
+
+        // Cast Expression
+        struct {
+            DataType *cast_type;
+            struct AstNode *cast_expr;
         };
 
         // Declaration, typedef

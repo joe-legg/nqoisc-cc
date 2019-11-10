@@ -27,6 +27,147 @@ static void check_function_specifiers(DataType *type)
     }
 }
 
+static DataType *parse_declaration_specifiers(Vector *decl_specs)
+{
+    // -1 for unspecified
+    int type = -1;
+    int is_unsigned = -1;
+    int long_cnt = 0;
+    int is_short = 0; // 1 if short 0 if not
+
+    int storage_specs = 0;
+    int type_qualifiers = 0;
+
+    // Parse the list of types.
+    for (int i = 0; i < decl_specs->length; i++) {
+        int cur_specifier = *(int *)decl_specs->items[i];
+
+        switch (cur_specifier) {
+        case TYPE_INT:
+        case TYPE_VOID:
+        case TYPE_CHAR:
+        case TYPE_FLOAT:
+        case TYPE_DOUBLE:
+        case TYPE_BOOL:
+            if (type > -1)
+                error(cur_filename, cur_line_num,
+                      "multiple data types in declaration specifiers.");
+            else
+                type = cur_specifier;
+            break;
+        case STORAGE_SPEC_TYPEDEF:
+        case STORAGE_SPEC_EXTERN:
+        case STORAGE_SPEC_STATIC:
+        case STORAGE_SPEC_AUTO:
+        case STORAGE_SPEC_REGISTER:
+            if (storage_specs)
+                error(cur_filename, cur_line_num,
+                      "multiple storage specifiers in declaration specifiers.");
+            else storage_specs = cur_specifier;
+            break;
+        case TYPE_QUAL_CONST:    type_qualifiers |= TYPE_QUAL_CONST; break;
+        case TYPE_QUAL_VOLATILE: type_qualifiers |= TYPE_QUAL_VOLATILE; break;
+        case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
+        case TYPE_SHORT:
+            if (is_short)
+                error(cur_filename, cur_line_num,
+                      "\"short\" appears more than once in declaration "
+                      "specifiers.");
+            else
+                is_short = 1;
+            break;
+        case TYPE_LONG: long_cnt++; break;
+        case TYPE_SIGNED:
+            if (is_unsigned == 1) {
+                error(cur_filename, cur_line_num,
+                      "\"signed\" and \"unsigned\" in declaration specifiers.");
+            } else if (is_unsigned == 0) {
+                error(cur_filename, cur_line_num,
+                      "more than one \"signed\" in declaration specifiers.");
+            } else {
+                is_unsigned = 0;
+            }
+            break;
+        case TYPE_UNSIGNED:
+            if (is_unsigned == 1) {
+                error(cur_filename, cur_line_num,
+                      "more than one \"unsigned\" in declaration specifiers.");
+            } else if (is_unsigned == 0) {
+                error(cur_filename, cur_line_num,
+                      "\"signed\" and \"unsigned\" in declaration specifiers.");
+            } else {
+                is_unsigned = 1;
+            }
+            break;
+        }
+    }
+
+    // NOTE: This next section of the code is probably the worst code in the
+    //       compiler. YOU HAVE BEEN WARNED.
+
+    if (type == -1) {
+        if (is_short) {
+            type = TYPE_SHORT;
+        } else if (long_cnt) {
+            type = TYPE_LONG;
+        } else if (is_unsigned == 1) {
+            type = TYPE_INT;
+        } else if (is_unsigned == 0) {
+            type = TYPE_INT;
+        } else {
+            error(cur_filename, cur_line_num,
+                  "no type specified in declaration specifiers.");
+        }
+    }
+
+    if (is_short && type == TYPE_INT) type = TYPE_SHORT;
+
+    if (long_cnt > 2) {
+        error(cur_filename, cur_line_num,
+              "to many \"long\" types in declaration specifiers.");
+    }
+
+    if ((long_cnt || is_short) &&
+        (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
+        error(cur_filename, cur_line_num,
+              "cannot specify a size for for \"%s\".",
+              type_to_string(new_data_type(type, is_unsigned, storage_specs,
+                             type_qualifiers, NULL)));
+    }
+
+    if (type == TYPE_DOUBLE && is_short) {
+        error(cur_filename, cur_line_num,
+              "\"double\" and \"short\" in function definition.");
+    }
+
+    if (is_unsigned > -1 &&
+        (type == TYPE_FLOAT || type == TYPE_DOUBLE || type == TYPE_BOOL)) {
+        error(cur_filename, cur_line_num,
+              "cannot specify a sign for \"%s\".",
+              type_to_string(new_data_type(type, is_unsigned, storage_specs,
+                             type_qualifiers, NULL)));
+    }
+
+    if (type == TYPE_LONG || type == TYPE_INT) {
+        if (long_cnt == 2) {
+            type = TYPE_LLONG;
+        } else if (long_cnt == 1) {
+            type = TYPE_LONG;
+        }
+    } else if (type == TYPE_DOUBLE) {
+        if (long_cnt == 1) {
+            type = TYPE_LDOUBLE;
+        } else if (long_cnt > 1) {
+            error(cur_filename, cur_line_num,
+                  "to many \"long\" types for double.");
+        }
+    }
+
+    // If only sign is specified set type = sign
+    return new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned,
+                         storage_specs, type_qualifiers, NULL);
+}
+
 }
 
 %syntax_error {
@@ -348,148 +489,12 @@ init_declarator(A) ::= declarator(DECL) OP_EQUALS initializer(INIT). {
 // Declaration specifiers
 %type declaration_specs { DataType * }
 declaration_specs(A) ::= declaration_specs_list(TYPE_LIST). {
-    // -1 for unspecified
-    int type = -1;
-    int is_unsigned = -1;
-    int long_cnt = 0;
-    int is_short = 0; // 1 if short 0 if not
+    A = parse_declaration_specifiers(TYPE_LIST);
 
-    int storage_specs = 0;
-    int type_qualifiers = 0;
-
-    // Parse the list of types.
-    for (int i = 0; i < TYPE_LIST->length; i++) {
-        int cur_specifier = *(int *)TYPE_LIST->items[i];
-
-        switch (cur_specifier) {
-        case TYPE_INT:
-        case TYPE_VOID:
-        case TYPE_CHAR:
-        case TYPE_FLOAT:
-        case TYPE_DOUBLE:
-        case TYPE_BOOL:
-            if (type > -1)
-                error(cur_filename, cur_line_num,
-                      "multiple data types in declaration specifiers.");
-            else
-                type = cur_specifier;
-            break;
-        case STORAGE_SPEC_TYPEDEF:
-        case STORAGE_SPEC_EXTERN:
-        case STORAGE_SPEC_STATIC:
-        case STORAGE_SPEC_AUTO:
-        case STORAGE_SPEC_REGISTER:
-            if (storage_specs)
-                error(cur_filename, cur_line_num,
-                      "multiple storage specifiers in declaration specifiers.");
-            else storage_specs = cur_specifier;
-            break;
-        case TYPE_QUAL_CONST:    type_qualifiers |= TYPE_QUAL_CONST; break;
-        case TYPE_QUAL_VOLATILE: type_qualifiers |= TYPE_QUAL_VOLATILE; break;
-        case TYPE_QUAL_RESTRICT: type_qualifiers |= TYPE_QUAL_RESTRICT; break;
-        case TYPE_SHORT:
-            if (is_short)
-                error(cur_filename, cur_line_num,
-                      "\"short\" appears more than once in declaration "
-                      "specifiers.");
-            else
-                is_short = 1;
-            break;
-        case TYPE_LONG: long_cnt++; break;
-        case TYPE_SIGNED:
-            if (is_unsigned == 1) {
-                error(cur_filename, cur_line_num,
-                      "\"signed\" and \"unsigned\" in declaration specifiers.");
-            } else if (is_unsigned == 0) {
-                error(cur_filename, cur_line_num,
-                      "more than one \"signed\" in declaration specifiers.");
-            } else {
-                is_unsigned = 0;
-            }
-            break;
-        case TYPE_UNSIGNED:
-            if (is_unsigned == 1) {
-                error(cur_filename, cur_line_num,
-                      "more than one \"unsigned\" in declaration specifiers.");
-            } else if (is_unsigned == 0) {
-                error(cur_filename, cur_line_num,
-                      "\"signed\" and \"unsigned\" in declaration specifiers.");
-            } else {
-                is_unsigned = 1;
-            }
-            break;
-        }
-    }
-
-    // Delete the TYPE_LIST
+    // Free TYPE_LIST
     for (int i = 0; i < TYPE_LIST->length; i++)
         free(TYPE_LIST->items[i]);
     vector_free(TYPE_LIST);
-
-    // NOTE: This next section of the code is probably the worst code in the
-    //       compiler. YOU HAVE BEEN WARNED.
-
-    if (type == -1) {
-        if (is_short) {
-            type = TYPE_SHORT;
-        } else if (long_cnt) {
-            type = TYPE_LONG;
-        } else if (is_unsigned == 1) {
-            type = TYPE_INT;
-        } else if (is_unsigned == 0) {
-            type = TYPE_INT;
-        } else {
-            error(cur_filename, cur_line_num,
-                  "no type specified in declaration specifiers.");
-        }
-    }
-
-    if (is_short && type == TYPE_INT) type = TYPE_SHORT;
-
-    if (long_cnt > 2) {
-        error(cur_filename, cur_line_num,
-              "to many \"long\" types in declaration specifiers.");
-    }
-
-    if ((long_cnt || is_short) &&
-        (type == TYPE_CHAR || type == TYPE_FLOAT || type == TYPE_BOOL)) {
-        error(cur_filename, cur_line_num,
-              "cannot specify a size for for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers, NULL)));
-    }
-
-    if (type == TYPE_DOUBLE && is_short) {
-        error(cur_filename, cur_line_num,
-              "\"double\" and \"short\" in function definition.");
-    }
-
-    if (is_unsigned > -1 &&
-        (type == TYPE_FLOAT || type == TYPE_DOUBLE || type == TYPE_BOOL)) {
-        error(cur_filename, cur_line_num,
-              "cannot specify a sign for \"%s\".",
-              type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers, NULL)));
-    }
-
-    if (type == TYPE_LONG || type == TYPE_INT) {
-        if (long_cnt == 2) {
-            type = TYPE_LLONG;
-        } else if (long_cnt == 1) {
-            type = TYPE_LONG;
-        }
-    } else if (type == TYPE_DOUBLE) {
-        if (long_cnt == 1) {
-            type = TYPE_LDOUBLE;
-        } else if (long_cnt > 1) {
-            error(cur_filename, cur_line_num,
-                  "to many \"long\" types for double.");
-        }
-    }
-
-    // If only sign is specified set type = sign
-    A = new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned, storage_specs,
-                      type_qualifiers, NULL);
 }
 
 // Storage class specifiers
@@ -550,10 +555,33 @@ storage_class_specifier(A) ::= KWD_REGISTER. {
     warning(cur_filename, cur_line_num, "register keyword is not supported.");
 }
 
-specifier_qualifier_list ::= type_specifier.
-specifier_qualifier_list ::= type_specifier specifier_qualifier_list.
-specifier_qualifier_list ::= type_qualifier.
-specifier_qualifier_list ::= type_qualifier specifier_qualifier_list.
+%type specifier_qualifier_list { Vector * }
+specifier_qualifier_list(A) ::= type_specifier(TYPE). {
+    A = new_vector();
+    int *new_type = malloc_or_die(sizeof(int));
+    *new_type = TYPE;
+    vector_append(A, (void *)new_type);
+}
+specifier_qualifier_list(A) ::= type_specifier(TYPE)
+                                specifier_qualifier_list(LIST). {
+    int *new_type = malloc_or_die(sizeof(int));
+    *new_type = TYPE;
+    vector_append(LIST, new_type);
+    A = LIST;
+}
+specifier_qualifier_list(A) ::= type_qualifier(QUAL). {
+    A = new_vector();
+    int *new_qual = malloc_or_die(sizeof(int));
+    *new_qual = QUAL;
+    vector_append(A, (void *)new_qual);
+}
+specifier_qualifier_list(A) ::= type_qualifier(QUAL)
+                                specifier_qualifier_list(LIST). {
+    int *new_qual= malloc_or_die(sizeof(int));
+    *new_qual = QUAL;
+    vector_append(LIST, new_qual);
+    A = LIST;
+}
 
 // Type specifiers
 %type type_specifier { int }
@@ -732,7 +760,15 @@ parameter_declaration(A) ::= declaration_specs(DECL_SPECS)
 }
 
 // Type name
-type_name ::= specifier_qualifier_list.
+%type type_name { DataType * }
+type_name(A) ::= specifier_qualifier_list(SPEC_QUAL_LIST). {
+    A = parse_declaration_specifiers(SPEC_QUAL_LIST);
+
+    // Free SPEC_QUAL_LIST
+    for (int i = 0; i < SPEC_QUAL_LIST->length; i++)
+        free(SPEC_QUAL_LIST->items[i]);
+    vector_free(SPEC_QUAL_LIST);
+}
 type_name ::= specifier_qualifier_list abstract_declarator.
 
 // Direct abstract declarator
@@ -1056,7 +1092,12 @@ multiplicative_expr(A) ::= multiplicative_expr(LHS) OP_MODULO cast_expr(RHS). {
 }
 
 cast_expr(A) ::= unary_expr(UNARY). { A = UNARY; }
-cast_expr ::= LPAREN type_name RPAREN cast_expr.
+cast_expr(A) ::= LPAREN type_name(TYPE) RPAREN cast_expr(EXPR). {
+    A = malloc_or_die(sizeof(AstNode));
+    A->node_type = AST_CAST_EXPR;
+    A->cast_type = TYPE;
+    A->cast_expr = EXPR;
+}
 
 %type unary_op { int }
 unary_op(A) ::= OP_AND.      { A = UNARY_ADDRESS; }
