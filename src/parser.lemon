@@ -960,39 +960,17 @@ expression(A) ::= expression(LHS) COMMA assignment_expr(RHS). {
 
 // Assignment operators
 %type assignment_op { int }
-assignment_op(A) ::= OP_EQUALS. {
-    A = OP_ASSIGN_EQUAL;
-}
-assignment_op(A) ::= OP_TIMES_EQUALS. {
-    A = OP_ASSIGN_MULT;
-}
-assignment_op(A) ::= OP_DIVIDE_EQUALS. {
-    A = OP_ASSIGN_DIV;
-}
-assignment_op(A) ::= OP_MODULO_EQUALS. {
-    A = OP_ASSIGN_MODULO;
-}
-assignment_op(A) ::= OP_PLUS_EQUALS. {
-    A = OP_ASSIGN_PLUS;
-}
-assignment_op(A) ::= OP_MINUS_EQUALS. {
-    A = OP_ASSIGN_MINUS;
-}
-assignment_op(A) ::= OP_SHIFT_LEFT_EQUALS. {
-    A = OP_ASSIGN_SHIFT_LEFT;
-}
-assignment_op(A) ::= OP_SHIFT_RIGHT_EQUALS. {
-    A = OP_ASSIGN_SHIFT_RIGHT;
-}
-assignment_op(A) ::= OP_AND_EQUALS. {
-    A = OP_ASSIGN_AND;
-}
-assignment_op(A) ::= OP_XOR_EQUALS. {
-    A = OP_ASSIGN_XOR;
-}
-assignment_op(A) ::= OP_OR_EQUALS. {
-    A = OP_ASSIGN_OR;
-}
+assignment_op(A) ::= OP_EQUALS.             { A = OP_ASSIGN_EQUAL; }
+assignment_op(A) ::= OP_TIMES_EQUALS.       { A = OP_ASSIGN_MULT; }
+assignment_op(A) ::= OP_DIVIDE_EQUALS.      { A = OP_ASSIGN_DIV; }
+assignment_op(A) ::= OP_MODULO_EQUALS.      { A = OP_ASSIGN_MODULO; }
+assignment_op(A) ::= OP_PLUS_EQUALS.        { A = OP_ASSIGN_PLUS; }
+assignment_op(A) ::= OP_MINUS_EQUALS.       { A = OP_ASSIGN_MINUS; }
+assignment_op(A) ::= OP_SHIFT_LEFT_EQUALS.  { A = OP_ASSIGN_SHIFT_LEFT; }
+assignment_op(A) ::= OP_SHIFT_RIGHT_EQUALS. { A = OP_ASSIGN_SHIFT_RIGHT; }
+assignment_op(A) ::= OP_AND_EQUALS.         { A = OP_ASSIGN_AND; }
+assignment_op(A) ::= OP_XOR_EQUALS.         { A = OP_ASSIGN_XOR; }
+assignment_op(A) ::= OP_OR_EQUALS.          { A = OP_ASSIGN_OR; }
 
 // Assignment expression
 assignment_expr(A) ::= conditional_expr(COND). { A = COND; }
@@ -1121,7 +1099,7 @@ unary_expr(A) ::= OP_SIZEOF unary_expr(EXPR). {
     A = new_ast_unary_op(UNARY_SIZEOF, EXPR);
 }
 unary_expr(A) ::= OP_SIZEOF LPAREN type_name RPAREN. {
-    // TODO: Finish this. Maybe calculate the size of the type at compile time.
+    // TODO: Finish this. Calculate type size.
     A = new_ast_unary_op(UNARY_SIZEOF, NULL);
 }
 
@@ -1186,8 +1164,8 @@ primary_expr(A) ::= STR_LIT(STR).    { A = new_ast_string_lit(STR); }
 primary_expr(A) ::= LPAREN expression(EXPR) RPAREN. { A = EXPR; }
 
 // Constants
-constant(A) ::= integer_const(CONST). { A = CONST; }
-constant ::= floating_const.
+constant(A) ::= integer_const(CONST).  { A = CONST; }
+constant(A) ::= floating_const(CONST). { A = CONST; }
 constant(A) ::= CHAR(CHAR). {
     if (strlen(CHAR) > 3)
         warning(cur_filename, cur_line_num,

@@ -3,15 +3,18 @@ Todo List
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
 - [ ] rename compiler.
-- [ ] improve errors.
-- [ ] start implementing semantic checks - check_ast()
+- [ ] improve errors. - Dont exit after error
 - [ ] maybe make functions in ir static.
 - [ ] ir gen.
 - [ ] variable function arguments.
 - [ ] AST gen for enums.
     - [ ] enum constants.
+- [ ] semantic checks for varaiables.
 - [ ] implement a symbol table.
     - [ ] implement a hash table.
+        - [ ] Dynamic implementation.
+        - [x] static implementation.
+- [x] start implementing semantic checks
 - [x] replace malloc() with malloc_or_die()
 - [x] ast gen for typedefs.
 - [ ] ast gen for structs.
@@ -30,8 +33,8 @@ Todo List
     - [x] constants.
         - [x] floating point numbers.
         - [x] characters.
-    - [ ] sizeof operator.
-    - [ ] cast expressions.
+    - [ ] sizeof operator. - Mostly done, just size calculations for types.
+    - [x] cast expressions.
     - [x] comma expressions.
     - [x] conditional expression.
 - [ ] finish declarations.
