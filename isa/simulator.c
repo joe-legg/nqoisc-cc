@@ -8,12 +8,13 @@ uint32_t mem_size;
 uint32_t program_counter;
 uint32_t data_ptr;
 
-uint32_t sign_extend_imm(uint32_t imm)
+int sign_extend_imm(int imm)
 {
     int mask = 1U << (30 - 1);
     return (imm ^ mask) - mask;
 }
 
+// Read 4 bytes from memory
 uint32_t read_4_bytes(uint32_t addr)
 {
     return memory[addr] << 24     |
@@ -22,6 +23,7 @@ uint32_t read_4_bytes(uint32_t addr)
            memory[addr + 3];
 }
 
+// Write 4 bytes
 void write_4_bytes(uint32_t addr, uint32_t bytes)
 {
     memory[addr] = bytes >> 24;
@@ -35,12 +37,8 @@ uint32_t fetch()
     // Load 4 bytes from memory
     uint32_t instr = read_4_bytes(program_counter);
 
-    if (program_counter + 1 > mem_size)
-        program_counter = 0;
-    else
-        program_counter += 4;
-
-    if (program_counter >= 15) exit(0); // -------------- Remove this
+    if (program_counter + 1 > mem_size) program_counter = 0;
+    else program_counter += 4;
 
     return instr;
 }
@@ -48,25 +46,18 @@ uint32_t fetch()
 void execute(uint32_t instr)
 {
     uint8_t opcode = instr >> 30;
-    uint32_t imm = sign_extend_imm(instr & 0x3FFF);
+    uint32_t imm = sign_extend_imm(instr & 0x3FFFFFFF);
 
     switch (opcode) {
-    case 0: // Right
+    case 0: // right
         data_ptr += imm;
-        printf("right. data_ptr = %d\n", data_ptr);
         break;
-    case 1: // Add
+    case 1: // add
         write_4_bytes(data_ptr, read_4_bytes(data_ptr) + imm);
-        printf("add. memory[data_ptr] = %d\n", read_4_bytes(data_ptr));
         break;
-    case 2: // Bnz
-        if (read_4_bytes(data_ptr) != 0) {
-            printf("imm = %d\n.", imm);
+    case 2: // bnz
+        if (read_4_bytes(data_ptr) != 0)
             program_counter += imm;
-            printf("bnz. program counter = %d.\n", program_counter);
-        }
-        else
-            printf("bnz. zero nothing happened.\n");
         break;
     }
 }
