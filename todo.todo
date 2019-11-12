@@ -1,15 +1,20 @@
 Todo List
 #########################################
+- [ ] binary literals. - This is a gcc extention.
+    - [ ] Maybe look into implementing other gcc extenetions.
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
 - [ ] rename compiler.
 - [ ] improve errors. - Dont exit after error
 - [ ] maybe make functions in ir static.
-- [ ] ir gen.
+- [ ] start implementing an ir.
+- [ ] rewrite README.md.
 - [ ] variable function arguments.
 - [ ] AST gen for enums.
     - [ ] enum constants.
-- [ ] semantic checks for varaiables.
+- [ ] semantic checks for declarations.
+- [ ] semantic checks for expressions.
+    - [ ] Read through the standard.
 - [ ] implement a symbol table.
     - [ ] implement a hash table.
         - [ ] Dynamic implementation.
