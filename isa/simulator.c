@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 uint8_t *memory;
 uint32_t mem_size;
@@ -82,16 +83,57 @@ void load_program(const char *filename)
     fread(memory, 1, mem_size, program);
 }
 
+void print_help()
+{
+    printf("ISA Simulator.\n\n"
+           "-h              Print this help and exit.\n"
+           "-m <size>       Set the amount of memory in bytes. (The default is 65536)\n"
+           "-b <filename>   Specify an input file.\n");
+}
+
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        printf("To many or not enough arguments.\n");
+    char *input_program = NULL;
+    for (int option; (option = getopt(argc, argv, "m:b:h")) != -1;) {
+        switch (option) {
+        // Memory size
+        case 'm':
+            for (int i = 0; optarg[i] != '\0'; i++) {
+                if (!(optarg[i] >= '0' && optarg[i] <= '9')) {
+                    printf("Invalid memory size.");
+                    return 1;
+                }
+            }
+            mem_size = atoi(optarg);
+            break;
+        // Program to be simulated
+        case 'b':
+            input_program = optarg;
+            break;
+        // Help
+        case 'h':
+            print_help();
+            return 0;
+            break;
+        case '?':
+            printf("Unkown option: %c\n", optopt);
+            print_help();
+            return 1;
+            break;
+        }
+    }
+
+    if (input_program == NULL) {
+        printf("No program specified.\n");
+        print_help();
         return 1;
     }
 
-    mem_size = 2 ^ 16;
+    // If memory size is not specified. Set the memory size.
+    if (mem_size == 0)
+        mem_size = 2 ^ 16;
 
-    load_program(argv[1]);
+    load_program(input_program);
     run_processor();
 
     return 0;
