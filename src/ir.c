@@ -1,150 +1,104 @@
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "ir.h"
-#include "error.h"
-#include "malloc_or_die.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-static Vector *ir_instrs; // List of instructions
+#define ir_for_each(stmt, ir) \
+    for (IrStmt *stmt = ir; ir != NULL; ir = ir->next)
 
-/* Initializers */
-
-IrValue *ir_new_var(char *ident)
-{
-    IrValue *val = malloc_or_die(sizeof(IrValue));
-    val->type = IR_VAR;
-    val->var_ident = ident;
-    return val;
-}
-
-IrValue *ir_new_integer(int value)
-{
-    IrValue *val = malloc_or_die(sizeof(IrValue));
-    val->type = IR_INT;
-    val->int_value = value;
-    return val;
-}
-
-
-void ir_new_func_header(char *ident, DataType *type, Vector *params)
-{
-    IrInstr *instr = malloc_or_die(sizeof(IrInstr));
-    instr->operation = IR_FUNC_HEADER;
-    instr->func_ident = ident;
-    instr->func_type = type;
-    instr->func_params = params;
-    vector_append(ir_instrs, instr);
-}
-
-void ir_new_instruction(int op, IrValue *arg1, IrValue *arg2, IrValue *result)
-{
-    IrInstr *instr = malloc_or_die(sizeof(IrInstr));
-    instr->operation = op;
-    instr->arg1 = arg1;
-    instr->arg2 = arg2;
-    instr->result = result;
-    vector_append(ir_instrs, instr);
-}
-
-/* AST To Ir */
-
-static void gen_ir_from_ast(AstNode *ast)
+IrStmt *ir_from_ast(AstNode *ast)
 {
     switch (ast->node_type) {
     case AST_FUNCTION_DEF:
-        // TODO: add support for function parameters
-        ir_new_func_header(ast->func_ident, ast->func_type, new_vector());
-        gen_ir_from_ast(ast->func_body);
+        break;
+    case AST_FUNC_DECLARATION:
+        break;
+    case AST_FUNC_CALL:
         break;
     case AST_RETURN_STMT:
-        // TODO
         break;
     case AST_EXPR_STMT:
-        // TODO
         break;
     case AST_COMPOUND_STMT:
-        // TODO
+        break;
+    case AST_WHILE_STMT:
+        break;
+    case AST_DO_WHILE_STMT:
+        break;
+    case AST_IF_STMT:
+        break;
+    case AST_GOTO_STMT:
+        break;
+    case AST_BREAK_STMT:
+        break;
+    case AST_CONTINUE_STMT:
+        break;
+    case AST_LABEL_STMT:
+        break;
+    case AST_SWITCH_STMT:
+        break;
+    case AST_CASE_STMT:
+        break;
+    case AST_DEFAULT_STMT:
+        break;
+    case AST_DECLARATOR_HEAD:
+        break;
+    case AST_DECLARATION:
+        break;
+    case AST_TYPEDEF:
+        break;
+    case AST_DECL_LIST:
+        break;
+    case AST_CONDITIONAL_EXPR:
+        break;
+    case AST_STRUCT_MEMBER_ACCESS:
         break;
     case AST_INTEGER_CONST:
-        // TODO
+        break;
+    case AST_FLOAT_CONST:
+        break;
+    case AST_STR_LIT:
         break;
     case AST_IDENTIFIER:
-        // TODO
+        break;
+    case AST_CAST_EXPR:
         break;
     case AST_BINARY_OP:
+        break;
+    case AST_UNARY_OP:
+        break;
+    }
+}
+
+void free_ir(IrStmt *ir)
+{
+    ir_for_each (i, ir) {
         // TODO
-        break;
-    default:
-        warning("-", -1, "unkown ast type in IR generation. You should never be "
-                        "seeing this warning.");
     }
 }
 
-void ast_to_ir(AstNode *ast)
+void print_ir(IrStmt *ir)
 {
-    ir_instrs = new_vector();
-    gen_ir_from_ast(ast);
-}
-
-/* Printing */
-
-static void print_value(IrValue *val)
-{
-    switch (val->type) {
-    case IR_VAR:
-        printf("%s", val->var_ident);
-        break;
-    case IR_INT:
-        printf("%d", val->int_value);
-        break;
-    }
-}
-
-static void print_formatted_ir(IrInstr *instr, char *op_str)
-{
-    printf("(set ");
-    print_value(instr->result);
-    printf(" (%s ", op_str);
-    print_value(instr->arg1);
-    printf(" ");
-    print_value(instr->arg2);
-    printf("))\n");
-}
-
-void ir_print()
-{
-    for (int i = 0; i < ir_instrs->length; i++) {
-        IrInstr *cur_instr = ir_instrs->items[i];
-        switch (cur_instr->operation) {
-        case IR_OP_ADD:
-            print_formatted_ir(cur_instr, "add");
+    // TODO: implement this function
+    ir_for_each (i, ir) {
+        switch (i->type) {
+        case IR_ADD:
+            printf("(add)");
             break;
-        case IR_OP_MINUS:
-            print_formatted_ir(cur_instr, "minus");
+        case IR_COPY:
+            printf("(copy)");
             break;
-        case IR_OP_DIV:
-            print_formatted_ir(cur_instr, "div");
+        case IR_SET:
+            printf("(set)");
             break;
-        case IR_OP_MULT:
-            print_formatted_ir(cur_instr, "mult");
+        case IR_BNZ:
+            printf("(bnz)");
             break;
-        case IR_FUNC_HEADER:
-            printf("(func-head %s ", cur_instr->func_ident);
-            printf("(type %s)", type_to_string(cur_instr->func_type));
-            printf(")\n");
+        case IR_FCALL:
+            printf("(fcall)");
+            break;
+        case IR_RET:
+            printf("(ret)");
             break;
         }
     }
-}
-
-/* Code Gen */
-
-static void ir_gen_instr(IrInstr *instr)
-{
-}
-
-void ir_gen_target()
-{
-    for (int i = 0; i < ir_instrs->length; i++)
-        ir_gen_instr(ir_instrs->items[i]);
 }

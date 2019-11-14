@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "ast.h"
-#include "ir.h"
 
 extern AstNode *parse(char *filename);
 
@@ -13,6 +12,4 @@ int main(int argc, char *argv[])
     print_ast(ast);
     printf("\nAST printing done.\n");
     free_ast(ast);
-    //ast_to_ir(ast);
-    //ir_print();
 }

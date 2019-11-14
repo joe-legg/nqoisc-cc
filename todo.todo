@@ -2,6 +2,9 @@ Todo List
 #########################################
 - [ ] binary literals. - This is a gcc extention.
     - [ ] Maybe look into implementing other gcc extenetions.
+- [ ] start implementing optimizations.
+    - [ ] AST.
+    - [ ] IR.
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
 - [ ] rename compiler.
