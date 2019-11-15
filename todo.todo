@@ -13,8 +13,12 @@ Todo List
 - [ ] start implementing an ir.
 - [ ] rewrite README.md.
 - [ ] variable function arguments.
+- [ ] write documentation.
+    - [ ] AST.
+    - [ ] IR.
 - [ ] AST gen for enums.
     - [ ] enum constants.
+- [ ] change parse() function to parse_c()
 - [ ] semantic checks for declarations.
 - [ ] semantic checks for expressions.
     - [ ] Read through the standard.

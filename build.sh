@@ -10,4 +10,4 @@ gcc -g -Wall -c src/ast.c
 gcc -g -Wall -c src/ir.c
 gcc -g -Wall -c src/parser.c
 gcc -g -Wall -c src/main.c
-gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o ir.c
+gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o ir.o
