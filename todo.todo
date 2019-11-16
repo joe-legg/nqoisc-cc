@@ -2,20 +2,15 @@ Todo List
 #########################################
 - [ ] binary literals. - This is a gcc extention.
     - [ ] Maybe look into implementing other gcc extenetions.
-- [ ] start implementing optimizations.
-    - [ ] AST.
-    - [ ] IR.
+- [ ] start implementing AST optimizations.
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
 - [ ] rename compiler.
 - [ ] improve errors. - Dont exit after error
-- [ ] maybe make functions in ir static.
-- [ ] start implementing an ir.
 - [ ] rewrite README.md.
 - [ ] variable function arguments.
 - [ ] write documentation.
     - [ ] AST.
-    - [ ] IR.
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] change parse() function to parse_c()

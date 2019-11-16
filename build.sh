@@ -7,7 +7,6 @@ gcc -g -Wall -c src/hash_table.c
 gcc -g -Wall -c src/malloc_or_die.c
 gcc -g -Wall -c src/error.c
 gcc -g -Wall -c src/ast.c
-gcc -g -Wall -c src/ir.c
 gcc -g -Wall -c src/parser.c
 gcc -g -Wall -c src/main.c
-gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o ir.o
+gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o

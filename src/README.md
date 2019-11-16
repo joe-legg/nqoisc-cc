@@ -8,8 +8,6 @@
 | `error.c`         | Error printing and handling.                                                        |
 | `hash_table.h`    | Declarations for hash table.                                                        |
 | `hash_table.c`    | Hash table implementation.                                                          |
-| `ir.h`            | Declarations for a 3-address-code-like IR (**I**ntermediate **R**epresentation).    |
-| `ir.c`            | IR implementation.                                                                  |
 | `lexer.l`         | FLEX based lexer/tokenizer.                                                         |
 | `main.c`          | Main compiler entry point.                                                          |
 | `malloc_or_die.h` | Declarations for malloc_or_die.h                                                    |
