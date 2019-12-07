@@ -1,4 +1,5 @@
 #!/bin/bash
+
 flex src/lexer.l
 lemon src/parser.lemon
 gcc -g -Wall -c lex.yy.c
@@ -9,4 +10,5 @@ gcc -g -Wall -c src/error.c
 gcc -g -Wall -c src/ast.c
 gcc -g -Wall -c src/parser.c
 gcc -g -Wall -c src/main.c
-gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o
+gcc -g -Wall -c src/code_gen.c
+gcc -g -Wall -o jcc lex.yy.o parser.o error.o main.o vector.o ast.o malloc_or_die.o code_gen.o

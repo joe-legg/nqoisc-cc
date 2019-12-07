@@ -34,10 +34,10 @@ Opcode  Imm 30-bit
 00      000000000000000000000000000000
 ```
 
-| Opcode |  Name       |  Description                                              |
-|--------|-------------|-----------------------------------------------------------|
-| 00     |  right imm  |  Move the data pointer to the right by imm.               |
-| 01     |  add   imm  |  Add imm to the current address pointed to by the data pointer.                   |
+| Opcode |  Name       |  Description                                                    |
+|--------|-------------|-----------------------------------------------------------------|
+| 00     |  right imm  |  Move the data pointer to the right by imm.                     |
+| 01     |  add   imm  |  Add imm to the current address pointed to by the data pointer. |
 | 10     |  bnz   imm  |  Set the program counter to program counter + imm if the current address pointed to by the data pointer is equal to zero. |
 
 Any I/O is memory mapped.
@@ -50,8 +50,8 @@ _________    __________    ______________    ____________    ________________
 | Flex  |--->| Lemon  |--->| AST        |--->| Semantic |--->| AST          |___
 | Lexer |    | Parser |    | Generation |    | Analysis |    | Optimization |  |
 ---------    ----------    --------------    ------------    ----------------  |
-                        _______________    ________________    ______________  |
-                        | Target Code |<---| IR           |<---| IR         |<--
-                        | Generation  |    | Optimization |    | Generation |
-                        ---------------    ----------------    --------------
+                                                             _______________   |
+                                                             | Target Code |<---
+                                                             | Generation  |
+                                                             ---------------
 ```

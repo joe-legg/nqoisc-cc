@@ -80,6 +80,8 @@ void load_program(const char *filename)
     }
 
     memory = malloc(sizeof(uint8_t) * mem_size);
+    for (int i = 0; i < mem_size; i++)
+        memory[i] = 0;
     fread(memory, 1, mem_size, program);
 }
 

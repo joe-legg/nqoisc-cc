@@ -1,5 +1,8 @@
 Todo List
 #########################################
+- [ ] compiler defined constants and macros.
+    - [ ] __FILE__
+    - [ ] __func__
 - [ ] binary literals. - This is a gcc extention.
     - [ ] Maybe look into implementing other gcc extenetions.
 - [ ] start implementing AST optimizations.
