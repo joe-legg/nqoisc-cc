@@ -2,9 +2,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
+
+uint32_t memory_dump = 0;
 
 uint8_t *memory;
-uint32_t mem_size;
+uint32_t mem_size = 2 ^ 16;
 
 uint32_t program_counter;
 uint32_t data_ptr;
@@ -80,23 +83,36 @@ void load_program(const char *filename)
     }
 
     memory = malloc(sizeof(uint8_t) * mem_size);
-    for (int i = 0; i < mem_size; i++)
-        memory[i] = 0;
     fread(memory, 1, mem_size, program);
+}
+
+void handle_ctrl_c()
+{
+    if (memory_dump > mem_size) {
+        printf("Memory dump to large!\n");
+    } else {
+        for (int i = 0; i < memory_dump; i++)
+            printf("%c", memory[i]);
+    }
+    exit(1);
 }
 
 void print_help()
 {
     printf("ISA Simulator.\n\n"
+           "Press ctrl+c to stop the simulator.\n\n"
            "-h              Print this help and exit.\n"
            "-m <size>       Set the amount of memory in bytes. (The default is 65536)\n"
+           "-d <size>       Dump <size> bytes of memory to stdout.\n"
            "-b <filename>   Specify an input file.\n");
 }
 
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, handle_ctrl_c);
+
     char *input_program = NULL;
-    for (int option; (option = getopt(argc, argv, "m:b:h")) != -1;) {
+    for (int option; (option = getopt(argc, argv, "m:b:d:h")) != -1;) {
         switch (option) {
         // Memory size
         case 'm':
@@ -117,6 +133,10 @@ int main(int argc, char *argv[])
             print_help();
             return 0;
             break;
+        // Memory dump
+        case 'd':
+            memory_dump = atoi(optarg);
+            break;
         case '?':
             printf("Unkown option: %c\n", optopt);
             print_help();
@@ -130,10 +150,6 @@ int main(int argc, char *argv[])
         print_help();
         return 1;
     }
-
-    // If memory size is not specified. Set the memory size.
-    if (mem_size == 0)
-        mem_size = 2 ^ 16;
 
     load_program(input_program);
     run_processor();

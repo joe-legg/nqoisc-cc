@@ -1,3 +1,10 @@
+## Files
+| Name      | Description                                          |
+|-----------|------------------------------------------------------|
+| isa_cat.c | A program to print binarys in an assembly like form. |
+| simulator.c | ISA simulator. Run `./simulator -h` for more info |
+
+
 ## The Instruction Set
 The insruction set is based on [brainfuck](https://esolangs.org/wiki/Brainfuck).
 Each cell is 32-bit. The 30-bit immediate is sign extended to 32-bit.

@@ -21,7 +21,7 @@ enum {
 
 static FILE *out_file;
 
-Word instr_addr = -1;
+static Word instr_addr = -1;
 
 static void gen_instr(char opcode, Word imm)
 {
@@ -37,7 +37,7 @@ static void gen_instr(char opcode, Word imm)
 static void zero_at_dp()
 {
     GEN_SUB(1);
-    GEN_BNZ(-1);
+    GEN_BNZ(-4);
 }
 
 /*
@@ -82,10 +82,14 @@ static void stack_pop()
 static void function_prologue(AstNode *ast)
 {
     // TODO
+    // Save old frame pointer
+    stack_push(
+    // Create new frame pointer
 }
 
 static void function_epilogue()
 {
+    // TODO
     // Pop stack frame
     // Push return value to the stack
     // Jump to calling location
