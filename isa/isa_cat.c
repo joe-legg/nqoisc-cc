@@ -31,22 +31,27 @@ void cat_file(FILE *fp)
         instr = to_little_endian(instr);
 
         switch (instr >> 30) {
-        case 0: printf("right 0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
-        case 1: printf("left  0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
-        case 2: printf("bnz   0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
+        case 0:  printf("right 0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
+        case 1:  printf("left  0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
+        case 2:  printf("bnz   0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
+        default: printf("data  0x%x\n", instr); break;
         }
     }
 }
 
 int main(int argc, char *argv[])
 {
-    for (int i = 1; i < argc; i++) {
-        FILE *fp = fopen(argv[i], "rb");
-        if (fp == NULL) {
-            printf("Error opening file \"%s\".\n", argv[i]);
-            return 1;
+    if (argc < 2) {
+        cat_file(stdin);
+    } else {
+        for (int i = 1; i < argc; i++) {
+            FILE *fp = fopen(argv[i], "rb");
+            if (fp == NULL) {
+                printf("Error opening file \"%s\".\n", argv[i]);
+                return 1;
+            }
+            cat_file(fp);
+            fclose(fp);
         }
-        cat_file(fp);
-        fclose(fp);
     }
 }
