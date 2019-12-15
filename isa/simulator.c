@@ -89,7 +89,7 @@ void load_program(const char *filename)
 void handle_ctrl_c()
 {
     if (memory_dump > mem_size) {
-        printf("Memory dump to large!\n");
+        printf("Memory dump to large! Memory size = %d.\n", mem_size);
     } else {
         for (int i = 0; i < memory_dump; i++)
             printf("%c", memory[i]);

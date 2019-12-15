@@ -32,9 +32,9 @@ void cat_file(FILE *fp)
 
         switch (instr >> 30) {
         case 0:  printf("right 0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
-        case 1:  printf("left  0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
+        case 1:  printf("add   0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
         case 2:  printf("bnz   0x%x\n", extend_imm(instr & 0x3FFFFFFF)); break;
-        default: printf("data  0x%x\n", instr); break;
+        default: printf("nop\n"); break;
         }
     }
 }
