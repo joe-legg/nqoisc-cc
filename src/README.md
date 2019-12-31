@@ -4,8 +4,6 @@
 |-------------------|---------------------------------------------------------------------------------------------|
 | `ast.h`           | Declarations for the AST (**A**bstract **S**yntax **T**ree).                                |
 | `ast.c`           | Implementation for the AST.                                                                 |
-| `code_gen.c`      | Code generation header.                                                                     |
-| `code_gen.c`      | Code generation implementation. This is probably the most interesting file in the compiler. |
 | `error.h`         | Declarations for error.c                                                                    |
 | `error.c`         | Error printing and handling.                                                                |
 | `hash_table.h`    | Declarations for hash table.                                                                |
