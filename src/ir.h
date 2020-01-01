@@ -25,8 +25,8 @@ typedef struct IrInstr {
     enum {
         IR_INIT,
         IR_COPY,
-        IR_JAL,
         IR_RET,
+        IR_JAL,
         IR_JNZ,
 
         // Operations
@@ -39,9 +39,14 @@ typedef struct IrInstr {
     struct IrInstr *next;
     struct IrInstr *branch; // Used in jump instructions
 
+    int print_label; // Used to tell ir_print that a label exists here
+
     IrValue p0, p1; // Parameters
 } IrInstr;
 
 IrInstr *new_ir_instr(int type, IrValue p0, IrValue p1,
                       IrInstr *next, IrInstr *branch);
+void ir_value_print(IrValue val);
+void ir_print(IrInstr *ir);
+
 #endif

@@ -4,6 +4,8 @@
 |-------------------|---------------------------------------------------------------------------------------------|
 | `ast.h`           | Declarations for the AST (**A**bstract **S**yntax **T**ree).                                |
 | `ast.c`           | Implementation for the AST.                                                                 |
+| `ir.h`            | Header file for a simple intermediate representation.                                       |
+| `ir.c`            | Implementation for `ir.h`.                                                                  |
 | `error.h`         | Declarations for error.c                                                                    |
 | `error.c`         | Error printing and handling.                                                                |
 | `hash_table.h`    | Declarations for hash table.                                                                |

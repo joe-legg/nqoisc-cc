@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "ast.h"
+#include "ir.h"
 
 extern AstNode *parse(char *filename);
 
@@ -12,4 +13,10 @@ int main(int argc, char *argv[])
     print_ast(ast);
     printf("\nAST printing done.\n");
     free_ast(ast);
+
+    IrInstr *ir = new_ir_instr(IR_INIT,
+        (IrValue) { .type = VALUE_MEM_ADDR, .mem_addr = 1 },
+        (IrValue) { .type = VALUE_INTEGER, .integer = 2},
+        new_ir_instr(IR_RET, (IrValue) { .type = VALUE_INTEGER, .integer = 42 }, (IrValue) {}, NULL, NULL), NULL);
+    ir_print(ir);
 }
