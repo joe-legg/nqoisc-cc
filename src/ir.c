@@ -1,6 +1,7 @@
 #include "ir.h"
 #include "malloc_or_die.h"
 #include <stdio.h>
+#include <string.h>
 
 IrInstr *new_ir_instr(int type, IrValue p0, IrValue p1,
                       IrInstr *next, IrInstr *branch)
@@ -34,7 +35,19 @@ void ir_value_print(IrValue val)
 
 void ir_print(IrInstr *ir)
 {
+
+    // Assign labels
     int label = 1; // Gets incremented every time a new label is created
+    IrInstr *tmp = ir;
+    while (1) {
+        if (tmp->branch) {
+            if (!tmp->branch->print_label) {
+                tmp->branch->print_label = label++;
+            }
+        }
+        if (tmp->next == NULL) break;
+        tmp = tmp->next;
+    }
 
     while (1) {
         if (ir->print_label)
@@ -56,22 +69,11 @@ void ir_print(IrInstr *ir)
             printf("return ");
             ir_value_print(ir->p0);
             break;
-        case IR_JAL:
-            // Assign new label to branch if no label exists
-            if (!ir->branch->print_label)
-                ir->branch->print_label = label++;
-            printf("jal L%d", ir->branch->print_label);
-            break;
-        case IR_JNZ:
-            if (!ir->branch->print_label)
-                ir->branch->print_label = label++;
-            printf("jnz L%d", ir->branch->print_label);
-            break;
+        case IR_JAL: printf("jal L%d", ir->branch->print_label); break;
+        case IR_JNZ: printf("jnz L%d", ir->branch->print_label); break;
         }
         printf("\n");
-
-        if (ir->next == NULL)
-            break;
+        if (ir->next == NULL) break;
         ir = ir->next;
     }
 }
