@@ -15,6 +15,13 @@ IrInstr *new_ir_instr(int type, IrValue p0, IrValue p1,
     return ir;
 }
 
+void free_ir_instr(IrInstr *ir)
+{
+    if (ir->next != NULL)
+        free(ir->next);
+    free(ir);
+}
+
 void ir_value_print(IrValue val)
 {
     switch (val.type) {
@@ -67,4 +74,4 @@ void ir_print(IrInstr *ir)
             break;
         ir = ir->next;
     }
-
+}

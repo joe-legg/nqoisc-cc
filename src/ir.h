@@ -46,6 +46,7 @@ typedef struct IrInstr {
 
 IrInstr *new_ir_instr(int type, IrValue p0, IrValue p1,
                       IrInstr *next, IrInstr *branch);
+void free_ir_instr(IrInstr *ir);
 void ir_value_print(IrValue val);
 void ir_print(IrInstr *ir);
 
