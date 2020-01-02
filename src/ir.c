@@ -35,20 +35,21 @@ void ir_value_print(IrValue val)
 
 void ir_print(IrInstr *ir)
 {
-
     // Assign labels
-    int label = 1; // Gets incremented every time a new label is created
+    // Note: I am aware that this is probably not the most optimal code but
+    //       as this function only exists for debugging purposes it does not
+    //       matter that much.
+    int label = 1;
     IrInstr *tmp = ir;
     while (1) {
-        if (tmp->branch) {
-            if (!tmp->branch->print_label) {
+        if (tmp->branch)
+            if (!tmp->branch->print_label)
                 tmp->branch->print_label = label++;
-            }
-        }
         if (tmp->next == NULL) break;
         tmp = tmp->next;
     }
 
+    // Print AST
     while (1) {
         if (ir->print_label)
             printf("L%d:\n", ir->print_label);

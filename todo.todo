@@ -1,10 +1,11 @@
 Todo List
 #########################################
+- [ ] standard library.
 - [ ] compiler defined constants and macros.
     - [ ] __FILE__
     - [ ] __func__
 - [ ] binary literals. - This is a gcc extention.
-    - [ ] Maybe look into implementing other gcc extenetions.
+    - [ ] Maybe look into implementing other gcc extentions.
 - [ ] start implementing AST optimizations.
 - [ ] compile return 42 program.
 - [ ] start implementing a preprocessor.
@@ -16,6 +17,7 @@ Todo List
     - [ ] AST.
 - [ ] AST gen for enums.
     - [ ] enum constants.
+- [ ] implement parse_c() to take a file pointer instead of a file name.
 - [ ] change parse() function to parse_c()
 - [ ] semantic checks for declarations.
 - [ ] semantic checks for expressions.

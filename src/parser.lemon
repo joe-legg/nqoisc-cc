@@ -163,7 +163,6 @@ static DataType *parse_declaration_specifiers(Vector *decl_specs)
         }
     }
 
-    // If only sign is specified set type = sign
     return new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned,
                          storage_specs, type_qualifiers, NULL);
 }
@@ -1148,6 +1147,7 @@ postfix_expr(A) ::= postfix_expr(STRUCT) OP_ARROW IDENT(IDENT). {
 
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list RBRACE.
 postfix_expr ::= LPAREN type_name RPAREN LBRACE initializer_list COMMA RBRACE.
+
 postfix_expr(A) ::= postfix_expr(EXPR) OP_PLUS_PLUS. {
     A = new_ast_unary_op(UNARY_INC, EXPR);
 }
