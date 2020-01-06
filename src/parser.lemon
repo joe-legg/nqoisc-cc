@@ -701,15 +701,22 @@ direct_declarator_tail ::= old_func_direct_declarator_tail. {
 }
 
 // Arrays
+
 array_declarator_tail(A) ::= array_declarator_single(ARRAY). { A = ARRAY; }
-array_declarator_tail ::= array_declarator_tail array_declarator_single. // TODO
+// Multi-dimensional arrays
+array_declarator_tail(A) ::= array_declarator_tail(ARRAY)
+                             array_declarator_single(NEW_DIMENSION). {
+    set_pointer_type(ARRAY->data_type, NEW_DIMENSION->data_type);
+    free(NEW_DIMENSION);
+    A = ARRAY;
+}
 
 array_declarator_single(A) ::= LSQUARE assignment_expr(EXPR) RSQUARE. {
-    A = malloc_or_die(sizeof(AstNode));
-    A->node_type = AST_DATA_TYPE;
-    A->data_type = new_data_type(TYPE_ARRAY, 0, 0, 0, NULL, EXPR);
+    A = new_ast_data_type(new_data_type(TYPE_ARRAY, 0, 0, 0, NULL, EXPR));
 }
-array_declarator_single ::= LSQUARE RSQUARE.
+array_declarator_single(A) ::= LSQUARE RSQUARE. {
+    A = new_ast_data_type(new_data_type(TYPE_ARRAY, 0, 0, 0, NULL, NULL));
+}
 array_declarator_single ::= LSQUARE type_qualifier_list assignment_expr RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list RSQUARE.
 array_declarator_single ::= LSQUARE KWD_STATIC assignment_expr RSQUARE.

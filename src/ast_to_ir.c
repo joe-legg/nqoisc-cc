@@ -1,4 +1,5 @@
 #include "ast_to_ir.h"
+#include <stddef.h>
 
 #define NEW_MEM_ADDR(x) (IrValue) { .type = VALUE_MEM_ADDR, .mem_addr = x }
 #define NEW_INT(x)    (IrValue) { .type = VALUE_INTEGER, .integer = x }
@@ -75,4 +76,5 @@ IrInstr *ast_to_ir(AstNode *ast)
     case AST_DATA_TYPE:
         break;
     }
+    return NULL;
 }

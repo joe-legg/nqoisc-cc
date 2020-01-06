@@ -65,6 +65,14 @@ AstNode *new_ast_float_const(long double value)
     return node;
 }
 
+AstNode *new_ast_data_type(DataType *data_type)
+{
+    AstNode *node = malloc_or_die(sizeof(AstNode));
+    node->node_type = AST_DATA_TYPE;
+    node->data_type = data_type;
+    return node;
+}
+
 AstNode *new_ast_unary_op(int op, AstNode *expression)
 {
     AstNode *node = malloc_or_die(sizeof(AstNode));
