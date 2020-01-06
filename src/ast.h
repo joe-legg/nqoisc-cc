@@ -19,6 +19,7 @@ enum {
     TYPE_BOOL,
 
     TYPE_POINTER,
+    TYPE_ARRAY,
 
     // Storage specifiers
     STORAGE_SPEC_TYPEDEF,
@@ -27,7 +28,7 @@ enum {
     STORAGE_SPEC_AUTO,
     STORAGE_SPEC_REGISTER,
 
-    // Type qualifiers
+    // Type qualifiers bit mask
     TYPE_QUAL_CONST    = 0xff0000,
     TYPE_QUAL_RESTRICT = 0x00ff00,
     TYPE_QUAL_VOLATILE = 0x0000ff
@@ -39,10 +40,12 @@ typedef struct DataType {
     int storage_specs; // 0 if there are no storage_specs
     int type_qualifiers;
 
-    // Pointers are stored as a linked-list-like data structure
+    // Pointers (and arrays) are stored as a linked-list-like data structure.
     // This is probably not the best way to do it but it was
     // the best I could think of.
     struct DataType *pointer;
+
+    struct AstNode *array_expr;
 } DataType;
 
 // Operators for the AST
@@ -126,7 +129,10 @@ typedef struct AstNode {
         AST_IDENTIFIER,
         AST_CAST_EXPR,
         AST_BINARY_OP,
-        AST_UNARY_OP
+        AST_UNARY_OP,
+
+        // Other
+        AST_DATA_TYPE
     } node_type;
 
     union {
@@ -151,10 +157,14 @@ typedef struct AstNode {
         // Compound statement
         Vector *statements;
 
+        // Simple data type wrapper
+        // TODO: currently only used for arrays so maybe rename to array_tail
+        DataType *data_type;
+
         // Declarator head
         struct {
             char *declarator_head_ident;
-            DataType *declarator_head_pointer;
+            DataType *declarator_head_pointer; // Pointer/array
         };
 
         // Binary operator
@@ -242,7 +252,8 @@ AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head);
 
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
-                        int type_qualifiers, DataType *pointer);
+                        int type_qualifiers, DataType *pointer,
+                        AstNode *array_expr);
 void set_pointer_type(DataType *pointer, DataType *type);
 // Return 1 if both types are equal
 int cmp_data_types(DataType *type_a, DataType *type_b);

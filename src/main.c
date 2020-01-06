@@ -13,12 +13,4 @@ int main(int argc, char *argv[])
     print_ast(ast);
     printf("\nAST printing done.\n");
     free_ast(ast);
-
-    IrInstr *ir = new_ir_instr(IR_INIT,
-        (IrValue) { .type = VALUE_MEM_ADDR, .mem_addr = 1 },
-        (IrValue) { .type = VALUE_INTEGER, .integer = 2},
-        new_ir_instr(IR_RET, (IrValue) { .type = VALUE_STRING, .string = "test" }, (IrValue) {}, NULL, NULL), NULL);
-    ir->next = new_ir_instr(IR_JAL, (IrValue) {}, (IrValue) {}, NULL, ir);
-    ir_print(ir);
-    free_ir_instr(ir);
 }

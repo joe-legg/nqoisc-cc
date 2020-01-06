@@ -8,7 +8,7 @@
 
 IrInstr *ast_to_ir(AstNode *ast)
 {
-    switch(ast->node_type) {
+    switch (ast->node_type) {
     case AST_COMPOUND_STMT:
         for (int i = 0; i < ast->statements->length; i++)
             ast_to_ir(ast->statements->items[i]);
@@ -71,6 +71,8 @@ IrInstr *ast_to_ir(AstNode *ast)
     case AST_BINARY_OP:
         break;
     case AST_UNARY_OP:
+        break;
+    case AST_DATA_TYPE:
         break;
     }
 }

@@ -1,4 +1,1 @@
-int test()
-{
-    return 42;
-}
+int a[10];

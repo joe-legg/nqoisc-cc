@@ -132,7 +132,7 @@ static DataType *parse_declaration_specifiers(Vector *decl_specs)
         error(cur_filename, cur_line_num,
               "cannot specify a size for for \"%s\".",
               type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers, NULL)));
+                             type_qualifiers, NULL, NULL)));
     }
 
     if (type == TYPE_DOUBLE && is_short) {
@@ -145,7 +145,7 @@ static DataType *parse_declaration_specifiers(Vector *decl_specs)
         error(cur_filename, cur_line_num,
               "cannot specify a sign for \"%s\".",
               type_to_string(new_data_type(type, is_unsigned, storage_specs,
-                             type_qualifiers, NULL)));
+                             type_qualifiers, NULL, NULL)));
     }
 
     if (type == TYPE_LONG || type == TYPE_INT) {
@@ -164,7 +164,7 @@ static DataType *parse_declaration_specifiers(Vector *decl_specs)
     }
 
     return new_data_type(type, is_unsigned == -1 ? 0 : is_unsigned,
-                         storage_specs, type_qualifiers, NULL);
+                         storage_specs, type_qualifiers, NULL, NULL);
 }
 
 }
@@ -357,10 +357,6 @@ old_func_direct_declarator_tail(A) ::= LPAREN identifier_list(IDENT_LIST)
 
 /* Declarations */
 
-declaration ::= declaration_specs SEMICOLON. {
-    warning(cur_filename, cur_line_num,
-            "declaration does not declare anything.");
-}
 declaration(A) ::= declaration_specs(DECL_SPECS)
                    init_declarator_list(INIT_DECL_LIST) SEMICOLON. {
     for (int i = 0; i < INIT_DECL_LIST->length; i++) {
@@ -448,6 +444,10 @@ declaration(A) ::= declaration_specs(DECL_SPECS)
         A = INIT_DECL_LIST->items[0];
         vector_free(INIT_DECL_LIST);
     }
+}
+declaration ::= declaration_specs SEMICOLON. {
+    warning(cur_filename, cur_line_num,
+            "declaration does not declare anything.");
 }
 
 %type declaration_list { Vector * }
@@ -600,9 +600,9 @@ type_specifier ::= KWD_IMAGINARY. {
 type_specifier ::= KWD_COMPLEX. {
     error(cur_filename, cur_line_num, "complex types not supported.");
 }
-type_specifier ::= TYPEDEF_NAME.
-type_specifier ::= struct_or_union_specifier.
-type_specifier ::= enum_specifier.
+type_specifier ::= TYPEDEF_NAME. // TODO
+type_specifier ::= struct_or_union_specifier. // TODO
+type_specifier ::= enum_specifier. // TODO
 
 // Structs
 struct_or_union_specifier ::= struct_or_union IDENT LBRACE
@@ -643,6 +643,7 @@ enumerator ::= ENUMERATION_CONSTANT OP_EQUALS constant_expr.
 /* Declarator */
 
 declarator(A) ::= direct_declarator_head(HEAD) direct_declarator_tail(TAIL). {
+    // If it is a funciton def merge the head and tail into one AST node.
     if (TAIL->node_type == AST_FUNCTION_DEF) {
         A = TAIL;
         A->node_type = AST_FUNC_DECLARATION;
@@ -654,6 +655,17 @@ declarator(A) ::= direct_declarator_head(HEAD) direct_declarator_tail(TAIL). {
             A->func_type = NULL;
         free(HEAD);
         A->func_body = NULL;
+
+    // Arrays
+    } else if (TAIL->node_type == AST_DATA_TYPE) {
+        A = HEAD;
+
+        // If the head contains a pointer
+        if (A->declarator_head_pointer != NULL)
+            set_pointer_type(A->declarator_head_pointer, TAIL->data_type);
+        else
+            A->declarator_head_pointer = TAIL->data_type;
+        free(TAIL);
     }
 }
 declarator(A) ::= direct_declarator_head(HEAD). { A = HEAD; }
@@ -689,11 +701,16 @@ direct_declarator_tail ::= old_func_direct_declarator_tail. {
 }
 
 // Arrays
-array_declarator_tail ::= array_declarator_single.
-array_declarator_tail ::= array_declarator_tail array_declarator_single.
+array_declarator_tail(A) ::= array_declarator_single(ARRAY). { A = ARRAY; }
+array_declarator_tail ::= array_declarator_tail array_declarator_single. // TODO
+
+array_declarator_single(A) ::= LSQUARE assignment_expr(EXPR) RSQUARE. {
+    A = malloc_or_die(sizeof(AstNode));
+    A->node_type = AST_DATA_TYPE;
+    A->data_type = new_data_type(TYPE_ARRAY, 0, 0, 0, NULL, EXPR);
+}
 array_declarator_single ::= LSQUARE RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list assignment_expr RSQUARE.
-array_declarator_single ::= LSQUARE assignment_expr RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list RSQUARE.
 array_declarator_single ::= LSQUARE KWD_STATIC assignment_expr RSQUARE.
 array_declarator_single ::= LSQUARE KWD_STATIC type_qualifier_list
@@ -706,16 +723,16 @@ array_declarator_single ::= LSQUARE type_qualifier_list OP_ASTERISK RSQUARE.
 // Pointer
 %type pointer { DataType * }
 pointer(A) ::= OP_ASTERISK. {
-    A = new_data_type(TYPE_POINTER, 0, 0, 0, NULL);
+    A = new_data_type(TYPE_POINTER, 0, 0, 0, NULL, NULL);
 }
 pointer(A) ::= OP_ASTERISK type_qualifier_list(QUALIFERS). {
-    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFERS, NULL);
+    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFERS, NULL, NULL);
 }
 pointer(A) ::= OP_ASTERISK pointer(POINTER). {
-    A = new_data_type(TYPE_POINTER, 0, 0, 0, POINTER);
+    A = new_data_type(TYPE_POINTER, 0, 0, 0, POINTER, NULL);
 }
 pointer(A) ::= OP_ASTERISK type_qualifier_list(QUALIFIERS) pointer(POINTER). {
-    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFIERS, POINTER);
+    A = new_data_type(TYPE_POINTER, 0, 0, QUALIFIERS, POINTER, NULL);
 }
 
 // Type qualifiers
@@ -768,7 +785,7 @@ type_name(A) ::= specifier_qualifier_list(SPEC_QUAL_LIST). {
         free(SPEC_QUAL_LIST->items[i]);
     vector_free(SPEC_QUAL_LIST);
 }
-type_name ::= specifier_qualifier_list abstract_declarator.
+type_name ::= specifier_qualifier_list abstract_declarator. // TODO
 
 // Direct abstract declarator
 direct_abstract_declarator ::= LPAREN abstract_declarator RPAREN.

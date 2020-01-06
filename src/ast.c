@@ -138,7 +138,8 @@ AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head)
 /* Data types */
 
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
-                        int type_qualifiers, DataType *pointer)
+                        int type_qualifiers, DataType *pointer,
+                        AstNode *array_expr)
 {
     DataType *new_type = malloc_or_die(sizeof(DataType));
     new_type->type = type;
@@ -146,6 +147,7 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs,
     new_type->storage_specs = storage_specs;
     new_type->type_qualifiers = type_qualifiers;
     new_type->pointer = pointer;
+    new_type->array_expr = array_expr;
     return new_type;
 }
 
@@ -257,6 +259,8 @@ void free_ast(AstNode *ast)
             free_ast(ast->func_call_args->items[i]);
         vector_free(ast->func_call_args);
         break;
+    case AST_DATA_TYPE:
+        free(ast->data_type);
     case AST_CONTINUE_STMT:
     case AST_INTEGER_CONST:
     case AST_FLOAT_CONST:
@@ -275,7 +279,7 @@ char *type_to_string(const DataType *type)
     char type_str[25];
     char type_qualifier[25] = { 0 };
 
-    // If it is a pointer
+    // If it is a pointer/array
     if (type->pointer != NULL) {
         // Type qualifiers
         if (type->type_qualifiers & TYPE_QUAL_CONST)
@@ -288,7 +292,14 @@ char *type_to_string(const DataType *type)
         char *pointer_str = type_to_string(type->pointer);
 
         char final_str[strlen(pointer_str) + 25];
-        sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
+
+        // Pointer
+        if (type->type == TYPE_POINTER)
+            sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
+        // Arrays
+        else
+            sprintf(final_str, "%s%s[]", pointer_str, type_qualifier);
+
         free(pointer_str);
         return strdup(final_str);
     }
@@ -334,7 +345,7 @@ char *type_to_string(const DataType *type)
 static void print_data_type(const DataType *type)
 {
     char *type_str = type_to_string(type);
-    printf("(type \"%s\")", type_str);
+    printf("(type '(%s))", type_str);
     free(type_str);
 }
 
@@ -346,6 +357,7 @@ void print_ast(AstNode *ast)
     }
 
     switch (ast->node_type) {
+    case AST_DATA_TYPE:     print_data_type(ast->data_type);
     case AST_BREAK_STMT:    printf("(break)"); break;
     case AST_CONTINUE_STMT: printf("(continue)"); break;
     case AST_GOTO_STMT:     printf("(goto %s)", ast->identifier); break;
