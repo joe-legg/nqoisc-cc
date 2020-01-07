@@ -8,7 +8,7 @@
 
 /* New Ast Functions */
 
-AstNode *new_expr_stmt(AstNode *expr)
+AstNode *new_ast_expr_stmt(AstNode *expr)
 {
     AstNode *node = malloc_or_die(sizeof(AstNode));
     node->node_type = AST_EXPR_STMT;
@@ -134,13 +134,6 @@ AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
     vector_append(stmts->statements,
                   new_ast_conditional(AST_WHILE_STMT, expr_2, body, NULL));
     return stmts;
-}
-
-AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head)
-{
-    AstNode *ident = new_ast_ident(declarator_head->declarator_head_ident);
-    free_ast(declarator_head);
-    return ident;
 }
 
 /* Data types */

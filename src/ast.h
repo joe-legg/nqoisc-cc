@@ -45,7 +45,7 @@ typedef struct DataType {
     // the best I could think of.
     struct DataType *pointer;
 
-    // NULL if array size is calculated at runtime
+    // NULL if no array size is specified
     struct AstNode *array_expr;
 } DataType;
 
@@ -233,8 +233,8 @@ typedef struct AstNode {
 } AstNode;
 
 // New AST Functions
-AstNode *new_expr_stmt(AstNode *expr);
 AstNode *new_ast_string_lit(char *str);
+AstNode *new_ast_expr_stmt(AstNode *expr);
 AstNode *new_ast_ident(const char *ident);
 AstNode *new_ast_integer_const(long value);
 AstNode *new_ast_float_const(long double value);
@@ -249,7 +249,6 @@ AstNode *new_ast_conditional(int node_type, AstNode *cond, AstNode *cond_body,
                              AstNode *cond_else);
 AstNode *new_ast_for_loop(AstNode *clause_1, AstNode *expr_2, AstNode *expr_3,
                           AstNode *body);
-AstNode *ast_declarator_head_to_identifier(AstNode *declarator_head);
 
 // New Data Type
 DataType *new_data_type(int type, int is_unsigned, int storage_specs,
