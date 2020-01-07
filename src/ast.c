@@ -291,22 +291,20 @@ char *type_to_string(const DataType *type)
     if (type->pointer != NULL) {
         // Type qualifiers
         if (type->type_qualifiers & TYPE_QUAL_CONST)
-            strcat(type_qualifier, "const ");
+            strcat(type_qualifier, " const ");
         if (type->type_qualifiers & TYPE_QUAL_RESTRICT)
-            strcat(type_qualifier, "restrict ");
+            strcat(type_qualifier, " restrict ");
         if (type->type_qualifiers & TYPE_QUAL_VOLATILE)
-            strcat(type_qualifier, "volatile ");
+            strcat(type_qualifier, " volatile ");
 
         char *pointer_str = type_to_string(type->pointer);
 
         char final_str[strlen(pointer_str) + 25];
 
-        // Pointer
         if (type->type == TYPE_POINTER)
-            sprintf(final_str, "%s%s*", pointer_str, type_qualifier);
-        // Arrays
+            sprintf(final_str, "%s%s*", pointer_str, type_qualifier); // Pointer
         else
-            sprintf(final_str, "%s%s[]", pointer_str, type_qualifier);
+            sprintf(final_str, "%s%s[]", pointer_str, type_qualifier); // Arrays
 
         free(pointer_str);
         return strdup(final_str);

@@ -18,14 +18,20 @@ Todo List
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] implement parse_c() to take a file pointer instead of a file name.
-- [ ] change parse() function to parse_c()
-- [ ] semantic checks for declarations.
-- [ ] semantic checks for expressions.
+- [ ] semantic checks
     - [ ] Read through the standard.
+    - [ ] declarations.
+    - [ ] expressions.
+    - [ ] arrays
+        - [ ] check that the expression is a constant integer expression.
+        - [ ] check the size is greater than zero
+        - [ ] handle empty array size.
+        - [ ] if the size is * check that it is in function prototype scope.
 - [ ] implement a symbol table.
     - [ ] implement a hash table.
         - [ ] Dynamic implementation.
         - [x] static implementation.
+- [x] change parse() function to parse_c()
 - [x] start implementing semantic checks
 - [x] replace malloc() with malloc_or_die()
 - [x] ast gen for typedefs.

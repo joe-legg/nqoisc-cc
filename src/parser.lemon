@@ -193,7 +193,7 @@ extern FILE *yyin;
 extern int yylineno;
 extern void yylex_destroy();
 
-AstNode *parse(char *filename)
+AstNode *parse_c(char *filename)
 {
     cur_filename = filename;
     yyin = fopen(filename, "r");
@@ -717,7 +717,8 @@ array_declarator_single(A) ::= LSQUARE assignment_expr(EXPR) RSQUARE. {
 array_declarator_single(A) ::= LSQUARE RSQUARE. {
     A = new_ast_data_type(new_data_type(TYPE_ARRAY, 0, 0, 0, NULL, NULL));
 }
-array_declarator_single ::= LSQUARE type_qualifier_list assignment_expr RSQUARE.
+array_declarator_single ::= LSQUARE type_qualifier_list assignment_expr
+                            RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list RSQUARE.
 array_declarator_single ::= LSQUARE KWD_STATIC assignment_expr RSQUARE.
 array_declarator_single ::= LSQUARE KWD_STATIC type_qualifier_list
@@ -727,7 +728,7 @@ array_declarator_single ::= LSQUARE type_qualifier_list KWD_STATIC
 array_declarator_single ::= LSQUARE OP_ASTERISK RSQUARE.
 array_declarator_single ::= LSQUARE type_qualifier_list OP_ASTERISK RSQUARE.
 
-// Pointer
+// Pointers
 %type pointer { DataType * }
 pointer(A) ::= OP_ASTERISK. {
     A = new_data_type(TYPE_POINTER, 0, 0, 0, NULL, NULL);
@@ -744,9 +745,7 @@ pointer(A) ::= OP_ASTERISK type_qualifier_list(QUALIFIERS) pointer(POINTER). {
 
 // Type qualifiers
 %type type_qualifier_list { int }
-type_qualifier_list(A) ::= type_qualifier(QUALIFIER). {
-    A = QUALIFIER;
-}
+type_qualifier_list(A) ::= type_qualifier(QUALIFIER). { A = QUALIFIER; }
 type_qualifier_list(A) ::= type_qualifier_list(QUALIFIERS)
                            type_qualifier(NEW_QUALIFIER). {
     A = QUALIFIERS | NEW_QUALIFIER;
