@@ -5,6 +5,8 @@
 
 int enable_warnings = 1;
 
+char *cur_filename; // Filename global
+
 void error(const char *filename, int line_num, char *fmt, ...)
 {
     va_list args;

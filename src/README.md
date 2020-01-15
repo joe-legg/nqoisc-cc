@@ -6,13 +6,15 @@
 | `ast.c`           | Implementation for the AST.                                                                 |
 | `ir.h`            | Header file for a simple intermediate representation.                                       |
 | `ir.c`            | Implementation for `ir.h`.                                                                  |
-| `error.h`         | Declarations for error.c                                                                    |
+| `ast_to_ir.h`     | Header file for `ast_to_ir.c`.                                                              |
+| `ast_to_ir.c`     | Converts the ast to the IR defined in `ir.h` and `ir.c`                                     |
+| `error.h`         | Declarations for `error.c`.                                                                 |
 | `error.c`         | Error printing and handling.                                                                |
 | `hash_table.h`    | Declarations for hash table.                                                                |
 | `hash_table.c`    | Hash table implementation.                                                                  |
 | `lexer.l`         | FLEX based lexer/tokenizer.                                                                 |
 | `main.c`          | Main compiler entry point.                                                                  |
-| `malloc_or_die.h` | Declarations for malloc_or_die.h                                                            |
+| `malloc_or_die.h` | Declarations for `malloc_or_die.h`.                                                         |
 | `malloc_or_die.c` | A simple function that trys to allocate memory, if it fails it exits the compiler.          |
 | `parser.lemon`    | LEMON based parser for C.                                                                   |
 | `vector.h`        | Declarations for `vector.c`.                                                                |

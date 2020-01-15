@@ -116,8 +116,8 @@ typedef struct AstNode {
         AST_DEFAULT_STMT,
 
         // Declarations
-        AST_DECLARATOR_HEAD,
         AST_DECLARATION,
+        AST_DECLARATOR_HEAD,
         AST_TYPEDEF,
         AST_DECL_LIST,
 

@@ -3,50 +3,55 @@
 
 #include <stdint.h>
 
-typedef uint32_t MemAddr;
-
+// IR Value
 typedef struct IrValue {
     enum {
-        VALUE_MEM_ADDR,
+        VALUE_VARIABLE,
         VALUE_INTEGER,
         VALUE_FLOAT,
         VALUE_STRING
     } type;
 
     union {
-        MemAddr mem_addr;
+        int variable;
         long long integer;
-        long double floating_point;
+        double floating_point;
         char *string;
     };
 } IrValue;
 
+// IR Instruction
 typedef struct IrInstr {
     enum {
+        // Variables
         IR_INIT,
-        IR_COPY,
+        IR_NEW_FRAME,
+        IR_POP_FRAME,
+
+        // Branching
         IR_RET,
         IR_JAL,
         IR_JNZ,
 
         // Operations
-        IR_OP_ADD,
-        IR_OP_SUB,
-        IR_OP_MULT,
-        IR_OP_DIV
+        IR_ADD,
+        IR_SUB,
+        IR_MULT,
+        IR_DIV
     } type;
 
     struct IrInstr *next;
     struct IrInstr *branch; // Used in jump instructions
 
-    int print_label; // Used to tell ir_print that a label exists here
-
     IrValue p0, p1; // Parameters
+
+    int print_label; // Used to tell ir_print that a label exists here
 } IrInstr;
 
 IrInstr *new_ir_instr(int type, IrValue p0, IrValue p1,
                       IrInstr *next, IrInstr *branch);
 void free_ir_instr(IrInstr *ir);
+
 void ir_value_print(IrValue val);
 void ir_print(IrInstr *ir);
 

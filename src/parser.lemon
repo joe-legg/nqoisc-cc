@@ -8,14 +8,15 @@
 #include "malloc_or_die.h"
 
 // Location info
-static char *cur_filename;
+char *cur_filename; // Filename global
 static int cur_line_num;
 static char *cur_tok_str;
 
 // Root node for the AST
 static AstNode *ast_root_node;
 
-AstNode *extract_ident_from_declarator_head(AstNode *declarator_head)
+
+static AstNode *extract_ident_from_declarator_head(AstNode *declarator_head)
 {
     AstNode *ident = new_ast_ident(declarator_head->declarator_head_ident);
     free_ast(declarator_head);

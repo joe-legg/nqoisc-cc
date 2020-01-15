@@ -11,13 +11,16 @@ Todo List
 - [ ] start implementing a preprocessor.
 - [ ] rename compiler.
 - [ ] improve errors. - Dont exit after error
-- [ ] rewrite README.md.
+- [ ] documentation.
+    - [ ] rewrite README.md.
+    - [ ] documentation for the backend and front end
 - [ ] variable function arguments.
 - [ ] write documentation.
     - [ ] AST.
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] implement parse_c() to take a file pointer instead of a file name.
+- [ ] try to remove some AST nodes.
 - [ ] semantic checks
     - [ ] Read through the standard.
     - [ ] declarations.

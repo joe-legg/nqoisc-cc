@@ -1,1 +1,4 @@
-int *a;
+int test()
+{
+    return 42;
+}
