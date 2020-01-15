@@ -7,7 +7,7 @@
 uint32_t memory_dump = 0;
 
 uint8_t *memory;
-uint32_t mem_size = 2 ^ 16;
+uint32_t mem_size;
 
 uint32_t program_counter;
 uint32_t data_ptr;
@@ -150,6 +150,9 @@ int main(int argc, char *argv[])
         print_help();
         return 1;
     }
+
+    if (mem_size == 0)
+        mem_size = 2 ^ 16;
 
     load_program(input_program);
     run_processor();

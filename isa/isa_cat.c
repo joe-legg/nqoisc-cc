@@ -8,10 +8,10 @@ version of it.
 
 uint32_t to_little_endian(uint32_t word)
 {
-    return (((word >>  0) & 0xff) << 24) |
-           (((word >>  8) & 0xff) << 16) |
-           (((word >> 16) & 0xff) <<  8) |
-           (((word >> 24) & 0xff) <<  0);
+    return (((word >> 0) & 0xff) << 24) |
+           (((word >> 8) & 0xff) << 16) |
+           (((word >> 16) & 0xff) << 8) |
+           (((word >> 24) & 0xff) << 0);
 }
 
 // Sign extend 30-bit value

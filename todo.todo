@@ -25,6 +25,8 @@ Todo List
     - [ ] Read through the standard.
     - [ ] declarations.
     - [ ] expressions.
+        - [ ] addition.
+        - [ ] subtraction.
     - [ ] arrays
         - [ ] check that the expression is a constant integer expression.
         - [ ] check the size is greater than zero
@@ -98,6 +100,10 @@ Todo List
 - [x] parse statements.
 - [x] finish parsing declarations.
 - [x] error system.
+
+Possible Bugs
+#########################################
+- Negative numbers in code gen may fail if the host compiler does not use twos compliment
 
 Long Term Todo
 #########################################

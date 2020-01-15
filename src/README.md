@@ -4,10 +4,6 @@
 |-------------------|---------------------------------------------------------------------------------------------|
 | `ast.h`           | Declarations for the AST (**A**bstract **S**yntax **T**ree).                                |
 | `ast.c`           | Implementation for the AST.                                                                 |
-| `ir.h`            | Header file for a simple intermediate representation.                                       |
-| `ir.c`            | Implementation for `ir.h`.                                                                  |
-| `ast_to_ir.h`     | Header file for `ast_to_ir.c`.                                                              |
-| `ast_to_ir.c`     | Converts the ast to the IR defined in `ir.h` and `ir.c`                                     |
 | `error.h`         | Declarations for `error.c`.                                                                 |
 | `error.c`         | Error printing and handling.                                                                |
 | `hash_table.h`    | Declarations for hash table.                                                                |
