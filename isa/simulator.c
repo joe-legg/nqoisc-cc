@@ -12,6 +12,8 @@ uint32_t mem_size;
 uint32_t program_counter;
 uint32_t data_ptr;
 
+int single_step_mode = 0;
+
 int sign_extend_imm(int imm)
 {
     int mask = 1U << (30 - 1);
@@ -21,6 +23,12 @@ int sign_extend_imm(int imm)
 // Read 4 bytes from memory
 uint32_t read_4_bytes(uint32_t addr)
 {
+    if (addr + 3 > mem_size) {
+        printf("Error: invalid read from address 0x%x. Consider increasing the "
+               "memory size.\n", addr);
+        exit(0);
+    }
+
     return memory[addr] << 24     |
            memory[addr + 1] << 16 |
            memory[addr + 2] << 8  |
@@ -30,6 +38,12 @@ uint32_t read_4_bytes(uint32_t addr)
 // Write 4 bytes
 void write_4_bytes(uint32_t addr, uint32_t bytes)
 {
+    if (addr + 3 > mem_size) {
+        printf("Error: invalid write to address 0x%x. Consider increasing the "
+               "memory size.\n", addr);
+        exit(0);
+    }
+
     memory[addr] = bytes >> 24;
     memory[addr + 1] = bytes >> 16;
     memory[addr + 2] = bytes >> 8;
@@ -61,15 +75,62 @@ void execute(uint32_t instr)
         break;
     case 2: // bnz
         if (read_4_bytes(data_ptr) != 0)
-            program_counter += imm;
+            program_counter = (int32_t)program_counter + (int32_t)imm;
         break;
+    }
+}
+
+void dump_status(uint32_t instr)
+{
+    printf("Status\n------\n");
+
+    // Instruction
+    uint8_t opcode = instr >> 30;
+    uint32_t imm = sign_extend_imm(instr & 0x3FFFFFFF);
+
+    switch (opcode) {
+    case 0: printf("instruction: right\n"); break;
+    case 1: printf("instruction: add\n"); break;
+    case 2: printf("instruction: bnz\n"); break;
+    }
+    printf("immediate: 0x%x\n\n", imm);
+
+    // Program counter
+    printf("program counter: %d\n\n", program_counter);
+    if (((int32_t)program_counter - 8) >= 0) {
+        printf("0x%x\n", read_4_bytes(program_counter - 8));
+        printf("0x%x\n", read_4_bytes(program_counter - 4));
+    }
+    if (((int32_t)program_counter + 8) < mem_size) {
+        printf("0x%x <- program counter\n", read_4_bytes(program_counter));
+        printf("0x%x\n", read_4_bytes(program_counter + 4));
+        printf("0x%x\n\n", read_4_bytes(program_counter + 8));
+    }
+
+    // Data pointer
+    printf("data pointer: %d\n\n", data_ptr);
+    if (((int32_t)data_ptr - 8) >= 0) {
+        printf("0x%x\n", read_4_bytes(data_ptr - 8));
+        printf("0x%x\n", read_4_bytes(data_ptr - 4));
+    }
+    printf("0x%x <- data pointer\n", read_4_bytes(data_ptr));
+    if (((int32_t)data_ptr + 8) < mem_size) {
+        printf("0x%x\n", read_4_bytes(data_ptr + 4));
+        printf("0x%x\n\n", read_4_bytes(data_ptr + 8));
     }
 }
 
 void run_processor()
 {
     while (1) {
-        execute(fetch());
+        uint32_t cur_instr = fetch();
+        execute(cur_instr);
+
+        if (single_step_mode) {
+            dump_status(cur_instr);
+            printf("Press enter to continue...\n");
+            getchar();
+        }
     }
 }
 
@@ -83,6 +144,7 @@ void load_program(const char *filename)
     }
 
     memory = malloc(sizeof(uint8_t) * mem_size);
+
     fread(memory, 1, mem_size, program);
 }
 
@@ -94,6 +156,10 @@ void handle_ctrl_c()
         for (int i = 0; i < memory_dump; i++)
             printf("%c", memory[i]);
     }
+
+    dump_status(read_4_bytes(program_counter));
+
+    free(memory);
     exit(1);
 }
 
@@ -104,7 +170,8 @@ void print_help()
            "-h              Print this help and exit.\n"
            "-m <size>       Set the amount of memory in bytes. (The default is 65536)\n"
            "-d <size>       Dump <size> bytes of memory to stdout.\n"
-           "-b <filename>   Specify an input file.\n");
+           "-b <filename>   Specify an input file.\n"
+           "-s              Single step mode.\n");
 }
 
 int main(int argc, char *argv[])
@@ -112,7 +179,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, handle_ctrl_c);
 
     char *input_program = NULL;
-    for (int option; (option = getopt(argc, argv, "m:b:d:h")) != -1;) {
+    for (int option; (option = getopt(argc, argv, "sm:b:d:h")) != -1;) {
         switch (option) {
         // Memory size
         case 'm':
@@ -136,6 +203,10 @@ int main(int argc, char *argv[])
         // Memory dump
         case 'd':
             memory_dump = atoi(optarg);
+            break;
+        // Single step
+        case 's':
+            single_step_mode = 1;
             break;
         case '?':
             printf("Unkown option: %c\n", optopt);
