@@ -20,6 +20,7 @@ Todo List
 - [ ] AST gen for enums.
     - [ ] enum constants.
 - [ ] implement parse_c() to take a file pointer instead of a file name.
+- [ ] write realloc_or_die() function.
 - [ ] try to remove some AST nodes.
 - [ ] semantic checks
     - [ ] Read through the standard.
