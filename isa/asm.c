@@ -4,11 +4,11 @@
 #include <string.h>
 #include "../src/vector.h"
 
-int is_int(char *str)
+int fpeek(FILE *fp)
 {
-    char *p = NULL;
-    strtol(str, &p, 10);
-    return !*p;
+    int c = fgetc(fp);
+    ungetc(c, fp);
+    return c;
 }
 
 char *append_char(char *str, char c)
@@ -28,13 +28,48 @@ char *scan_while(FILE *fp, int (*condition)(char c))
 
     while ((c = fgetc(fp)) != EOF && condition(c))
         token = append_char(token, c);
+    ungetc(c, fp);
+
+    return token;
+}
+
+char *next_tok(FILE *fp)
+{
+    scan_while(fp, (int (*)(char c))&isspace); // Skip whitespace
+
+    char *token;
+
+    if (isalpha(fpeek(fp))) { // Labels and instructions
+        token = scan_while(fp, (int (*)(char c))&isalnum);
+
+        if (fpeek(fp) == ':') { // Check for label
+            token = append_char(token, ':');
+            fgetc(fp);
+        }
+
+    } else if (isdigit(fpeek(fp))) { // Integers
+        token = scan_while(fp, (int (*)(char c))&isdigit);
+
+    } else if (fpeek(fp) == EOF) { // EOF
+        return NULL;
+
+    } else {
+        printf("Error unkown token \"%c\".\n", fpeek(fp));
+        exit(1);
+    }
 
     return token;
 }
 
 Vector *lex(FILE *fp)
 {
-    printf("%s\n", scan_while(fp, (int (*)(char c))&isalnum));
+    char *token;
+    Vector *tok_vec = new_vector();
+
+    while ((token = next_tok(fp)) != NULL)
+        vector_append(tok_vec, token);
+
+    return tok_vec;
 }
 
 int main(int argc, char *argv[])
@@ -46,7 +81,9 @@ int main(int argc, char *argv[])
     if (asm_fp == NULL)
         return 1;
 
-    lex(asm_fp);
+    Vector *tokens = lex(asm_fp);
+    for (int i = 0; i < tokens->length; i++)
+        printf("%s\n", (char *)tokens->items[i]);
 
     fclose(asm_fp);
 }
