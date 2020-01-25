@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] write a proper assembler
 - [ ] standard library.
 - [ ] compiler defined constants and macros.
     - [ ] __FILE__

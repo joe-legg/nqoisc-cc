@@ -1,4 +1,4 @@
 left 10
-bnz test
 right 11
-test:
+add 10
+sub 6
