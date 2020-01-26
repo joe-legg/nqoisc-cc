@@ -3,7 +3,7 @@
 |-------------|------------------------------------------------------|
 | isa_cat.c   | A program to print binarys in an assembly like form. |
 | simulator.c | ISA simulator. Run `./simulator -h` for more info.   |
-| asm.c       | A badly writen assembler.                            |
+| asm.c       | An assembler.                                        |
 
 
 ## The Instruction Set

@@ -5,83 +5,29 @@
 #include <string.h>
 #include "../src/vector.h"
 
-// Parser
-
-// Instruction op-codes
-enum {
-    INSTR_RIGHT = 0x0,
-    INSTR_ADD   = 0x1,
-    INSTR_BNZ   = 0x2,
-};
-
-static void gen_instr(FILE *outfile, char opcode, uint32_t imm)
-{
-    uint32_t instr = (opcode << 30) | (imm & 0x3FFFFFFF);
-    instr = __bswap_constant_32(instr); // Little-endian to big-endian
-    fwrite(&instr, 4, 1, outfile);
-}
-
-void parse(Vector *tokens, FILE *outfile)
-{
+typedef struct Token {
     enum {
-        PARSE_NONE,
-        PARSE_RIGHT,
-        PARSE_LEFT,
-        PARSE_ADD,
-        PARSE_SUB,
-        PARSE_BNZ,
-    } parse_state = PARSE_NONE;
+        TOK_RIGHT,
+        TOK_LEFT,
+        TOK_ADD,
+        TOK_SUB,
+        TOK_BNZ,
+        TOK_INTEGER,
+        TOK_LABEL_REF,
+    } type;
 
-    for (int i = 0; i < tokens->length; i++) {
-        char *curtok = tokens->items[i];
+    char *string;
+} Token;
 
-        if (strcmp(curtok, "right") == 0) {
-            parse_state = PARSE_RIGHT;
-        } else if (strcmp(curtok, "left") == 0) {
-            parse_state = PARSE_LEFT;
-        } else if (strcmp(curtok, "add") == 0) {
-            parse_state = PARSE_ADD;
-        } else if (strcmp(curtok, "sub") == 0) {
-            parse_state = PARSE_SUB;
-        } else if (strcmp(curtok, "bnz") == 0) {
-            parse_state = PARSE_BNZ;
-        } else if (isdigit(curtok[0])) { // Instruction parameter
-            switch (parse_state) {
-            case PARSE_RIGHT:
-                gen_instr(outfile, INSTR_RIGHT, strtol(curtok, NULL, 10));
-                break;
-            case PARSE_LEFT:
-                gen_instr(outfile, INSTR_RIGHT, -strtol(curtok, NULL, 10));
-                break;
-            case PARSE_ADD:
-                gen_instr(outfile, INSTR_ADD, strtol(curtok, NULL, 10));
-                break;
-            case PARSE_SUB:
-                gen_instr(outfile, INSTR_ADD, -strtol(curtok, NULL, 10));
-                break;
-            case PARSE_BNZ:
-                gen_instr(outfile, INSTR_BNZ, strtol(curtok, NULL, 10));
-                break;
-            default:
-                printf("Error: unexpected value \"%s\".", curtok);
-                exit(1);
-            }
-            parse_state = PARSE_NONE;
-        } else if (curtok[strlen(curtok) - 1] == ':') { // Label definition
-            // TODO
-        } else if (isalpha(curtok[0])) { // Label reference
-            if (parse_state == PARSE_BNZ) {
-                // TODO
-            } else {
-                printf("Error: unexpected value \"%s\".", curtok);
-                exit(1);
-            }
-        } else {
-        }
-    }
-}
+typedef struct Label {
+    int location;
+    char *name;
+} Label;
 
-// Lexer
+// Globals
+
+Vector *tokens;
+Vector *labels; // Symbol
 
 int fpeek(FILE *fp)
 {
@@ -112,51 +58,75 @@ char *scan_while(FILE *fp, int (*condition)(char c))
     return token;
 }
 
-char *next_tok(FILE *fp)
+void lex(FILE *src)
 {
-    scan_while(fp, (int (*)(char c))&isspace); // Skip whitespace
+    tokens = new_vector();
+    labels = new_vector();
 
-    char *token;
-    int instr_count = 0;
+    int instr_index = 0;
 
-    if (isalpha(fpeek(fp))) { // Labels and instructions
-        token = scan_while(fp, (int (*)(char c))&isalnum);
+    while (1) {
+        Token *tok = malloc(sizeof(Token));
+        tok->string = malloc(sizeof(char));
+        tok->string[0] = '\0';
 
+        scan_while(src, (int (*)(char))&isspace);
 
-        if (fpeek(fp) == ':') { // Check for label
-            token = append_char(token, ':');
-            fgetc(fp);
-            
-        // Calculate label location
-        } else if (strcmp(token, "right") == 0 || strcmp(token, "left") == 0 ||
-                   strcmp(token, "add") == 0 || strcmp(token, "sub") == 0 ||
-                   strcmp(token, "bnz") == 0) {
-            instr_count++;
+        if (fpeek(src) == EOF)
+            break;
+
+        // Instruction or label
+        if (isalpha(fpeek(src))) {
+            tok->string = scan_while(src, (int (*)(char))&isalnum);
+
+            if (fpeek(src) == ':') { // Label definition
+                fgetc(src); // Advance the file stream
+
+                // Create label
+                Label *l = malloc(sizeof(Label));
+                l->name = tok->string;
+                l->location = instr_index;
+
+                vector_append(labels, l);
+
+                // Delete the token as it is not needed
+                free(tok->string);
+                free(tok);
+                continue;
+            } else {
+                // Keywords
+                if (strcmp(tok->string, "right") == 0) {
+                    instr_index += 4;
+                    tok->type = TOK_RIGHT;
+                } else if (strcmp(tok->string, "left") == 0) {
+                    instr_index += 4;
+                    tok->type = TOK_LEFT;
+                } else if (strcmp(tok->string, "add") == 0) {
+                    instr_index += 4;
+                    tok->type = TOK_ADD;
+                } else if (strcmp(tok->string, "sub") == 0) {
+                    instr_index += 4;
+                    tok->type = TOK_SUB;
+                } else if (strcmp(tok->string, "bnz") == 0) {
+                    instr_index += 4;
+                    tok->type = TOK_BNZ;
+                // Label reference
+                } else {
+                    tok->type = TOK_LABEL_REF;
+                }
+            }
+        // Integers
+        } else if (isdigit(fpeek(src))) {
+            tok->string = scan_while(src, (int (*)(char))&isdigit);
+            tok->type = TOK_INTEGER;
+        // Error
+        } else {
+            printf("error: unexpected character \"%c\".\n", fpeek(src));
+            exit(1);
         }
 
-    } else if (isdigit(fpeek(fp))) { // Integers
-        token = scan_while(fp, (int (*)(char c))&isdigit);
-
-    } else if (fpeek(fp) == EOF) { // EOF
-        return NULL;
-
-    } else {
-        printf("Error unkown token \"%c\".\n", fpeek(fp));
-        exit(1);
+        vector_append(tokens, tok);
     }
-
-    return token;
-}
-
-Vector *lex(FILE *fp)
-{
-    char *token;
-    Vector *tok_vec = new_vector();
-
-    while ((token = next_tok(fp)) != NULL)
-        vector_append(tok_vec, token);
-
-    return tok_vec;
 }
 
 // Main
@@ -166,19 +136,15 @@ int main(int argc, char *argv[])
     if (argc < 2)
         return 1;
 
-    FILE *asm_fp = fopen(argv[1], "r");
-    if (asm_fp == NULL)
-        return 1;
+    FILE *source = fopen(argv[1], "r");
+    lex(source);
+    fclose(source);
 
-    Vector *tokens = lex(asm_fp);
-
-    fclose(asm_fp);
-
-    FILE *outfile = fopen("out.bin", "w");
-    parse(tokens, outfile);
-    fclose(outfile);
-
-    for (int i = 0; i < tokens->length; i++)
-        free(tokens->items[i]);
+    for (int i = 0; i < tokens->length; i++) {
+        Token *curtok = (Token *)tokens->items[i];
+        printf("%s\n", curtok->string);
+        free(curtok->string);
+        free(curtok);
+    }
     vector_free(tokens);
 }
