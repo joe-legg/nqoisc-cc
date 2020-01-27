@@ -56,6 +56,12 @@ void gen_instr(FILE *outfile, char opcode, uint32_t imm)
 
 void next_tok()
 {
+    // Stop the parser advancing if it has reached the end of the token stream.
+    // Note: this is not the most efficent way to stop the parser. I may need to
+    //       change this in the future.
+    if (parser_ctx.nxt_tok_index >= lexer_ctx.tokens->length)
+        return;
+
     parser_ctx.lasttok = parser_ctx.curtok;
     parser_ctx.curtok = lexer_ctx.tokens->items[parser_ctx.nxt_tok_index];
     parser_ctx.nxt_tok_index++;
@@ -73,7 +79,7 @@ int accept_tok(int tok_type)
 void expect_tok(int tok_type)
 {
     if (!accept_tok(tok_type)) {
-        printf("error: unexpected token \"%s\".", parser_ctx.curtok->string);
+        printf("error: unexpected token \"%s\".\n", parser_ctx.curtok->string);
         exit(1);
     }
 }
@@ -83,7 +89,7 @@ void parse(FILE *outfile)
     parser_ctx.nxt_tok_index = 0;
     next_tok();
 
-    while (parser_ctx.nxt_tok_index - 1 != lexer_ctx.tokens->length) {
+    while (parser_ctx.nxt_tok_index <= lexer_ctx.tokens->length) {
         // Right instruction
         if (accept_tok(TOK_RIGHT)) {
             expect_tok(TOK_INTEGER);
@@ -112,7 +118,7 @@ void parse(FILE *outfile)
         } else if (accept_tok(TOK_BNZ)) {
             // TODO
         } else {
-            printf("error: unexpected token \"%s\".",
+            printf("error: unexpected token \"%s\".\n",
                    parser_ctx.curtok->string);
             exit(1);
         }
