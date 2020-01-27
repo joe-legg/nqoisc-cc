@@ -1,6 +1,5 @@
 Todo List
 #########################################
-- [ ] write a proper assembler
 - [ ] standard library.
 - [ ] compiler defined constants and macros.
     - [ ] __FILE__
@@ -38,6 +37,8 @@ Todo List
     - [ ] implement a hash table.
         - [ ] Dynamic implementation.
         - [x] static implementation.
+- [ ] add command line argument parsing to the assembler
+- [x] write a better assembler
 - [x] change parse() function to parse_c()
 - [x] start implementing semantic checks
 - [x] replace malloc() with malloc_or_die()

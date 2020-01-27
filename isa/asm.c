@@ -14,6 +14,7 @@ typedef struct Token {
         TOK_BNZ,
         TOK_INTEGER,
         TOK_LABEL_REF,
+        TOK_EOF,
     } type;
 
     char *string;
@@ -56,12 +57,6 @@ void gen_instr(FILE *outfile, char opcode, uint32_t imm)
 
 void next_tok()
 {
-    // Stop the parser advancing if it has reached the end of the token stream.
-    // Note: this is not the most efficent way to stop the parser. I may need to
-    //       change this in the future.
-    if (parser_ctx.nxt_tok_index >= lexer_ctx.tokens->length)
-        return;
-
     parser_ctx.lasttok = parser_ctx.curtok;
     parser_ctx.curtok = lexer_ctx.tokens->items[parser_ctx.nxt_tok_index];
     parser_ctx.nxt_tok_index++;
@@ -86,37 +81,65 @@ void expect_tok(int tok_type)
 
 void parse(FILE *outfile)
 {
+    int instr_addr = 0;
     parser_ctx.nxt_tok_index = 0;
     next_tok();
 
-    while (parser_ctx.nxt_tok_index <= lexer_ctx.tokens->length) {
+    while (parser_ctx.curtok->type != TOK_EOF) {
         // Right instruction
         if (accept_tok(TOK_RIGHT)) {
             expect_tok(TOK_INTEGER);
 
             gen_instr(outfile, INSTR_RIGHT,
                       strtol(parser_ctx.lasttok->string, NULL, 10));
+            instr_addr += 4;
         // Left instruction
         } else if (accept_tok(TOK_LEFT)) {
             expect_tok(TOK_INTEGER);
 
             gen_instr(outfile, INSTR_RIGHT,
                       -strtol(parser_ctx.lasttok->string, NULL, 10));
+            instr_addr += 4;
         // Add instruction
         } else if (accept_tok(TOK_ADD)) {
             expect_tok(TOK_INTEGER);
 
             gen_instr(outfile, INSTR_ADD,
                       strtol(parser_ctx.lasttok->string, NULL, 10));
+            instr_addr += 4;
         // Subtract instruction
         } else if (accept_tok(TOK_SUB)) {
             expect_tok(TOK_INTEGER);
 
             gen_instr(outfile, INSTR_ADD,
                       -strtol(parser_ctx.lasttok->string, NULL, 10));
+            instr_addr += 4;
         // Branch if not zero instruction
         } else if (accept_tok(TOK_BNZ)) {
-            // TODO
+            expect_tok(TOK_LABEL_REF);
+
+            char *label_name = parser_ctx.lasttok->string;
+            Label *label = NULL;
+
+            // Search the label symbol table
+            for (int i = 0; i < lexer_ctx.labels->length; i++) {
+                Label *curlabel = lexer_ctx.labels->items[i];
+
+                if (strcmp(curlabel->name, label_name) == 0)
+                    label = curlabel;
+            }
+
+            if (label == NULL) {
+                printf("error: undefined label \"%s\".\n", label_name);
+                exit(1);
+            }
+
+            // Generate the instruction
+            instr_addr += 4;
+            gen_instr(outfile, INSTR_BNZ,
+                      instr_addr < label->location ?
+                          label->location - instr_addr :       // Bnz positive
+                          (label->location - instr_addr)); // Bnz negative
         } else {
             printf("error: unexpected token \"%s\".\n",
                    parser_ctx.curtok->string);
@@ -162,7 +185,7 @@ void lex(FILE *src)
     lexer_ctx.tokens = new_vector();
     lexer_ctx.labels = new_vector();
 
-    int instr_index = 0;
+    int instr_addr = 0;
 
     while (1) {
         Token *tok = malloc(sizeof(Token));
@@ -186,8 +209,8 @@ void lex(FILE *src)
 
                 // Create label
                 Label *l = malloc(sizeof(Label));
-                l->name = tok->string;
-                l->location = instr_index;
+                l->name = strdup(tok->string);
+                l->location = instr_addr;
 
                 vector_append(lexer_ctx.labels, l);
 
@@ -198,19 +221,19 @@ void lex(FILE *src)
             } else {
                 // Keywords
                 if (strcmp(tok->string, "right") == 0) {
-                    instr_index += 4;
+                    instr_addr += 4;
                     tok->type = TOK_RIGHT;
                 } else if (strcmp(tok->string, "left") == 0) {
-                    instr_index += 4;
+                    instr_addr += 4;
                     tok->type = TOK_LEFT;
                 } else if (strcmp(tok->string, "add") == 0) {
-                    instr_index += 4;
+                    instr_addr += 4;
                     tok->type = TOK_ADD;
                 } else if (strcmp(tok->string, "sub") == 0) {
-                    instr_index += 4;
+                    instr_addr += 4;
                     tok->type = TOK_SUB;
                 } else if (strcmp(tok->string, "bnz") == 0) {
-                    instr_index += 4;
+                    instr_addr += 4;
                     tok->type = TOK_BNZ;
                 // Label reference
                 } else {
@@ -229,6 +252,10 @@ void lex(FILE *src)
 
         vector_append(lexer_ctx.tokens, tok);
     }
+
+    Token *eof = malloc(sizeof(Token));
+    eof->type = TOK_EOF;
+    vector_append(lexer_ctx.tokens, eof);
 }
 
 // Main
@@ -246,9 +273,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    lex(source);
+    lex(source); // Run the lexer
+
     fclose(source);
 
+    // Code gen
     FILE *outfile = fopen("out.bin", "wb");
     if (outfile == NULL) {
         printf("error: failed to open \"%s\" for writing.\n", "out.bin");
