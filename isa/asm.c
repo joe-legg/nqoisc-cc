@@ -24,10 +24,102 @@ typedef struct Label {
     char *name;
 } Label;
 
-// Globals
+struct {
+    Vector *tokens;
+    Vector *labels; // Symbol table
+} lexer_ctx;
 
-Vector *tokens;
-Vector *labels; // Symbol
+struct {
+    int nxt_tok_index;
+    Token *curtok;
+    Token *lasttok;
+} parser_ctx;
+
+// Code gen
+
+// Instruction opcodes
+enum {
+    INSTR_RIGHT = 0x0,
+    INSTR_ADD   = 0x1,
+    INSTR_BNZ   = 0x2,
+    INSTR_NOP   = 0x3
+};
+
+void gen_instr(FILE *outfile, char opcode, uint32_t imm)
+{
+    uint32_t instr = (opcode << 30) | (imm & 0x3FFFFFFF);
+    instr = __bswap_constant_32(instr); // Little-endian to big-endian
+    fwrite(&instr, 4, 1, outfile);
+}
+
+// Parser
+
+void next_tok()
+{
+    parser_ctx.lasttok = parser_ctx.curtok;
+    parser_ctx.curtok = lexer_ctx.tokens->items[parser_ctx.nxt_tok_index];
+    parser_ctx.nxt_tok_index++;
+}
+
+int accept_tok(int tok_type)
+{
+    if (parser_ctx.curtok->type == tok_type) {
+        next_tok();
+        return 1;
+    }
+    return 0;
+}
+
+void expect_tok(int tok_type)
+{
+    if (!accept_tok(tok_type)) {
+        printf("error: unexpected token \"%s\".", parser_ctx.curtok->string);
+        exit(1);
+    }
+}
+
+void parse(FILE *outfile)
+{
+    parser_ctx.nxt_tok_index = 0;
+    next_tok();
+
+    while (parser_ctx.nxt_tok_index - 1 != lexer_ctx.tokens->length) {
+        // Right instruction
+        if (accept_tok(TOK_RIGHT)) {
+            expect_tok(TOK_INTEGER);
+
+            gen_instr(outfile, INSTR_RIGHT,
+                      strtol(parser_ctx.lasttok->string, NULL, 10));
+        // Left instruction
+        } else if (accept_tok(TOK_LEFT)) {
+            expect_tok(TOK_INTEGER);
+
+            gen_instr(outfile, INSTR_RIGHT,
+                      -strtol(parser_ctx.lasttok->string, NULL, 10));
+        // Add instruction
+        } else if (accept_tok(TOK_ADD)) {
+            expect_tok(TOK_INTEGER);
+
+            gen_instr(outfile, INSTR_ADD,
+                      strtol(parser_ctx.lasttok->string, NULL, 10));
+        // Subtract instruction
+        } else if (accept_tok(TOK_SUB)) {
+            expect_tok(TOK_INTEGER);
+
+            gen_instr(outfile, INSTR_ADD,
+                      -strtol(parser_ctx.lasttok->string, NULL, 10));
+        // Branch if not zero instruction
+        } else if (accept_tok(TOK_BNZ)) {
+            // TODO
+        } else {
+            printf("error: unexpected token \"%s\".",
+                   parser_ctx.curtok->string);
+            exit(1);
+        }
+    }
+}
+
+// Lexer
 
 int fpeek(FILE *fp)
 {
@@ -58,10 +150,11 @@ char *scan_while(FILE *fp, int (*condition)(char c))
     return token;
 }
 
+// Basic lexer function
 void lex(FILE *src)
 {
-    tokens = new_vector();
-    labels = new_vector();
+    lexer_ctx.tokens = new_vector();
+    lexer_ctx.labels = new_vector();
 
     int instr_index = 0;
 
@@ -79,7 +172,10 @@ void lex(FILE *src)
         if (isalpha(fpeek(src))) {
             tok->string = scan_while(src, (int (*)(char))&isalnum);
 
-            if (fpeek(src) == ':') { // Label definition
+            // Label definition
+            // Note: label definitions are not appended to lexer_ctx.tokens,
+            //       instead they are appended to lexer_ctx.labels.
+            if (fpeek(src) == ':') {
                 fgetc(src); // Advance the file stream
 
                 // Create label
@@ -87,7 +183,7 @@ void lex(FILE *src)
                 l->name = tok->string;
                 l->location = instr_index;
 
-                vector_append(labels, l);
+                vector_append(lexer_ctx.labels, l);
 
                 // Delete the token as it is not needed
                 free(tok->string);
@@ -125,7 +221,7 @@ void lex(FILE *src)
             exit(1);
         }
 
-        vector_append(tokens, tok);
+        vector_append(lexer_ctx.tokens, tok);
     }
 }
 
@@ -136,15 +232,24 @@ int main(int argc, char *argv[])
     if (argc < 2)
         return 1;
 
+    // TODO: command line argument parsing.
+
     FILE *source = fopen(argv[1], "r");
+    if (source == NULL) {
+        printf("error: failed to open \"%s\" for reading.\n", argv[1]);
+        return 1;
+    }
+
     lex(source);
     fclose(source);
 
-    for (int i = 0; i < tokens->length; i++) {
-        Token *curtok = (Token *)tokens->items[i];
-        printf("%s\n", curtok->string);
-        free(curtok->string);
-        free(curtok);
+    FILE *outfile = fopen("out.bin", "wb");
+    if (outfile == NULL) {
+        printf("error: failed to open \"%s\" for writing.\n", "out.bin");
+        return 1;
     }
-    vector_free(tokens);
+    parse(outfile);
+    fclose(outfile);
+
+    // TODO: free allocated memory
 }
