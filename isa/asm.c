@@ -179,7 +179,8 @@ char *scan_while(FILE *fp, int (*condition)(char c))
     return token;
 }
 
-int is_not_newline(char c) { return c != '\n'; }
+int is_not_newline(char c)      { return c != '\n'; } // Used for comments
+int is_valid_ident_char(char c) { return isalnum(c) || c == '_'; } // Identifier
 
 // Basic lexer function
 void lex(FILE *src)
@@ -201,7 +202,7 @@ void lex(FILE *src)
 
         // Instruction or label
         if (isalpha(fpeek(src))) {
-            tok->string = scan_while(src, (int (*)(char))&isalnum);
+            tok->string = scan_while(src, (int (*)(char))&is_valid_ident_char);
 
             // Label definition
             // Note: label definitions are not appended to lexer_ctx.tokens,
