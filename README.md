@@ -1,10 +1,9 @@
-# jcc (Joes C Compiler)
-Note: Currently the compiler is still in development. The parser is almost
-finished. Once the parser has finished I will work on implementing a
-prepocessor.
+# nqoisc-cc (Not Quite One Instruction Set Computer C Compiler)
+Note: Currently the compiler is still in development. It is currently not in a
+usable state.
 
-A small c compiler designed to target an instruction set with only three
-instructions.
+A small c compiler designed to target the NQOISC instruction set (an instruction
+set with only three instructions).
 
 ### Design Goals
 - Easily portable to new target architectures.
@@ -13,14 +12,14 @@ instructions.
 - Aims to implement the C99 standard.
 
 ## Compiling
-To compile jcc you will need the following software installed:
+To compile nqoisc-cc you will need the following software installed:
 - The [lemon](https://www.hwaci.com/sw/lemon/) parser generator.
 - flex - lexer generator.
 - gcc.
 
-Run `build.sh` to build jcc from source.
+Run `build.sh` to build nqoisc-cc from source.
 
-Currently, jcc does not have a makefile but at some point, I will write one.
+Currently, nqoisc-cc does not have a makefile but at some point, I will write one.
 
 ## The Instruction Set
 The insruction set is based on [brainfuck](https://esolangs.org/wiki/Brainfuck).

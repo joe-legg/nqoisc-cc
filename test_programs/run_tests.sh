@@ -14,7 +14,7 @@ for file in valid/*
 do
     ((test_cnt++))
     printf "TESTING \"$file\"... "
-    ./../jcc $file > /dev/null 2>&1
+    ./../nqoisc-cc $file > /dev/null 2>&1
 
     if [ $? -ne 0 ] # If the comiler exits with and error
     then
@@ -22,7 +22,7 @@ do
         printf "${COL_RED}FAIL.${COL_NC} Unexpected compilation error.\n"
     else
         # Check for memory leaks
-        valgrind --leak-check=full --show-leak-kinds=all ./../jcc $file > /dev/null 2>&1
+        valgrind --leak-check=full --show-leak-kinds=all ./../nqoisc-cc $file > /dev/null 2>&1
         if [ $? -ne 0 ] # Memory leak
         then
             ((mem_err_cnt++))
@@ -38,7 +38,7 @@ for file in invalid/*
 do
     ((test_cnt++))
     printf "TESTING \"$file\"... "
-    ./../jcc $file > /dev/null 2>&1
+    ./../nqoisc-cc $file > /dev/null 2>&1
 
     if [ $? -eq 0 ] # If the comiler exits without and error
     then
