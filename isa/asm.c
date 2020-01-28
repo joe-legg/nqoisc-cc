@@ -179,6 +179,8 @@ char *scan_while(FILE *fp, int (*condition)(char c))
     return token;
 }
 
+int is_not_newline(char c) { return c != '\n'; }
+
 // Basic lexer function
 void lex(FILE *src)
 {
@@ -244,6 +246,14 @@ void lex(FILE *src)
         } else if (isdigit(fpeek(src))) {
             tok->string = scan_while(src, (int (*)(char))&isdigit);
             tok->type = TOK_INTEGER;
+        // Comments
+        } else if (fpeek(src) == ';') {
+            tok->string = scan_while(src, (int (*)(char))&is_not_newline);
+
+            // Delete the token as it is not needed
+            free(tok->string);
+            free(tok);
+            continue;
         // Error
         } else {
             printf("error: unexpected character \"%c\".\n", fpeek(src));
