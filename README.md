@@ -42,7 +42,7 @@ Opcode  Imm 30-bit
 
 Any I/O is memory mapped.
 
-`isa` contains all files relating to the instruction set architecture.
+`nqoisc_toolchain` contains all files relating to the instruction set architecture.
 
 ## The Compiler Architecture
 ```

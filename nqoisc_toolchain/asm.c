@@ -277,25 +277,5 @@ int main(int argc, char *argv[])
         return 1;
 
     // TODO: command line argument parsing.
-
-    FILE *source = fopen(argv[1], "r");
-    if (source == NULL) {
-        printf("error: failed to open \"%s\" for reading.\n", argv[1]);
-        return 1;
-    }
-
-    lex(source); // Run the lexer
-
-    fclose(source);
-
-    // Code gen
-    FILE *outfile = fopen("out.bin", "wb");
-    if (outfile == NULL) {
-        printf("error: failed to open \"%s\" for writing.\n", "out.bin");
-        return 1;
-    }
-    parse(outfile);
-    fclose(outfile);
-
     // TODO: free allocated memory
 }
