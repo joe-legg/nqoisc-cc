@@ -37,7 +37,6 @@ Todo List
         - [ ] Dynamic implementation.
         - [x] static implementation.
 - [ ] change code_gen.c to generate assembler instead of machine code.
-- [ ] add command line argument parsing to the assembler
 - [x] rename jcc to nqoisc-cc
 - [x] write a better assembler
 - [x] change parse() function to parse_c()
