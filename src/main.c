@@ -12,6 +12,6 @@ int main(int argc, char *argv[])
     else return 0;
     print_ast(ast);
     printf("\nAST printing done.\n");
-    code_gen(ast, "out.bin");
+    code_gen(ast, "a.asm");
     free_ast(ast);
 }
