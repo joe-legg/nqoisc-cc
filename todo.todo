@@ -1,5 +1,9 @@
 Todo List
 #########################################
+- [ ] rename some of the operator tokens.
+- [ ] try to remove AST nodes that are only used in the parser.
+    - [ ] remove some operators
+        - [ ] remove x++ operator ast node and replace with x + 1 do the same for x--
 - [ ] standard library.
 - [ ] compiler defined constants and macros.
     - [ ] __FILE__
@@ -25,8 +29,15 @@ Todo List
     - [ ] Read through the standard.
     - [ ] declarations.
     - [ ] expressions.
-        - [ ] addition.
-        - [ ] subtraction.
+        - [ ] integer constants.
+        - [ ] binary operations
+            - [x] addition.
+            - [ ] subtraction.
+            - [ ] multiplication.
+            - [ ] division.
+            - [ ] logical.
+            - [ ] bitwise.
+            - [ ] assignment.
     - [ ] arrays
         - [ ] check that the expression is a constant integer expression.
         - [ ] check the size is greater than zero

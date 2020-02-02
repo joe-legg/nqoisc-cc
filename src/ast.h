@@ -5,21 +5,22 @@
 
 // Data types and declaration specifiers
 enum {
-    TYPE_INT,
+    // Types must be ordered by integer conversion rank. Lowest to highest.
     TYPE_VOID,
+    TYPE_BOOL,
     TYPE_CHAR,
     TYPE_SHORT,
+    TYPE_INT,
     TYPE_LONG,
     TYPE_LLONG,
     TYPE_FLOAT,
     TYPE_DOUBLE,
     TYPE_LDOUBLE,
-    TYPE_SIGNED,
-    TYPE_UNSIGNED,
-    TYPE_BOOL,
-
-    TYPE_POINTER,
     TYPE_ARRAY,
+    TYPE_POINTER,
+
+    TYPE_SIGNED,   // TODO: remove signed and unsigned types
+    TYPE_UNSIGNED,
 
     // Storage specifiers
     STORAGE_SPEC_TYPEDEF,
@@ -56,7 +57,7 @@ enum {
     OP_MULT,
     OP_DIV,
     OP_MODULO,
-    OP_EQUALITY,
+    OP_EQUAL,
     OP_NOT_EQUAL,
     OP_GREATER_THAN,
     OP_LESS_THAN,
@@ -84,7 +85,7 @@ enum {
     OP_COMMA,
     UNARY_SIZEOF,
     UNARY_NOT,
-    UNARY_INC,
+    UNARY_INC, // TODO: remove increment and decrement
     UNARY_DEC,
     UNARY_PLUS,
     UNARY_MINUS,
@@ -158,11 +159,11 @@ typedef struct AstNode {
         // Compound statement
         Vector *statements;
 
-        // Simple data type wrapper
+        // Simple data type wrapper. Only for use in the parser
         // TODO: currently only used for arrays so maybe rename to array_tail
         DataType *data_type;
 
-        // Declarator head
+        // Declarator head. Only used in the parser
         struct {
             char *declarator_head_ident;
             DataType *declarator_head_pointer; // Pointer/array
@@ -255,8 +256,6 @@ DataType *new_data_type(int type, int is_unsigned, int storage_specs,
                         int type_qualifiers, DataType *pointer,
                         AstNode *array_expr);
 void set_pointer_type(DataType *pointer, DataType *type);
-// Return 1 if both types are equal
-int cmp_data_types(DataType *type_a, DataType *type_b);
 
 // Free functions
 void free_ast(AstNode *ast);

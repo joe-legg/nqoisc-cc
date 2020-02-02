@@ -162,18 +162,6 @@ void set_pointer_type(DataType *pointer, DataType *type)
     last_pointer->pointer = type;
 }
 
-// Compare data types
-int cmp_data_types(DataType *type_a, DataType *type_b)
-{
-    if (type_a->type == type_b->type                       ||
-        type_a->is_unsigned == type_b->is_unsigned         ||
-        type_a->storage_specs == type_b->storage_specs     ||
-        type_a->type_qualifiers == type_b->type_qualifiers ||
-        cmp_data_types(type_a->pointer, type_b->pointer))
-        return 1;
-    return 0;
-}
-
 void free_data_type(DataType *type)
 {
     if (type->pointer != NULL) free_data_type(type->pointer);

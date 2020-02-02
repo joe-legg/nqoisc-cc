@@ -7,6 +7,8 @@
 #include "error.h"
 #include "malloc_or_die.h"
 
+static DataType *check_expr_type(AstNode *expr);
+
 // Location info
 char *cur_filename; // Filename global
 static int cur_line_num;
@@ -15,6 +17,153 @@ static char *cur_tok_str;
 // Root node for the AST
 static AstNode *ast_root_node;
 
+// Data types
+
+static int is_float_type(DataType *t)
+{
+    switch (t->type) {
+    case TYPE_FLOAT:
+    case TYPE_DOUBLE:
+    case TYPE_LDOUBLE:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static int is_int_type(DataType *t)
+{
+    switch (t->type) {
+    case TYPE_INT:
+    case TYPE_CHAR:
+    case TYPE_BOOL:
+    case TYPE_LONG:
+    case TYPE_LLONG:
+    case TYPE_SHORT:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static int is_arith_type(DataType *t)
+{
+    return is_int_type(t) || is_float_type(t);
+}
+
+// Compare data types
+static int is_type_equal(DataType *type_a, DataType *type_b)
+{
+    if (type_a->type == type_b->type                       ||
+        type_a->is_unsigned == type_b->is_unsigned         ||
+        type_a->storage_specs == type_b->storage_specs     ||
+        type_a->type_qualifiers == type_b->type_qualifiers ||
+        is_type_equal(type_a->pointer, type_b->pointer))
+        return 1;
+    return 0;
+}
+
+// Expressions
+
+// TODO: implement this function properly
+static DataType *usual_arith_conv(DataType *a, DataType *b)
+{
+    DataType *t = malloc(sizeof(DataType));
+
+    if (a->type < b->type) {
+        memcpy(t, b, sizeof(DataType));
+        return t;
+    }
+
+    memcpy(t, a, sizeof(DataType));
+    return t;
+}
+
+static DataType *check_binary_op(AstNode *expr)
+{
+    DataType *rhs_type = check_expr_type(expr->binary_right);
+    DataType *lhs_type = check_expr_type(expr->binary_left);
+
+    // This may not be the best way to do this
+    switch (expr->binary_op) {
+    case OP_PLUS:
+        if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
+            return usual_arith_conv(lhs_type, rhs_type);
+        if (lhs_type->type == TYPE_POINTER && is_int_type(rhs_type))
+            return lhs_type;
+        if (is_int_type(lhs_type) && rhs_type->type == TYPE_POINTER)
+            return rhs_type;
+        break;
+    case OP_MINUS:
+    case OP_MULT:
+    case OP_DIV:
+    case OP_MODULO:
+    case OP_EQUAL:
+    case OP_NOT_EQUAL:
+    case OP_GREATER_THAN:
+    case OP_LESS_THAN:
+    case OP_LESS_THAN_EQUAL:
+    case OP_GREATER_THAN_EQUAL:
+    case OP_LOGICAL_AND:
+    case OP_LOGICAL_OR:
+    case OP_BITWISE_NOT:
+    case OP_BITWISE_OR:
+    case OP_BITWISE_XOR:
+    case OP_BITWISE_AND:
+    case OP_SHIFT_LEFT:
+    case OP_SHIFT_RIGHT:
+    case OP_ASSIGN_EQUAL:
+    case OP_ASSIGN_MINUS:
+    case OP_ASSIGN_PLUS:
+    case OP_ASSIGN_MULT:
+    case OP_ASSIGN_DIV:
+    case OP_ASSIGN_MODULO:
+    case OP_ASSIGN_AND:
+    case OP_ASSIGN_OR:
+    case OP_ASSIGN_XOR:
+    case OP_ASSIGN_SHIFT_LEFT:
+    case OP_ASSIGN_SHIFT_RIGHT:
+    case OP_COMMA:
+        break;
+    }
+
+    error(cur_filename, cur_line_num, "invalid oprands to binary operator.");
+    return NULL; // Stop compiler warnings.
+}
+
+// Check if expression is valid. Return the type.
+static DataType *check_expr_type(AstNode *expr)
+{
+    switch (expr->node_type) {
+    case AST_INTEGER_CONST:
+        return new_data_type(TYPE_LLONG, 0, 0, 0, NULL, NULL); // TODO: integer suffixes
+        break;
+    case AST_FLOAT_CONST:
+        return new_data_type(TYPE_LDOUBLE, 0, 0, 0, NULL, NULL); // TODO: integer suffixes
+        break;
+    case AST_STR_LIT:
+        return new_data_type(TYPE_POINTER, 0, 0, 0,
+                new_data_type(TYPE_CHAR, 0, 0, 0, NULL, NULL), NULL);
+        break;
+    case AST_IDENTIFIER:
+        break;
+    case AST_CONDITIONAL_EXPR:
+        break;
+    case AST_STRUCT_MEMBER_ACCESS:
+        break;
+    case AST_CAST_EXPR:
+        break;
+    case AST_BINARY_OP:
+        return check_binary_op(expr);
+        break;
+    case AST_UNARY_OP:
+        break;
+    default:
+        error("--", -1, "internal error: %s: expected an expression node.",
+              __func__);
+    }
+    return NULL; // Stop compiler warnings
+}
 
 static AstNode *extract_ident_from_declarator_head(AstNode *declarator_head)
 {
@@ -1045,7 +1194,7 @@ and_expr(A) ::= and_expr(LHS) OP_AND equality_expr(RHS). {
 // Equality check
 equality_expr(A) ::= relational_expr(RELATIONAL). { A = RELATIONAL; }
 equality_expr(A) ::= equality_expr(LHS) OP_EQUALITY relational_expr(RHS). {
-    A = new_ast_binary_op(OP_EQUALITY, LHS, RHS);
+    A = new_ast_binary_op(OP_EQUAL, LHS, RHS);
 }
 equality_expr(A) ::= equality_expr(LHS) OP_NOT_EQUAL relational_expr(RHS). {
     A = new_ast_binary_op(OP_NOT_EQUAL, LHS, RHS);
@@ -1081,6 +1230,7 @@ shift_expr(A) ::= shift_expr(LHS) OP_SHIFT_RIGHT additive_expr(RHS). {
 additive_expr(A) ::= multiplicative_expr(MULT_EXPR). { A = MULT_EXPR; }
 additive_expr(A) ::= additive_expr(LHS) OP_PLUS multiplicative_expr(RHS). {
     A = new_ast_binary_op(OP_PLUS, LHS, RHS);
+    check_binary_op(A);
 }
 additive_expr(A) ::= additive_expr(LHS) OP_MINUS multiplicative_expr(RHS). {
     A = new_ast_binary_op(OP_MINUS, LHS, RHS);

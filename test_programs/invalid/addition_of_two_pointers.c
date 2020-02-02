@@ -1,4 +1,4 @@
-int main()
+int test()
 {
     "test" + "test";
 }

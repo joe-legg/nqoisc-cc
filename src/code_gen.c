@@ -139,7 +139,7 @@ static void gen_binary_op(AstNode *binary_op)
         break;
     case OP_MODULO:
         break;
-    case OP_EQUALITY:
+    case OP_EQUAL:
         break;
     case OP_NOT_EQUAL:
         break;
