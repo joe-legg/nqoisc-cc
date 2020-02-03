@@ -1,5 +1,6 @@
 Todo List
 #########################################
+- [ ] write a makefile
 - [ ] rename some of the operator tokens.
 - [ ] try to remove AST nodes that are only used in the parser.
     - [ ] remove some operators
