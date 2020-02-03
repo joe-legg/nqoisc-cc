@@ -1,4 +1,4 @@
 int main()
 {
-    "test" + "test";
+     3 + 0;
 }

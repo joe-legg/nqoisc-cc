@@ -4,4 +4,6 @@ src/parser.h
 src/parser.c
 lex.yy.c
 *.o
-out.bin
+a.asm
+a.bin
+
