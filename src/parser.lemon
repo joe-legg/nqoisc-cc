@@ -86,6 +86,7 @@ static DataType *check_binary_op(AstNode *expr)
 
     // This may not be the best way to do this
     switch (expr->binary_op) {
+    // Addition
     case OP_PLUS:
         if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
             return usual_arith_conv(lhs_type, rhs_type);
@@ -94,7 +95,15 @@ static DataType *check_binary_op(AstNode *expr)
         if (is_int_type(lhs_type) && rhs_type->type == TYPE_POINTER)
             return rhs_type;
         break;
+    // Subtracting
     case OP_MINUS:
+        if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
+            return usual_arith_conv(lhs_type, rhs_type);
+        if (lhs_type->type == TYPE_POINTER && rhs_type->type == TYPE_POINTER)
+            return lhs_type;
+        if (lhs_type->type == TYPE_POINTER && is_int_type(rhs_type))
+            return lhs_type;
+        break;
     case OP_MULT:
     case OP_DIV:
     case OP_MODULO:
@@ -1234,6 +1243,7 @@ additive_expr(A) ::= additive_expr(LHS) OP_PLUS multiplicative_expr(RHS). {
 }
 additive_expr(A) ::= additive_expr(LHS) OP_MINUS multiplicative_expr(RHS). {
     A = new_ast_binary_op(OP_MINUS, LHS, RHS);
+    check_binary_op(A);
 }
 
 // Multiplication
