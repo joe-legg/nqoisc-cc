@@ -68,6 +68,24 @@ static int is_type_equal(DataType *type_a, DataType *type_b)
     return 0;
 }
 
+// Check types (ignoring qualifiers)
+static int is_compatible_types(DataType *type_a, DataType *type_b)
+{
+    // TODO: compatiable structs
+
+    if (type_a->type != type_b->type)
+        return 0;
+
+    // Arithmetic types
+    if (is_arith_type(type_a) && is_arith_type(type_a))
+        return type_a->is_unsigned == type_b->is_unsigned;
+    // Pointers
+    if (type_a->type == TYPE_POINTER && type_b->type == TYPE_POINTER)
+        return is_compatible_types(type_a->pointer, type_b->pointer);
+
+    return 0;
+}
+
 // Expressions
 
 // TODO: implement this function properly
@@ -89,30 +107,43 @@ static DataType *check_binary_op(AstNode *expr)
     DataType *rhs_type = check_expr_type(expr->binary_right);
     DataType *lhs_type = check_expr_type(expr->binary_left);
 
+    // TODO: incomplete types
+
     // This may not be the best way to do this
     switch (expr->binary_op) {
     // Addition
     case OP_PLUS:
+        // Arithmetic type
         if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
             return usual_arith_conv(lhs_type, rhs_type);
+        // RHS int LHS pointer
         if (lhs_type->type == TYPE_POINTER && is_int_type(rhs_type))
             return lhs_type;
+        // LHS int RHS pointer
         if (is_int_type(lhs_type) && rhs_type->type == TYPE_POINTER)
             return rhs_type;
         break;
     // Subtracting
     case OP_MINUS:
+        // Arithmetic
         if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
             return usual_arith_conv(lhs_type, rhs_type);
-        if (lhs_type->type == TYPE_POINTER && rhs_type->type == TYPE_POINTER)
+        // Both pointers
+        if (lhs_type->type == TYPE_POINTER && rhs_type->type == TYPE_POINTER &&
+            is_compatible_types(lhs_type, rhs_type))
             return lhs_type;
+        // TODO: this can be moved into the above if stmt.
         if (lhs_type->type == TYPE_POINTER && is_int_type(rhs_type))
             return lhs_type;
         break;
     case OP_MULT:
+        break;
     case OP_DIV:
+        break;
     case OP_MODULO:
+        break;
     case OP_EQUAL:
+        break;
     case OP_NOT_EQUAL:
     case OP_GREATER_THAN:
     case OP_LESS_THAN:
@@ -160,6 +191,7 @@ static DataType *check_expr_type(AstNode *expr)
                 new_data_type(TYPE_CHAR, 0, 0, 0, NULL, NULL), NULL);
         break;
     case AST_IDENTIFIER:
+        // TODO
         break;
     case AST_CONDITIONAL_EXPR:
         break;
@@ -1076,21 +1108,30 @@ selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN
                            statement(BODY). [KWD_ELSE] {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, NULL);
 
+    // TODO: put this in a function
     // Check the expression
-    if (!is_scalar_type(check_expr_type(COND))) {
+    DataType *cond_type = check_expr_type(COND);
+
+    if (!is_scalar_type(cond_type)) {
         error(cur_filename, cur_line_num,
               "invalid expression in if statement, expected a scalar type.");
     }
+
+    free(cond_type);
 }
 selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN statement(BODY)
                            KWD_ELSE statement(ELSE). {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, ELSE);
 
     // Check the expression
-    if (!is_scalar_type(check_expr_type(COND))) {
+    DataType *cond_type = check_expr_type(COND);
+
+    if (!is_scalar_type(cond_type)) {
         error(cur_filename, cur_line_num,
               "invalid expression in if statement, expected a scalar type.");
     }
+
+    free(cond_type);
 }
 
 // Switch statement

@@ -31,15 +31,22 @@ Todo List
     - [ ] Read through the standard.
     - [ ] declarations.
     - [ ] expressions.
+        - [ ] identifiers
         - [ ] integer constants.
         - [ ] binary operations
             - [x] addition.
-            - [ ] subtraction.
+            - [x] subtraction.
             - [ ] multiplication.
+            - [ ] modulo.
             - [ ] division.
             - [ ] logical.
             - [ ] bitwise.
             - [ ] assignment.
+            - [ ] comparison.
+                - [ ] less/greater than
+                - [ ] less/greater than or equal
+                - [ ] equal to
+                - [ ] not equal to
     - [ ] arrays
         - [ ] check that the expression is a constant integer expression.
         - [ ] check the size is greater than zero
@@ -49,7 +56,8 @@ Todo List
     - [ ] implement a hash table.
         - [ ] Dynamic implementation.
         - [x] static implementation.
-- [ ] change code_gen.c to generate assembler instead of machine code.
+- [ ] rename loop variables in code_gen.c
+- [x] change code_gen.c to generate assembler instead of machine code.
 - [x] rename jcc to nqoisc-cc
 - [x] write a better assembler
 - [x] change parse() function to parse_c()
