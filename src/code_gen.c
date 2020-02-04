@@ -160,16 +160,22 @@ static void gen_if_stmt(AstNode *if_stmt)
     EMIT_COMMENT("if stmt");
 
     int l_else = new_label();
+    int l_stmt_end = new_label();
 
     // Gen the code to evaluate the condition expression
     gen_ast(if_stmt->cond);
-    stack_left(1);               // Point to last item on the stack
+    stack_left(1);               // Point to last item pushed to the stack
     gen_branch_if_zero(l_else);  // Check the result of the expression
-    gen_ast(if_stmt->cond_body); // If stmt body
+
+    // If stmt body
+    gen_ast(if_stmt->cond_body);
+    gen_branch(l_stmt_end);
 
     // Else
     gen_branch_label(l_else);
     gen_ast(if_stmt->cond_else);
+
+    gen_branch_label(l_stmt_end);
 
     EMIT_COMMENT("/ if stmt");
 }
