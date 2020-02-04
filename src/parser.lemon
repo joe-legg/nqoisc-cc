@@ -51,6 +51,11 @@ static int is_arith_type(DataType *t)
     return is_int_type(t) || is_float_type(t);
 }
 
+static int is_scalar_type(DataType *t)
+{
+    return is_arith_type(t) || t->type == TYPE_POINTER;
+}
+
 // Compare data types
 static int is_type_equal(DataType *type_a, DataType *type_b)
 {
@@ -1070,10 +1075,22 @@ expression_statement(A) ::= SEMICOLON. { A = NULL; }
 selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN
                            statement(BODY). [KWD_ELSE] {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, NULL);
+
+    // Check the expression
+    if (!is_scalar_type(check_expr_type(COND))) {
+        error(cur_filename, cur_line_num,
+              "invalid expression in if statement, expected a scalar type.");
+    }
 }
 selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN statement(BODY)
                            KWD_ELSE statement(ELSE). {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, ELSE);
+
+    // Check the expression
+    if (!is_scalar_type(check_expr_type(COND))) {
+        error(cur_filename, cur_line_num,
+              "invalid expression in if statement, expected a scalar type.");
+    }
 }
 
 // Switch statement

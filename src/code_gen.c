@@ -81,9 +81,13 @@ static void gen_branch_if_zero(int label_id)
 // Gen label for unconditional branch
 static void gen_branch_label(int label_id)
 {
+    EMIT_COMMENT("branch label");
+
     EMIT_ADD(1);
     EMIT_LABEL(label_id);
     EMIT_SUB(1);
+
+    EMIT_COMMENT("/ branch label");
 }
 
 // Set the value at the data pointer to zero
@@ -147,6 +151,27 @@ static void stack_left(int n)
     EMIT_COMMENT("stack left");
     EMIT_LEFT(sizeof(Word) * n);
     EMIT_COMMENT("/ stack left");
+}
+
+/* AST Gen */
+
+static void gen_if_stmt(AstNode *if_stmt)
+{
+    EMIT_COMMENT("if stmt");
+
+    int l_else = new_label();
+
+    // Gen the code to evaluate the condition expression
+    gen_ast(if_stmt->cond);
+    stack_left(1);               // Point to last item on the stack
+    gen_branch_if_zero(l_else);  // Check the result of the expression
+    gen_ast(if_stmt->cond_body); // If stmt body
+
+    // Else
+    gen_branch_label(l_else);
+    gen_ast(if_stmt->cond_else);
+
+    EMIT_COMMENT("/ if stmt");
 }
 
 static void gen_binary_op(AstNode *binary_op)
@@ -243,6 +268,9 @@ static void gen_binary_op(AstNode *binary_op)
 // Recursive function for generating code from the ast
 static void gen_ast(AstNode *ast)
 {
+    if (ast == NULL)
+        return;
+
     switch (ast->node_type) {
     case AST_FUNCTION_DEF:
         // TODO
@@ -266,6 +294,7 @@ static void gen_ast(AstNode *ast)
     case AST_DO_WHILE_STMT:
         break;
     case AST_IF_STMT:
+        gen_if_stmt(ast);
         break;
     case AST_GOTO_STMT:
         break;

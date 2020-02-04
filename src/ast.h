@@ -212,7 +212,7 @@ typedef struct AstNode {
             Vector *func_call_args;
         };
 
-        // If, while, switch, case
+        // Conditional: if, while, switch, case
         struct {
             struct AstNode *cond;
             struct AstNode *cond_body;

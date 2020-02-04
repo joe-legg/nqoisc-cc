@@ -3,6 +3,7 @@ Todo List
 - [ ] write a makefile
 - [ ] rename some of the operator tokens.
 - [ ] try to remove AST nodes that are only used in the parser.
+    - [ ] make case use expression nodes instead of condition nodes.
     - [ ] remove some operators
         - [ ] remove x++ operator ast node and replace with x + 1 do the same for x--
 - [ ] standard library.
