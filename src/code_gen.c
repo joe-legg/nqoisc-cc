@@ -303,6 +303,7 @@ static void gen_ast(AstNode *ast)
             gen_ast(ast->statements->items[i]);
         break;
     case AST_WHILE_STMT:
+        
         break;
     case AST_DO_WHILE_STMT:
         break;

@@ -88,6 +88,20 @@ static int is_compatible_types(DataType *type_a, DataType *type_b)
 
 // Expressions
 
+static void ensure_expr_scalar_type(AstNode *expr)
+{
+    // Check the expression
+    DataType *expr_type = check_expr_type(expr);
+
+    if (!is_scalar_type(expr_type)) {
+        error(cur_filename, cur_line_num,
+              "expected a scalar type, instead got \"%s\".",
+              type_to_string(expr_type));
+    }
+
+    free(expr_type);
+}
+
 // TODO: implement this function properly
 static DataType *usual_arith_conv(DataType *a, DataType *b)
 {
@@ -1112,30 +1126,13 @@ selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN
                            statement(BODY). [KWD_ELSE] {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, NULL);
 
-    // TODO: put this in a function
-    // Check the expression
-    DataType *cond_type = check_expr_type(COND);
-
-    if (!is_scalar_type(cond_type)) {
-        error(cur_filename, cur_line_num,
-              "invalid expression in if statement, expected a scalar type.");
-    }
-
-    free(cond_type);
+    ensure_expr_scalar_type(COND);
 }
 selection_statement(A) ::= KWD_IF LPAREN expression(COND) RPAREN statement(BODY)
                            KWD_ELSE statement(ELSE). {
     A = new_ast_conditional(AST_IF_STMT, COND, BODY, ELSE);
 
-    // Check the expression
-    DataType *cond_type = check_expr_type(COND);
-
-    if (!is_scalar_type(cond_type)) {
-        error(cur_filename, cur_line_num,
-              "invalid expression in if statement, expected a scalar type.");
-    }
-
-    free(cond_type);
+    ensure_expr_scalar_type(COND);
 }
 
 // Switch statement
@@ -1148,6 +1145,8 @@ selection_statement(A) ::= KWD_SWITCH LPAREN expression(EXPR) RPAREN
 iteration_statement(A) ::= KWD_WHILE LPAREN expression(COND) RPAREN
                            statement(BODY). {
     A = new_ast_conditional(AST_WHILE_STMT, COND, BODY, NULL);
+
+    ensure_expr_scalar_type(COND);
 }
 iteration_statement(A) ::= KWD_DO statement(BODY) KWD_WHILE LPAREN
                            expression(COND) RPAREN SEMICOLON. {
