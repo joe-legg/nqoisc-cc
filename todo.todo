@@ -6,6 +6,7 @@ Todo List
     - [ ] make case use expression nodes instead of condition nodes.
     - [ ] remove some operators
         - [ ] remove x++ operator ast node and replace with x + 1 do the same for x--
+- [ ] code gen for 64-values in binary operators.
 - [ ] standard library.
 - [ ] compiler defined constants and macros.
     - [ ] __FILE__

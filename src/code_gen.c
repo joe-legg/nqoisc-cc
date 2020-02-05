@@ -155,29 +155,54 @@ static void stack_left(int n)
 
 /* AST Gen */
 
-static void gen_if_stmt(AstNode *if_stmt)
+static void gen_binop_plus()
 {
-    EMIT_COMMENT("if stmt");
+    int label1 = new_label();
+    int label2 = new_label();
 
-    int l_else = new_label();
-    int l_stmt_end = new_label();
+    stack_left(1); // Move dp to the last item pushed to the stack
 
-    // Gen the code to evaluate the condition expression
-    gen_ast(if_stmt->cond);
-    stack_left(1);               // Point to last item pushed to the stack
-    gen_branch_if_zero(l_else);  // Check the result of the expression
+    // If the RHS is zero don't perform addition
+    gen_branch_if_zero(label2);
 
-    // If stmt body
-    gen_ast(if_stmt->cond_body);
-    gen_branch(l_stmt_end);
+    EMIT_LABEL(label1);
 
-    // Else
-    gen_branch_label(l_else);
-    gen_ast(if_stmt->cond_else);
+    // Subtract 1 from the rhs and add 1 to the lhs
+    EMIT_SUB(1);
+    stack_left(1);
+    EMIT_ADD(1);
+    stack_right(1);
 
-    gen_branch_label(l_stmt_end);
+    EMIT_BNZ(label1);
 
-    EMIT_COMMENT("/ if stmt");
+    gen_branch_label(label2);
+}
+
+static void gen_binop_minus()
+{
+    int label1 = new_label();
+    int label2 = new_label();
+
+    stack_left(1); // Move dp to the last item pushed to the stack
+
+    // If the RHS is zero don't perform subtraction
+    gen_branch_if_zero(label2);
+
+    EMIT_LABEL(label1);
+
+    EMIT_SUB(1);
+    stack_left(1);
+    EMIT_SUB(1);
+    stack_right(1);
+
+    EMIT_BNZ(label1);
+
+    gen_branch_label(label2);
+}
+
+static void gen_binop_equal()
+{
+    // TODO:
 }
 
 static void gen_binary_op(AstNode *binary_op)
@@ -191,59 +216,12 @@ static void gen_binary_op(AstNode *binary_op)
 
     switch (binary_op->binary_op) {
     // Addition
-    case OP_PLUS: {
-        int label1 = new_label();
-        int label2 = new_label();
-
-        stack_left(1); // Move dp to the last item pushed to the stack
-
-        // If the RHS is zero don't perform addition
-        gen_branch_if_zero(label2);
-
-        EMIT_LABEL(label1);
-
-        // Subtract 1 from the rhs and add 1 to the lhs
-        EMIT_SUB(1);
-        stack_left(1);
-        EMIT_ADD(1);
-        stack_right(1);
-
-        EMIT_BNZ(label1);
-
-        gen_branch_label(label2);
-
-        break;
-    }
-    case OP_MINUS: {
-        int label1 = new_label();
-        int label2 = new_label();
-
-        stack_left(1); // Move dp to the last item pushed to the stack
-
-        // If the RHS is zero don't perform subtraction
-        gen_branch_if_zero(label2);
-
-        EMIT_LABEL(label1);
-
-        EMIT_SUB(1);
-        stack_left(1);
-        EMIT_SUB(1);
-        stack_right(1);
-
-        EMIT_BNZ(label1);
-
-        gen_branch_label(label2);
-
-        break;
-    }
-    case OP_MULT:
-        break;
-    case OP_DIV:
-        break;
-    case OP_MODULO:
-        break;
-    case OP_EQUAL:
-        break;
+    case OP_PLUS:   gen_binop_plus(); break;
+    case OP_MINUS:  gen_binop_minus(); break;
+    case OP_MULT:   break;
+    case OP_DIV:    break;
+    case OP_MODULO: break;
+    case OP_EQUAL:  gen_binop_equal(); break;
     case OP_NOT_EQUAL:
     case OP_GREATER_THAN:
     case OP_LESS_THAN:
@@ -273,6 +251,31 @@ static void gen_binary_op(AstNode *binary_op)
     }
 
     EMIT_COMMENT("/ binary operation");
+}
+
+static void gen_if_stmt(AstNode *if_stmt)
+{
+    EMIT_COMMENT("if stmt");
+
+    int l_else = new_label();
+    int l_stmt_end = new_label();
+
+    // Gen the code to evaluate the condition expression
+    gen_ast(if_stmt->cond);
+    stack_left(1);               // Point to last item pushed to the stack
+    gen_branch_if_zero(l_else);  // Check the result of the expression
+
+    // If stmt body
+    gen_ast(if_stmt->cond_body);
+    gen_branch(l_stmt_end);
+
+    // Else
+    gen_branch_label(l_else);
+    gen_ast(if_stmt->cond_else);
+
+    gen_branch_label(l_stmt_end);
+
+    EMIT_COMMENT("/ if stmt");
 }
 
 // Recursive function for generating code from the ast

@@ -143,6 +143,10 @@ static DataType *check_binary_op(AstNode *expr)
     case OP_MODULO:
         break;
     case OP_EQUAL:
+        // TODO:
+        // Arithmetic
+        if (is_arith_type(lhs_type) && is_arith_type(rhs_type))
+            return usual_arith_conv(lhs_type, rhs_type);
         break;
     case OP_NOT_EQUAL:
     case OP_GREATER_THAN:
